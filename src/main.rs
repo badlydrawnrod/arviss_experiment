@@ -22,6 +22,10 @@ fn bits(n: u32, hi: u32, lo: u32) -> u32 {
     (n & mask) >> lo
 }
 
+fn extract_fm(ins: u32) -> u8 {
+    ((ins >> 28) & 0xf) as u8
+}
+
 fn extract_rd(ins: u32) -> u8 {
     ((ins >> 7) & 0x1f) as u8
 }
@@ -96,39 +100,73 @@ enum ArvissOpcode {
 }
 
 #[derive(Debug)]
-enum ExecFn {
-    ExecIllegalInstruction,
+enum ExecFnCacheLineIndex {
     ExecFetchDecodeReplace,
-    ExecLui,
+}
+
+#[derive(Debug)]
+enum ExecFnNoArgs {
+    ExecEcall,
+    ExecEbreak,
+    ExecUret,
+    ExecSret,
+    ExecMret,
+}
+
+#[derive(Debug)]
+enum ExecFnRdFmPredRdRs1Succ {
+    ExecFence,
+}
+
+#[derive(Debug)]
+enum ExecFnRdImm {
     ExecAuipc,
+    ExecLui,
     ExecJal,
-    ExecJalr,
-    ExecBeq,
-    ExecBne,
-    ExecBlt,
-    ExecBge,
-    ExecBltu,
-    ExecBgeu,
+}
+
+#[derive(Debug)]
+enum ExecFnRdRs1 {
+    ExecFmvXW,
+    ExecFmvWX,
+    ExecFclassS,
+}
+
+#[derive(Debug)]
+enum ExecFnRdRs1Imm {
     ExecLb,
     ExecLh,
     ExecLw,
     ExecLbu,
     ExecLhu,
-    ExecSb,
-    ExecSh,
-    ExecSw,
+    ExecFlw,
+    ExecFenceI,
     ExecAddi,
+    ExecSlli,
     ExecSlti,
     ExecSltiu,
     ExecXori,
-    ExecOri,
-    ExecAndi,
-    ExecSlli,
     ExecSrli,
     ExecSrai,
+    ExecOri,
+    ExecAndi,
+    ExecJalr,
+}
+
+#[derive(Debug)]
+enum ExecFnRdRs1Rm {
+    ExecFsqrtS,
+    ExecFcvtWS,
+    ExecFcvtWuS,
+    ExecFcvtSW,
+    ExecFcvtSWu,
+}
+
+#[derive(Debug)]
+enum ExecFnRdRs1Rs2 {
     ExecAdd,
-    ExecSub,
     ExecMul,
+    ExecSub,
     ExecSll,
     ExecMulh,
     ExecSlt,
@@ -138,106 +176,138 @@ enum ExecFn {
     ExecXor,
     ExecDiv,
     ExecSrl,
-    ExecSra,
     ExecDivu,
+    ExecSra,
     ExecOr,
     ExecRem,
     ExecAnd,
     ExecRemu,
-    ExecFence,
-    ExecFenceI,
-    ExecEcall,
-    ExecEbreak,
-    ExecUret,
-    ExecSret,
-    ExecMret,
-    ExecFlw,
+    ExecFsgnjS,
+    ExecFminS,
+    ExecFleS,
+    ExecFsgnjnS,
+    ExecFmaxS,
+    ExecFltS,
+    ExecFsgnjxS,
+    ExecFeqS,
+}
+
+#[derive(Debug)]
+enum ExecFnRs1Rs2Imm {
+    ExecSb,
+    ExecSh,
+    ExecSw,
     ExecFsw,
-    ExecFmaddS,
-    ExecFmsubS,
-    ExecFnmsubS,
-    ExecFnmaddS,
+    ExecBeq,
+    ExecBne,
+    ExecBlt,
+    ExecBge,
+    ExecBltu,
+    ExecBgeu,
+}
+
+#[derive(Debug)]
+enum ExecFnRdRs1Rs2Rm {
     ExecFaddS,
     ExecFsubS,
     ExecFmulS,
     ExecFdivS,
-    ExecFsqrtS,
-    ExecFsgnjS,
-    ExecFsgnjnS,
-    ExecFsgnjxS,
-    ExecFminS,
-    ExecFmaxS,
-    ExecFcvtWS,
-    ExecFcvtWuS,
-    ExecFmvXW,
-    ExecFclassS,
-    ExecFeqS,
-    ExecFltS,
-    ExecFleS,
-    ExecFcvtSW,
-    ExecFcvtSWu,
-    ExecFmvWX,
 }
 
-use ExecFn::*;
+#[derive(Debug)]
+enum ExecFnRdRs1Rs2Rs3Rm {
+    ExecFmaddS,
+    ExecFmsubS,
+    ExecFnmsubS,
+    ExecFnmaddS,
+}
 
 #[derive(Debug)]
-enum Parameters {
-    NoArgs,
+enum ExecFnTrap {
+    ExecIllegalInstruction,
+}
+
+use ExecFnCacheLineIndex::*;
+use ExecFnNoArgs::*;
+use ExecFnRdFmPredRdRs1Succ::*;
+use ExecFnRdImm::*;
+use ExecFnRdRs1::*;
+use ExecFnRdRs1Imm::*;
+use ExecFnRdRs1Rm::*;
+use ExecFnRdRs1Rs2::*;
+use ExecFnRdRs1Rs2Rm::*;
+use ExecFnRdRs1Rs2Rs3Rm::*;
+use ExecFnRs1Rs2Imm::*;
+use ExecFnTrap::*;
+
+#[derive(Debug)]
+enum DecodedInstruction {
+    NoArgs {
+        opcode: ExecFnNoArgs, // Which opcodes are viable for these parameters.
+    },
     Fdr {
         cache_line: u32, // The instruction's cache line.
         index: u32,      // The instruction's index in the cache line.
     },
+    RdFmPredRdRs1Succ {
+        opcode: ExecFnRdFmPredRdRs1Succ, // Which opcodes are viable for these parameters.
+        fm: u8,                          // Fence "mode".
+        rd: u8,                          // Destination register. Currently ignored.
+        rs1: u8,                         // Source register. Currently ignored.
+    },
     RdImm {
-        rd: u8,   // Destination register.
-        imm: i32, // Immediate operand.
+        opcode: ExecFnRdImm, // Which opcodes are viable for these parameters.
+        rd: u8,              // Destination register.
+        imm: i32,            // Immediate operand.
     },
     RdRs1 {
-        rd: u8,  // Destination register.
-        rs1: u8, // Source register.
+        opcode: ExecFnRdRs1, // Which opcodes are viable for these parameters.
+        rd: u8,              // Destination register.
+        rs1: u8,             // Source register.
     },
     RdRs1Imm {
-        rd: u8,   // Destination register.
-        rs1: u8,  // Source register.
-        imm: i32, // Immediate operand.
+        opcode: ExecFnRdRs1Imm, // Which opcodes are viable for these parameters.
+        rd: u8,                 // Destination register.
+        rs1: u8,                // Source register.
+        imm: i32,               // Immediate operand.
     },
     RdRs1Rs2 {
-        rd: u8,  // Destination register.
-        rs1: u8, // First source register.
-        rs2: u8, // Second source register.
+        opcode: ExecFnRdRs1Rs2, // Which opcodes are viable for these parameters.
+        rd: u8,                 // Destination register.
+        rs1: u8,                // First source register.
+        rs2: u8,                // Second source register.
     },
     Rs1Rs2Imm {
-        rs1: u8,  // First source register.
-        rs2: u8,  // Second source register.
-        imm: i32, // Immediate operand.
+        opcode: ExecFnRs1Rs2Imm, // Which opcodes are viable for these parameters.
+        rs1: u8,                 // First source register.
+        rs2: u8,                 // Second source register.
+        imm: i32,                // Immediate operand.
     },
     RdRs1Rs2Rs3Rm {
-        rd: u8,  // Destination register.
-        rs1: u8, // First source register.
-        rs2: u8, // Second source register.
-        rs3: u8, // Third source register.
+        opcode: ExecFnRdRs1Rs2Rs3Rm, // Which opcodes are viable for these parameters.
+        rd: u8,                      // Destination register.
+        rs1: u8,                     // First source register.
+        rs2: u8,                     // Second source register.
+        rs3: u8,                     // Third source register.
         rm: u8,
     },
     RdRs1Rm {
-        rd: u8,  // Destination register.
-        rs1: u8, // Source register.
-        rm: u8,  // Rounding mode.
+        opcode: ExecFnRdRs1Rm, // Which opcodes are viable for these parameters.
+        rd: u8,                // Destination register.
+        rs1: u8,               // Source register.
+        rm: u8,                // Rounding mode.
     },
     RdRs1Rs2Rm {
-        rd: u8,  // Destination register.
-        rs1: u8, // First source register.
-        rs2: u8, // Second source register.
-        rm: u8,  // Rounding mode.
+        opcode: ExecFnRdRs1Rs2Rm, // Which opcodes are viable for these parameters.
+        rd: u8,                   // Destination register.
+        rs1: u8,                  // First source register.
+        rs2: u8,                  // Second source register.
+        rm: u8,                   // Rounding mode.
     },
     Ins {
+        opcode: ExecFnTrap, // Which opcodes are viable for these parameters.
         ins: u32,
     },
-}
-
-#[derive(Debug)]
-struct DecodedInstruction {
-    opcode: ExecFn,
-    params: Parameters,
 }
 
 struct Dummy;
@@ -259,173 +329,180 @@ impl Dispatcher for Dummy {
 
 fn dispatch(dispatcher: &mut impl Dispatcher, ins: DecodedInstruction) {
     match ins {
-        DecodedInstruction {
-            opcode: ExecAdd,
-            params: Parameters::RdRs1Imm { rd, rs1, imm },
+        DecodedInstruction::RdRs1Imm {
+            opcode: ExecAddi,
+            rd,
+            rs1,
+            imm,
         } => dispatcher.exec_add(rd, rs1, imm),
-        DecodedInstruction {
-            opcode: ExecEcall,
-            params: Parameters::NoArgs,
-        } => dispatcher.exec_ecall(),
+        DecodedInstruction::NoArgs { opcode: ExecEcall } => dispatcher.exec_ecall(),
         _ => {}
     }
 }
 
 trait Decoder {
-    fn gen_trap(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction;
-    fn gen_no_args(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction;
-    fn gen_jimm20_rd(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction;
-    fn gen_bimm12hi_bimm12lo_rs1_rs2(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction;
-    fn gen_rd_rm_rs1(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction;
-    fn gen_rd_rm_rs1_rs2(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction;
-    fn gen_rd_rs1(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction;
-    fn gen_rd_rm_rs1_rs2_rs3(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction;
-    fn gen_rd_rs1_rs2(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction;
-    fn gen_imm12hi_imm12lo_rs1_rs2(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction;
-    fn gen_imm20_rd(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction;
-    fn gen_rd_rs1_shamtw(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction;
-    fn gen_fm_pred_rd_rs1_succ(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction;
-    fn gen_imm12_rd_rs1(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction;
+    fn gen_trap(&mut self, opcode: ExecFnTrap, ins: u32) -> DecodedInstruction;
+    fn gen_no_args(&mut self, opcode: ExecFnNoArgs, ins: u32) -> DecodedInstruction;
+    fn gen_jimm20_rd(&mut self, opcode: ExecFnRdImm, ins: u32) -> DecodedInstruction;
+    fn gen_bimm12hi_bimm12lo_rs1_rs2(
+        &mut self,
+        opcode: ExecFnRs1Rs2Imm,
+        ins: u32,
+    ) -> DecodedInstruction;
+    fn gen_rd_rm_rs1(&mut self, opcode: ExecFnRdRs1Rm, ins: u32) -> DecodedInstruction;
+    fn gen_rd_rm_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2Rm, ins: u32) -> DecodedInstruction;
+    fn gen_rd_rs1(&mut self, opcode: ExecFnRdRs1, ins: u32) -> DecodedInstruction;
+    fn gen_rd_rm_rs1_rs2_rs3(
+        &mut self,
+        opcode: ExecFnRdRs1Rs2Rs3Rm,
+        ins: u32,
+    ) -> DecodedInstruction;
+    fn gen_rd_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2, ins: u32) -> DecodedInstruction;
+    fn gen_imm12hi_imm12lo_rs1_rs2(
+        &mut self,
+        opcode: ExecFnRs1Rs2Imm,
+        ins: u32,
+    ) -> DecodedInstruction;
+    fn gen_imm20_rd(&mut self, opcode: ExecFnRdImm, ins: u32) -> DecodedInstruction;
+    fn gen_rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Imm, ins: u32) -> DecodedInstruction;
+    fn gen_fm_pred_rd_rs1_succ(
+        &mut self,
+        opcode: ExecFnRdFmPredRdRs1Succ,
+        ins: u32,
+    ) -> DecodedInstruction;
+    fn gen_imm12_rd_rs1(&mut self, opcode: ExecFnRdRs1Imm, ins: u32) -> DecodedInstruction;
 }
 
 impl Decoder for Dummy {
-    fn gen_trap(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction {
-        DecodedInstruction {
-            opcode,
-            params: Parameters::Ins { ins },
+    fn gen_trap(&mut self, opcode: ExecFnTrap, ins: u32) -> DecodedInstruction {
+        DecodedInstruction::Ins { opcode, ins }
+    }
+
+    fn gen_no_args(&mut self, opcode: ExecFnNoArgs, _ins: u32) -> DecodedInstruction {
+        DecodedInstruction::NoArgs { opcode }
+    }
+
+    fn gen_jimm20_rd(&mut self, opcode: ExecFnRdImm, ins: u32) -> DecodedInstruction {
+        DecodedInstruction::RdImm {
+            opcode: opcode,
+            rd: extract_rd(ins),
+            imm: extract_jimmediate(ins),
         }
     }
 
-    fn gen_no_args(&mut self, opcode: ExecFn, _ins: u32) -> DecodedInstruction {
-        DecodedInstruction {
+    fn gen_bimm12hi_bimm12lo_rs1_rs2(
+        &mut self,
+        opcode: ExecFnRs1Rs2Imm,
+        ins: u32,
+    ) -> DecodedInstruction {
+        DecodedInstruction::Rs1Rs2Imm {
             opcode,
-            params: Parameters::NoArgs,
+            rs1: extract_rs1(ins),
+            rs2: extract_rs2(ins),
+            imm: extract_bimmediate(ins),
         }
     }
 
-    fn gen_jimm20_rd(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction {
-        DecodedInstruction {
+    fn gen_rd_rm_rs1(&mut self, opcode: ExecFnRdRs1Rm, ins: u32) -> DecodedInstruction {
+        DecodedInstruction::RdRs1Rm {
             opcode,
-            params: Parameters::RdImm {
-                rd: extract_rd(ins),
-                imm: extract_jimmediate(ins),
-            },
+            rd: extract_rd(ins),
+            rs1: extract_rs1(ins),
+            rm: extract_rm(ins),
         }
     }
 
-    fn gen_bimm12hi_bimm12lo_rs1_rs2(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction {
-        DecodedInstruction {
+    fn gen_rd_rm_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2Rm, ins: u32) -> DecodedInstruction {
+        DecodedInstruction::RdRs1Rs2Rm {
             opcode,
-            params: Parameters::Rs1Rs2Imm {
-                rs1: extract_rs1(ins),
-                rs2: extract_rs2(ins),
-                imm: extract_bimmediate(ins),
-            },
+            rd: extract_rd(ins),
+            rs1: extract_rs1(ins),
+            rs2: extract_rs2(ins),
+            rm: extract_rm(ins),
         }
     }
 
-    fn gen_rd_rm_rs1(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction {
-        DecodedInstruction {
+    fn gen_rd_rs1(&mut self, opcode: ExecFnRdRs1, ins: u32) -> DecodedInstruction {
+        DecodedInstruction::RdRs1 {
             opcode,
-            params: Parameters::RdRs1Rm {
-                rd: extract_rd(ins),
-                rs1: extract_rs1(ins),
-                rm: extract_rm(ins),
-            },
+            rd: extract_rd(ins),
+            rs1: extract_rs1(ins),
         }
     }
 
-    fn gen_rd_rm_rs1_rs2(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction {
-        DecodedInstruction {
+    fn gen_rd_rm_rs1_rs2_rs3(
+        &mut self,
+        opcode: ExecFnRdRs1Rs2Rs3Rm,
+        ins: u32,
+    ) -> DecodedInstruction {
+        DecodedInstruction::RdRs1Rs2Rs3Rm {
             opcode,
-            params: Parameters::RdRs1Rs2Rm {
-                rd: extract_rd(ins),
-                rs1: extract_rs1(ins),
-                rs2: extract_rs2(ins),
-                rm: extract_rm(ins),
-            },
+            rd: extract_rd(ins),
+            rs1: extract_rs1(ins),
+            rs2: extract_rs2(ins),
+            rs3: extract_rs3(ins),
+            rm: extract_rm(ins),
         }
     }
 
-    fn gen_rd_rs1(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction {
-        DecodedInstruction {
+    fn gen_rd_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2, ins: u32) -> DecodedInstruction {
+        DecodedInstruction::RdRs1Rs2 {
             opcode,
-            params: Parameters::RdRs1 {
-                rd: extract_rd(ins),
-                rs1: extract_rs1(ins),
-            },
+            rd: extract_rd(ins),
+            rs1: extract_rs1(ins),
+            rs2: extract_rs2(ins),
         }
     }
 
-    fn gen_rd_rm_rs1_rs2_rs3(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction {
-        DecodedInstruction {
+    fn gen_imm12hi_imm12lo_rs1_rs2(
+        &mut self,
+        opcode: ExecFnRs1Rs2Imm,
+        ins: u32,
+    ) -> DecodedInstruction {
+        DecodedInstruction::Rs1Rs2Imm {
             opcode,
-            params: Parameters::RdRs1Rs2Rs3Rm {
-                rd: extract_rd(ins),
-                rs1: extract_rs1(ins),
-                rs2: extract_rs2(ins),
-                rs3: extract_rs3(ins),
-                rm: extract_rm(ins),
-            },
+            rs1: extract_rs1(ins),
+            rs2: extract_rs2(ins),
+            imm: extract_simmediate(ins),
         }
     }
 
-    fn gen_rd_rs1_rs2(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction {
-        DecodedInstruction {
+    fn gen_imm20_rd(&mut self, opcode: ExecFnRdImm, ins: u32) -> DecodedInstruction {
+        DecodedInstruction::RdImm {
             opcode,
-            params: Parameters::RdRs1Rs2 {
-                rd: extract_rd(ins),
-                rs1: extract_rs1(ins),
-                rs2: extract_rs2(ins),
-            },
+            rd: extract_rd(ins),
+            imm: extract_uimmediate(ins),
         }
     }
 
-    fn gen_imm12hi_imm12lo_rs1_rs2(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction {
-        DecodedInstruction {
+    fn gen_rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Imm, ins: u32) -> DecodedInstruction {
+        DecodedInstruction::RdRs1Imm {
             opcode,
-            params: Parameters::Rs1Rs2Imm {
-                rs1: extract_rs1(ins),
-                rs2: extract_rs2(ins),
-                imm: extract_simmediate(ins),
-            },
+            rd: extract_rd(ins),
+            rs1: extract_rs1(ins),
+            imm: extract_iimmediate(ins),
         }
     }
 
-    fn gen_imm20_rd(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction {
-        DecodedInstruction {
+    fn gen_fm_pred_rd_rs1_succ(
+        &mut self,
+        opcode: ExecFnRdFmPredRdRs1Succ,
+        ins: u32,
+    ) -> DecodedInstruction {
+        DecodedInstruction::RdFmPredRdRs1Succ {
             opcode,
-            params: Parameters::RdImm {
-                rd: extract_rd(ins),
-                imm: extract_uimmediate(ins),
-            },
+            fm: extract_fm(ins),
+            rd: extract_rd(ins),
+            rs1: extract_rs1(ins),
         }
     }
 
-    fn gen_rd_rs1_shamtw(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction {
-        DecodedInstruction {
+    fn gen_imm12_rd_rs1(&mut self, opcode: ExecFnRdRs1Imm, ins: u32) -> DecodedInstruction {
+        DecodedInstruction::RdRs1Imm {
             opcode,
-            params: Parameters::RdRs1Imm {
-                rd: extract_rd(ins),
-                rs1: extract_rs1(ins),
-                imm: extract_iimmediate(ins),
-            },
-        }
-    }
-
-    fn gen_fm_pred_rd_rs1_succ(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction {
-        // TODO: implement this (fence?)
-        unimplemented!()
-    }
-
-    fn gen_imm12_rd_rs1(&mut self, opcode: ExecFn, ins: u32) -> DecodedInstruction {
-        DecodedInstruction {
-            opcode,
-            params: Parameters::RdRs1Imm {
-                rd: extract_rd(ins),
-                rs1: extract_rs1(ins),
-                imm: extract_iimmediate(ins),
-            },
+            rd: extract_rd(ins),
+            rs1: extract_rs1(ins),
+            imm: extract_iimmediate(ins),
         }
     }
 }
