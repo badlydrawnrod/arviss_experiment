@@ -1,4 +1,5 @@
 // use std::io::{self, BufRead};
+use std::fmt;
 
 pub fn main() {
     // let stdin = io::stdin();
@@ -10,10 +11,36 @@ pub fn main() {
     //     .expect("the line could not be read");
     // let ins: u32 = line.parse().unwrap();
 
-    let ins: u32 = (0b000000000000 << 20) | ArvissOpcode::OpSYSTEM as u32;
-    let mut dummy_decoder = Dummy {};
-    let result = decode(&mut dummy_decoder, ins);
-    dispatch(&mut dummy_decoder, result);
+    let mut dissassembler = Disassembler {};
+
+    for ins in [
+        // _start:
+        0x00_00_51_97, // auipc gp, 5
+        0x80_01_81_93, // addi  gp, gp, -2048
+        // .Lpcrel_hi1:
+        0x00_00_81_17, // auipc sp, 8
+        0xff_81_01_13, // addi  sp, sp, -8
+        0x00_01_04_33, // add   s0, sp, zero
+        // .Lpcrel_hi2:
+        0x00_00_45_17, // auipc a0, 4
+        0xfe_c5_05_13, // addi  a0, a0, -20
+        // .Lpcrel_hi3:
+        0x00_00_45_97, // auipc a1, 4
+        0xfe_45_85_93, // addi  a1, a1, -28
+        0x00_00_06_13, // mv    a2, zero
+        // clear_bss:
+        0x00_b5_78_63, // bgeu  a0, a1, 16
+        0x00_c5_00_23, // sb    a2, 0(a0)
+        0x00_15_05_13, // addi  a0, a0, 1
+        0xfe_00_0a_e3, // beqz  zero, -12
+        // finish_bss:
+        0x00_00_00_97, // auipc ra, 0
+        0x00_c0_80_e7, // jalr  12(ra)
+        0x00_10_00_73, // ebreak
+    ] {
+        let result = decode(&mut dissassembler, ins);
+        println!("Code: {:08x} {}", ins, result);
+    }
 }
 
 fn bits(n: u32, hi: u32, lo: u32) -> u32 {
@@ -47,29 +74,29 @@ fn extract_rm(ins: u32) -> u8 {
 }
 
 fn extract_bimmediate(ins: u32) -> i32 {
-    let p0 = (ins & 0x80000000) >> 19; // inst[31] -> sext(imm[12])
-    let p1 = (ins & 0x00000080) << 4; // inst[7] -> imm[11]
-    let p2 = (ins & 0x7e000000) >> 20; // inst[30:25] -> imm[10:5]
-    let p3 = (ins & 0x00000f00) >> 7; // inst[11:8]  -> imm[4:1]
-    (p0 | p1 | p2 | p3) as i32
+    let p0 = ((ins & 0x80000000) as i32) >> 19; // inst[31] -> sext(imm[12])
+    let p1 = ((ins & 0x00000080) << 4) as i32; // inst[7] -> imm[11]
+    let p2 = ((ins & 0x7e000000) >> 20) as i32; // inst[30:25] -> imm[10:5]
+    let p3 = ((ins & 0x00000f00) >> 7) as i32; // inst[11:8]  -> imm[4:1]
+    p0 | p1 | p2 | p3
 }
 
 fn extract_iimmediate(ins: u32) -> i32 {
-    (ins >> 20) as i32 // inst[31:20] -> sext(imm[11:0])
+    (ins as i32) >> 20 // inst[31:20] -> sext(imm[11:0])
 }
 
 fn extract_jimmediate(ins: u32) -> i32 {
-    let p0 = (ins & 0x80000000) >> 11; // inst[31] -> sext(imm[20])
-    let p1 = ins & 0x000ff000; // inst[19:12] -> imm[19:12]
-    let p2 = (ins & 0x00100000) >> 9; // inst[20] -> imm[11]
-    let p3 = (ins & 0x7fe00000) >> 20; // inst[20] -> imm[11]
-    (p0 | p1 | p2 | p3) as i32
+    let p0 = ((ins & 0x80000000) as i32) >> 11; // inst[31] -> sext(imm[20])
+    let p1 = (ins & 0x000ff000) as i32; // inst[19:12] -> imm[19:12]
+    let p2 = ((ins & 0x00100000) >> 9) as i32; // inst[20] -> imm[11]
+    let p3 = ((ins & 0x7fe00000) >> 20) as i32; // inst[20] -> imm[11]
+    p0 | p1 | p2 | p3
 }
 
 fn extract_simmediate(ins: u32) -> i32 {
-    let p0 = (ins & 0xfe000000) >> 20; // inst[31:25] -> sext(imm[11:5])
-    let p1 = (ins & 0x00000f80) >> 7; // inst[11:7]  -> imm[4:0]
-    (p0 | p1) as i32
+    let p0 = ((ins & 0xfe000000) as i32) >> 20; // inst[31:25] -> sext(imm[11:5])
+    let p1 = ((ins & 0x00000f80) >> 7) as i32; // inst[11:7]  -> imm[4:0]
+    p0 | p1
 }
 
 fn extract_uimmediate(ins: u32) -> i32 {
@@ -113,9 +140,31 @@ enum ExecFnNoArgs {
     ExecMret,
 }
 
+impl fmt::Display for ExecFnNoArgs {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ExecEcall => "ecall",
+            ExecEbreak => "ebreak",
+            ExecUret => "uret",
+            ExecSret => "sret",
+            ExecMret => "mret",
+        };
+        write!(f, "{}", s)
+    }
+}
+
 #[derive(Debug)]
 enum ExecFnRdFmPredRdRs1Succ {
     ExecFence,
+}
+
+impl fmt::Display for ExecFnRdFmPredRdRs1Succ {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ExecFence => "fence",
+        };
+        write!(f, "{}", s)
+    }
 }
 
 #[derive(Debug)]
@@ -125,11 +174,33 @@ enum ExecFnRdImm {
     ExecJal,
 }
 
+impl fmt::Display for ExecFnRdImm {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ExecAuipc => "auipc",
+            ExecLui => "lui",
+            ExecJal => "jal",
+        };
+        write!(f, "{}", s)
+    }
+}
+
 #[derive(Debug)]
 enum ExecFnRdRs1 {
     ExecFmvXW,
     ExecFmvWX,
     ExecFclassS,
+}
+
+impl fmt::Display for ExecFnRdRs1 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ExecFmvXW => "fmv.x.w",
+            ExecFmvWX => "fmv.w.x",
+            ExecFclassS => "fclass.s",
+        };
+        write!(f, "{}", s)
+    }
 }
 
 #[derive(Debug)]
@@ -153,6 +224,31 @@ enum ExecFnRdRs1Imm {
     ExecJalr,
 }
 
+impl fmt::Display for ExecFnRdRs1Imm {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ExecLb => "lb",
+            ExecLh => "lh",
+            ExecLw => "lw",
+            ExecLbu => "lbu",
+            ExecLhu => "lhu",
+            ExecFlw => "flw",
+            ExecFenceI => "fence.i",
+            ExecAddi => "addi",
+            ExecSlli => "slli",
+            ExecSlti => "slti",
+            ExecSltiu => "sltiu",
+            ExecXori => "xori",
+            ExecSrli => "srli",
+            ExecSrai => "srai",
+            ExecOri => "ori",
+            ExecAndi => "andi",
+            ExecJalr => "jalr",
+        };
+        write!(f, "{}", s)
+    }
+}
+
 #[derive(Debug)]
 enum ExecFnRdRs1Rm {
     ExecFsqrtS,
@@ -160,6 +256,19 @@ enum ExecFnRdRs1Rm {
     ExecFcvtWuS,
     ExecFcvtSW,
     ExecFcvtSWu,
+}
+
+impl fmt::Display for ExecFnRdRs1Rm {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ExecFsqrtS => "fsqrt.s",
+            ExecFcvtWS => "fvct.w.s",
+            ExecFcvtWuS => "fcvt.wu.s",
+            ExecFcvtSW => "fcvt.s.w",
+            ExecFcvtSWu => "fvct.s.wu",
+        };
+        write!(f, "{}", s)
+    }
 }
 
 #[derive(Debug)]
@@ -192,6 +301,40 @@ enum ExecFnRdRs1Rs2 {
     ExecFeqS,
 }
 
+impl fmt::Display for ExecFnRdRs1Rs2 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ExecAdd => "add",
+            ExecMul => "mul",
+            ExecSub => "sub",
+            ExecSll => "sll",
+            ExecMulh => "mulh",
+            ExecSlt => "slt",
+            ExecMulhsu => "mulhsu",
+            ExecSltu => "sltu",
+            ExecMulhu => "mulhu",
+            ExecXor => "xor",
+            ExecDiv => "div",
+            ExecSrl => "srl",
+            ExecDivu => "divu",
+            ExecSra => "sra",
+            ExecOr => "or",
+            ExecRem => "rem",
+            ExecAnd => "and",
+            ExecRemu => "remu",
+            ExecFsgnjS => "fsgnjs",
+            ExecFminS => "fmins",
+            ExecFleS => "fles",
+            ExecFsgnjnS => "fsgnjns",
+            ExecFmaxS => "fmaxs",
+            ExecFltS => "flts",
+            ExecFsgnjxS => "fsgnjxs",
+            ExecFeqS => "feqs",
+        };
+        write!(f, "{}", s)
+    }
+}
+
 #[derive(Debug)]
 enum ExecFnRs1Rs2Imm {
     ExecSb,
@@ -206,12 +349,42 @@ enum ExecFnRs1Rs2Imm {
     ExecBgeu,
 }
 
+impl fmt::Display for ExecFnRs1Rs2Imm {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ExecSb => "sb",
+            ExecSh => "sh",
+            ExecSw => "sw",
+            ExecFsw => "fsw",
+            ExecBeq => "beq",
+            ExecBne => "bne",
+            ExecBlt => "blt",
+            ExecBge => "bge",
+            ExecBltu => "bltu",
+            ExecBgeu => "bgeu",
+        };
+        write!(f, "{}", s)
+    }
+}
+
 #[derive(Debug)]
 enum ExecFnRdRs1Rs2Rm {
     ExecFaddS,
     ExecFsubS,
     ExecFmulS,
     ExecFdivS,
+}
+
+impl fmt::Display for ExecFnRdRs1Rs2Rm {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ExecFaddS => "fadd.s",
+            ExecFsubS => "fsub.s",
+            ExecFmulS => "fmul.s",
+            ExecFdivS => "fdiv.s",
+        };
+        write!(f, "{}", s)
+    }
 }
 
 #[derive(Debug)]
@@ -222,9 +395,27 @@ enum ExecFnRdRs1Rs2Rs3Rm {
     ExecFnmaddS,
 }
 
+impl fmt::Display for ExecFnRdRs1Rs2Rs3Rm {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ExecFmaddS => "fmadd.s",
+            ExecFmsubS => "fmsub.s",
+            ExecFnmsubS => "fnmsub.s",
+            ExecFnmaddS => "fnmadd.s",
+        };
+        write!(f, "{}", s)
+    }
+}
+
 #[derive(Debug)]
 enum ExecFnTrap {
     ExecIllegalInstruction,
+}
+
+impl fmt::Display for ExecFnTrap {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "ill")
+    }
 }
 
 use ExecFnCacheLineIndex::*;
@@ -310,35 +501,33 @@ enum DecodedInstruction {
     },
 }
 
-struct Dummy;
-
 trait Dispatcher {
     fn exec_add(&mut self, rd: u8, rs1: u8, imm: i32);
     fn exec_ecall(&mut self);
 }
 
-impl Dispatcher for Dummy {
-    fn exec_add(&mut self, rd: u8, rs1: u8, imm: i32) {
-        println!("add {}, {}, {}", rd, rs1, imm);
-    }
+// impl Dispatcher for Disassembler {
+//     fn exec_add(&mut self, rd: u8, rs1: u8, imm: i32) {
+//         println!("add {}, {}, {}", rd, rs1, imm);
+//     }
 
-    fn exec_ecall(&mut self) {
-        println!("ecall");
-    }
-}
+//     fn exec_ecall(&mut self) {
+//         println!("ecall");
+//     }
+// }
 
-fn dispatch(dispatcher: &mut impl Dispatcher, ins: DecodedInstruction) {
-    match ins {
-        DecodedInstruction::RdRs1Imm {
-            opcode: ExecAddi,
-            rd,
-            rs1,
-            imm,
-        } => dispatcher.exec_add(rd, rs1, imm),
-        DecodedInstruction::NoArgs { opcode: ExecEcall } => dispatcher.exec_ecall(),
-        _ => {}
-    }
-}
+// fn dispatch(dispatcher: &mut impl Dispatcher, ins: DecodedInstruction) {
+//     match ins {
+//         DecodedInstruction::RdRs1Imm {
+//             opcode: ExecAddi,
+//             rd,
+//             rs1,
+//             imm,
+//         } => dispatcher.exec_add(rd, rs1, imm),
+//         DecodedInstruction::NoArgs { opcode: ExecEcall } => dispatcher.exec_ecall(),
+//         _ => {}
+//     }
+// }
 
 trait Decoder {
     type Item;
@@ -359,7 +548,9 @@ trait Decoder {
     fn gen_imm12_rd_rs1(&mut self, opcode: ExecFnRdRs1Imm, ins: u32) -> Self::Item;
 }
 
-impl Decoder for Dummy {
+struct Generator;
+
+impl Decoder for Generator {
     type Item = DecodedInstruction;
 
     fn gen_trap(&mut self, opcode: ExecFnTrap, ins: u32) -> DecodedInstruction {
@@ -492,6 +683,135 @@ impl Decoder for Dummy {
             rs1: extract_rs1(ins),
             imm: extract_iimmediate(ins),
         }
+    }
+}
+
+struct Disassembler;
+
+impl Decoder for Disassembler {
+    type Item = String;
+
+    fn gen_trap(&mut self, opcode: ExecFnTrap, ins: u32) -> Self::Item {
+        format!("{}\t{}", opcode, ins)
+    }
+
+    fn gen_no_args(&mut self, opcode: ExecFnNoArgs, _ins: u32) -> Self::Item {
+        format!("{}", opcode)
+    }
+
+    fn gen_jimm20_rd(&mut self, opcode: ExecFnRdImm, ins: u32) -> Self::Item {
+        format!(
+            "{}\t{}, {}",
+            opcode,
+            extract_rd(ins),
+            extract_jimmediate(ins)
+        )
+    }
+
+    fn gen_bimm12hi_bimm12lo_rs1_rs2(&mut self, opcode: ExecFnRs1Rs2Imm, ins: u32) -> Self::Item {
+        format!(
+            "{}\t{}, {}, {}",
+            opcode,
+            extract_rs1(ins),
+            extract_rs2(ins),
+            extract_bimmediate(ins)
+        )
+    }
+
+    fn gen_rd_rm_rs1(&mut self, opcode: ExecFnRdRs1Rm, ins: u32) -> Self::Item {
+        format!(
+            "{}\t{}, {}, {}",
+            opcode,
+            extract_rd(ins),
+            extract_rs1(ins),
+            extract_rm(ins)
+        )
+    }
+
+    fn gen_rd_rm_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2Rm, ins: u32) -> Self::Item {
+        format!(
+            "{}\t{}, {}, {}, {}",
+            opcode,
+            extract_rd(ins),
+            extract_rs1(ins),
+            extract_rs2(ins),
+            extract_rm(ins)
+        )
+    }
+
+    fn gen_rd_rs1(&mut self, opcode: ExecFnRdRs1, ins: u32) -> Self::Item {
+        format!("{}\t{}, {}", opcode, extract_rd(ins), extract_rs1(ins))
+    }
+
+    fn gen_rd_rm_rs1_rs2_rs3(&mut self, opcode: ExecFnRdRs1Rs2Rs3Rm, ins: u32) -> Self::Item {
+        format!(
+            "{}\t{}, {}, {}, {}, {}",
+            opcode,
+            extract_rd(ins),
+            extract_rs1(ins),
+            extract_rs2(ins),
+            extract_rs3(ins),
+            extract_rm(ins)
+        )
+    }
+
+    fn gen_rd_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2, ins: u32) -> Self::Item {
+        format!(
+            "{}\t{}, {}, {}",
+            opcode,
+            extract_rd(ins),
+            extract_rs1(ins),
+            extract_rs2(ins)
+        )
+    }
+
+    fn gen_imm12hi_imm12lo_rs1_rs2(&mut self, opcode: ExecFnRs1Rs2Imm, ins: u32) -> Self::Item {
+        format!(
+            "{}\t{}, {}, {}",
+            opcode,
+            extract_rs1(ins),
+            extract_rs2(ins),
+            extract_simmediate(ins)
+        )
+    }
+
+    fn gen_imm20_rd(&mut self, opcode: ExecFnRdImm, ins: u32) -> Self::Item {
+        format!(
+            "{}\t{}, {}",
+            opcode,
+            extract_rd(ins),
+            extract_uimmediate(ins) >> 12 // TODO: Does the shift belong here, or with extract_uimmediate()?
+        )
+    }
+
+    fn gen_rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Imm, ins: u32) -> Self::Item {
+        format!(
+            "{}\t{}, {}, {}",
+            opcode,
+            extract_rd(ins),
+            extract_rs1(ins),
+            extract_iimmediate(ins)
+        )
+    }
+
+    fn gen_fm_pred_rd_rs1_succ(&mut self, opcode: ExecFnRdFmPredRdRs1Succ, ins: u32) -> Self::Item {
+        format!(
+            "{}\t{}, {}, {}",
+            opcode,
+            extract_fm(ins),
+            extract_rd(ins),
+            extract_rs1(ins)
+        )
+    }
+
+    fn gen_imm12_rd_rs1(&mut self, opcode: ExecFnRdRs1Imm, ins: u32) -> Self::Item {
+        format!(
+            "{}\t{}, {}, {}",
+            opcode,
+            extract_rd(ins),
+            extract_rs1(ins),
+            extract_iimmediate(ins)
+        )
     }
 }
 
