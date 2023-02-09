@@ -1,16 +1,6 @@
-// use std::io::{self, BufRead};
 use std::fmt;
 
 pub fn main() {
-    // let stdin = io::stdin();
-    // let line = stdin
-    //     .lock()
-    //     .lines()
-    //     .next()
-    //     .expect("there was no next line")
-    //     .expect("the line could not be read");
-    // let ins: u32 = line.parse().unwrap();
-
     let mut dissassembler = Disassembler {};
 
     for ins in [
@@ -168,17 +158,29 @@ impl fmt::Display for ExecFnRdFmPredRdRs1Succ {
 }
 
 #[derive(Debug)]
-enum ExecFnRdImm {
+enum ExecFnImm20Rd {
     ExecAuipc,
     ExecLui,
-    ExecJal,
 }
 
-impl fmt::Display for ExecFnRdImm {
+impl fmt::Display for ExecFnImm20Rd {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             ExecAuipc => "auipc",
             ExecLui => "lui",
+        };
+        write!(f, "{}", s)
+    }
+}
+
+#[derive(Debug)]
+enum ExecFnJimm20Rd {
+    ExecJal,
+}
+
+impl fmt::Display for ExecFnJimm20Rd {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
             ExecJal => "jal",
         };
         write!(f, "{}", s)
@@ -204,7 +206,7 @@ impl fmt::Display for ExecFnRdRs1 {
 }
 
 #[derive(Debug)]
-enum ExecFnRdRs1Imm {
+enum ExecFnImm12RdRs1 {
     ExecLb,
     ExecLh,
     ExecLw,
@@ -213,18 +215,13 @@ enum ExecFnRdRs1Imm {
     ExecFlw,
     ExecFenceI,
     ExecAddi,
-    ExecSlli,
-    ExecSlti,
-    ExecSltiu,
     ExecXori,
-    ExecSrli,
-    ExecSrai,
     ExecOri,
     ExecAndi,
     ExecJalr,
 }
 
-impl fmt::Display for ExecFnRdRs1Imm {
+impl fmt::Display for ExecFnImm12RdRs1 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             ExecLb => "lb",
@@ -235,15 +232,32 @@ impl fmt::Display for ExecFnRdRs1Imm {
             ExecFlw => "flw",
             ExecFenceI => "fence.i",
             ExecAddi => "addi",
-            ExecSlli => "slli",
-            ExecSlti => "slti",
-            ExecSltiu => "sltiu",
             ExecXori => "xori",
-            ExecSrli => "srli",
-            ExecSrai => "srai",
             ExecOri => "ori",
             ExecAndi => "andi",
             ExecJalr => "jalr",
+        };
+        write!(f, "{}", s)
+    }
+}
+
+#[derive(Debug)]
+enum ExecFnRdRs1Shamtw {
+    ExecSlli,
+    ExecSlti,
+    ExecSltiu,
+    ExecSrli,
+    ExecSrai,
+}
+
+impl fmt::Display for ExecFnRdRs1Shamtw {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ExecSlli => "slli",
+            ExecSlti => "slti",
+            ExecSltiu => "sltiu",
+            ExecSrli => "srli",
+            ExecSrai => "srai",
         };
         write!(f, "{}", s)
     }
@@ -336,11 +350,27 @@ impl fmt::Display for ExecFnRdRs1Rs2 {
 }
 
 #[derive(Debug)]
-enum ExecFnRs1Rs2Imm {
+enum ExecFnImm12Rs1Rs2 {
     ExecSb,
     ExecSh,
     ExecSw,
     ExecFsw,
+}
+
+impl fmt::Display for ExecFnImm12Rs1Rs2 {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
+        let s = match self {
+            ExecSb => "sb",
+            ExecSh => "sh",
+            ExecSw => "sw",
+            ExecFsw => "fsw",
+        };
+        write!(f, "{}", s)
+    }
+}
+
+#[derive(Debug)]
+enum ExecFnBimm12Rs1Rs2 {
     ExecBeq,
     ExecBne,
     ExecBlt,
@@ -349,13 +379,9 @@ enum ExecFnRs1Rs2Imm {
     ExecBgeu,
 }
 
-impl fmt::Display for ExecFnRs1Rs2Imm {
+impl fmt::Display for ExecFnBimm12Rs1Rs2 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            ExecSb => "sb",
-            ExecSh => "sh",
-            ExecSw => "sw",
-            ExecFsw => "fsw",
             ExecBeq => "beq",
             ExecBne => "bne",
             ExecBlt => "blt",
@@ -418,17 +444,20 @@ impl fmt::Display for ExecFnTrap {
     }
 }
 
+use ExecFnBimm12Rs1Rs2::*;
 use ExecFnCacheLineIndex::*;
+use ExecFnImm12RdRs1::*;
+use ExecFnImm12Rs1Rs2::*;
+use ExecFnImm20Rd::*;
+use ExecFnJimm20Rd::*;
 use ExecFnNoArgs::*;
 use ExecFnRdFmPredRdRs1Succ::*;
-use ExecFnRdImm::*;
 use ExecFnRdRs1::*;
-use ExecFnRdRs1Imm::*;
 use ExecFnRdRs1Rm::*;
 use ExecFnRdRs1Rs2::*;
 use ExecFnRdRs1Rs2Rm::*;
 use ExecFnRdRs1Rs2Rs3Rm::*;
-use ExecFnRs1Rs2Imm::*;
+use ExecFnRdRs1Shamtw::*;
 use ExecFnTrap::*;
 
 #[derive(Debug)]
@@ -446,21 +475,32 @@ enum DecodedInstruction {
         rd: u8,                          // Destination register. Currently ignored.
         rs1: u8,                         // Source register. Currently ignored.
     },
-    RdImm {
-        opcode: ExecFnRdImm, // Which opcodes are viable for these parameters.
-        rd: u8,              // Destination register.
-        imm: i32,            // Immediate operand.
+    RdImm20 {
+        opcode: ExecFnImm20Rd, // Which opcodes are viable for these parameters.
+        rd: u8,                // Destination register.
+        imm: i32,              // Immediate operand.
+    },
+    RdJImm20 {
+        opcode: ExecFnJimm20Rd, // Which opcodes are viable for these parameters.
+        rd: u8,                 // Destination register.
+        imm: i32,               // Immediate operand.
     },
     RdRs1 {
         opcode: ExecFnRdRs1, // Which opcodes are viable for these parameters.
         rd: u8,              // Destination register.
         rs1: u8,             // Source register.
     },
-    RdRs1Imm {
-        opcode: ExecFnRdRs1Imm, // Which opcodes are viable for these parameters.
-        rd: u8,                 // Destination register.
-        rs1: u8,                // Source register.
-        imm: i32,               // Immediate operand.
+    RdRs1Imm12 {
+        opcode: ExecFnImm12RdRs1, // Which opcodes are viable for these parameters.
+        rd: u8,                   // Destination register.
+        rs1: u8,                  // Source register.
+        imm: i32,                 // Immediate operand.
+    },
+    RdRs1Shamtw {
+        opcode: ExecFnRdRs1Shamtw, // Which opcodes are viable for these parameters.
+        rd: u8,                    // Destination register.
+        rs1: u8,                   // Source register.
+        imm: i32,                  // Immediate operand.
     },
     RdRs1Rs2 {
         opcode: ExecFnRdRs1Rs2, // Which opcodes are viable for these parameters.
@@ -468,11 +508,17 @@ enum DecodedInstruction {
         rs1: u8,                // First source register.
         rs2: u8,                // Second source register.
     },
-    Rs1Rs2Imm {
-        opcode: ExecFnRs1Rs2Imm, // Which opcodes are viable for these parameters.
-        rs1: u8,                 // First source register.
-        rs2: u8,                 // Second source register.
-        imm: i32,                // Immediate operand.
+    Rs1Rs2Imm12 {
+        opcode: ExecFnImm12Rs1Rs2, // Which opcodes are viable for these parameters.
+        rs1: u8,                   // First source register.
+        rs2: u8,                   // Second source register.
+        imm: i32,                  // Immediate operand.
+    },
+    Rs1Rs2BImm12 {
+        opcode: ExecFnBimm12Rs1Rs2, // Which opcodes are viable for these parameters.
+        rs1: u8,                    // First source register.
+        rs2: u8,                    // Second source register.
+        imm: i32,                   // Immediate operand.
     },
     RdRs1Rs2Rs3Rm {
         opcode: ExecFnRdRs1Rs2Rs3Rm, // Which opcodes are viable for these parameters.
@@ -534,18 +580,19 @@ trait Decoder {
 
     fn gen_trap(&mut self, opcode: ExecFnTrap, ins: u32) -> Self::Item;
     fn gen_no_args(&mut self, opcode: ExecFnNoArgs, ins: u32) -> Self::Item;
-    fn gen_jimm20_rd(&mut self, opcode: ExecFnRdImm, ins: u32) -> Self::Item;
-    fn gen_bimm12hi_bimm12lo_rs1_rs2(&mut self, opcode: ExecFnRs1Rs2Imm, ins: u32) -> Self::Item;
+    fn gen_jimm20_rd(&mut self, opcode: ExecFnJimm20Rd, ins: u32) -> Self::Item;
+    fn gen_bimm12hi_bimm12lo_rs1_rs2(&mut self, opcode: ExecFnBimm12Rs1Rs2, ins: u32)
+        -> Self::Item;
     fn gen_rd_rm_rs1(&mut self, opcode: ExecFnRdRs1Rm, ins: u32) -> Self::Item;
     fn gen_rd_rm_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2Rm, ins: u32) -> Self::Item;
     fn gen_rd_rs1(&mut self, opcode: ExecFnRdRs1, ins: u32) -> Self::Item;
     fn gen_rd_rm_rs1_rs2_rs3(&mut self, opcode: ExecFnRdRs1Rs2Rs3Rm, ins: u32) -> Self::Item;
     fn gen_rd_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2, ins: u32) -> Self::Item;
-    fn gen_imm12hi_imm12lo_rs1_rs2(&mut self, opcode: ExecFnRs1Rs2Imm, ins: u32) -> Self::Item;
-    fn gen_imm20_rd(&mut self, opcode: ExecFnRdImm, ins: u32) -> Self::Item;
-    fn gen_rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Imm, ins: u32) -> Self::Item;
+    fn gen_imm12hi_imm12lo_rs1_rs2(&mut self, opcode: ExecFnImm12Rs1Rs2, ins: u32) -> Self::Item;
+    fn gen_imm20_rd(&mut self, opcode: ExecFnImm20Rd, ins: u32) -> Self::Item;
+    fn gen_rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Shamtw, ins: u32) -> Self::Item;
     fn gen_fm_pred_rd_rs1_succ(&mut self, opcode: ExecFnRdFmPredRdRs1Succ, ins: u32) -> Self::Item;
-    fn gen_imm12_rd_rs1(&mut self, opcode: ExecFnRdRs1Imm, ins: u32) -> Self::Item;
+    fn gen_imm12_rd_rs1(&mut self, opcode: ExecFnImm12RdRs1, ins: u32) -> Self::Item;
 }
 
 struct Generator;
@@ -561,8 +608,8 @@ impl Decoder for Generator {
         DecodedInstruction::NoArgs { opcode }
     }
 
-    fn gen_jimm20_rd(&mut self, opcode: ExecFnRdImm, ins: u32) -> DecodedInstruction {
-        DecodedInstruction::RdImm {
+    fn gen_jimm20_rd(&mut self, opcode: ExecFnJimm20Rd, ins: u32) -> DecodedInstruction {
+        DecodedInstruction::RdJImm20 {
             opcode: opcode,
             rd: extract_rd(ins),
             imm: extract_jimmediate(ins),
@@ -571,10 +618,10 @@ impl Decoder for Generator {
 
     fn gen_bimm12hi_bimm12lo_rs1_rs2(
         &mut self,
-        opcode: ExecFnRs1Rs2Imm,
+        opcode: ExecFnBimm12Rs1Rs2,
         ins: u32,
     ) -> DecodedInstruction {
-        DecodedInstruction::Rs1Rs2Imm {
+        DecodedInstruction::Rs1Rs2BImm12 {
             opcode,
             rs1: extract_rs1(ins),
             rs2: extract_rs2(ins),
@@ -635,10 +682,10 @@ impl Decoder for Generator {
 
     fn gen_imm12hi_imm12lo_rs1_rs2(
         &mut self,
-        opcode: ExecFnRs1Rs2Imm,
+        opcode: ExecFnImm12Rs1Rs2,
         ins: u32,
     ) -> DecodedInstruction {
-        DecodedInstruction::Rs1Rs2Imm {
+        DecodedInstruction::Rs1Rs2Imm12 {
             opcode,
             rs1: extract_rs1(ins),
             rs2: extract_rs2(ins),
@@ -646,16 +693,16 @@ impl Decoder for Generator {
         }
     }
 
-    fn gen_imm20_rd(&mut self, opcode: ExecFnRdImm, ins: u32) -> DecodedInstruction {
-        DecodedInstruction::RdImm {
+    fn gen_imm20_rd(&mut self, opcode: ExecFnImm20Rd, ins: u32) -> DecodedInstruction {
+        DecodedInstruction::RdImm20 {
             opcode,
             rd: extract_rd(ins),
             imm: extract_uimmediate(ins),
         }
     }
 
-    fn gen_rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Imm, ins: u32) -> DecodedInstruction {
-        DecodedInstruction::RdRs1Imm {
+    fn gen_rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Shamtw, ins: u32) -> DecodedInstruction {
+        DecodedInstruction::RdRs1Shamtw {
             opcode,
             rd: extract_rd(ins),
             rs1: extract_rs1(ins),
@@ -676,8 +723,8 @@ impl Decoder for Generator {
         }
     }
 
-    fn gen_imm12_rd_rs1(&mut self, opcode: ExecFnRdRs1Imm, ins: u32) -> DecodedInstruction {
-        DecodedInstruction::RdRs1Imm {
+    fn gen_imm12_rd_rs1(&mut self, opcode: ExecFnImm12RdRs1, ins: u32) -> DecodedInstruction {
+        DecodedInstruction::RdRs1Imm12 {
             opcode,
             rd: extract_rd(ins),
             rs1: extract_rs1(ins),
@@ -686,7 +733,35 @@ impl Decoder for Generator {
     }
 }
 
-struct Disassembler;
+struct Disassembler {}
+
+impl Disassembler {
+    const ABI_NAMES: &[&'static str] = &[
+        "zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2", "s0", "s1", "a0", "a1", "a2", "a3", "a4",
+        "a5", "a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "t3", "t4",
+        "t5", "t6",
+    ];
+
+    const FABI_NAMES: &[&'static str] = &[
+        "ft0", "ft1", "ft2", "ft3", "ft4", "ft5", "ft6", "ft7", "fs0", "fs1", "fa0", "fa1", "fa2",
+        "fa3", "fa4", "fa5", "fa6", "fa7", "fs2", "fs3", "fs4", "fs5", "fs6", "fs7", "fs8", "fs9",
+        "fs10", "fs11", "ft8", "ft9", "ft10", "ft11",
+    ];
+
+    fn abi_name(reg: u8) -> &'static str {
+        match reg {
+            0..=31 => Disassembler::ABI_NAMES[reg as usize],
+            _ => unreachable!(),
+        }
+    }
+
+    fn fabi_name(reg: u8) -> &'static str {
+        match reg {
+            0..=31 => Disassembler::FABI_NAMES[reg as usize],
+            _ => unreachable!(),
+        }
+    }
+}
 
 impl Decoder for Disassembler {
     type Item = String;
@@ -699,7 +774,7 @@ impl Decoder for Disassembler {
         format!("{}", opcode)
     }
 
-    fn gen_jimm20_rd(&mut self, opcode: ExecFnRdImm, ins: u32) -> Self::Item {
+    fn gen_jimm20_rd(&mut self, opcode: ExecFnJimm20Rd, ins: u32) -> Self::Item {
         format!(
             "{}\t{}, {}",
             opcode,
@@ -708,14 +783,28 @@ impl Decoder for Disassembler {
         )
     }
 
-    fn gen_bimm12hi_bimm12lo_rs1_rs2(&mut self, opcode: ExecFnRs1Rs2Imm, ins: u32) -> Self::Item {
-        format!(
-            "{}\t{}, {}, {}",
-            opcode,
-            extract_rs1(ins),
-            extract_rs2(ins),
-            extract_bimmediate(ins)
-        )
+    fn gen_bimm12hi_bimm12lo_rs1_rs2(
+        &mut self,
+        opcode: ExecFnBimm12Rs1Rs2,
+        ins: u32,
+    ) -> Self::Item {
+        match opcode {
+            // TRACE("BEQ %s, %s, %d\n", abiNames[ins->rs1_rs2_imm.rs1], abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm);
+            // TRACE("BNE %s, %s, %d\n", abiNames[ins->rs1_rs2_imm.rs1], abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm);
+            // TRACE("BLT %s, %s, %d\n", abiNames[ins->rs1_rs2_imm.rs1], abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm);
+            // TRACE("BGE %s, %s, %d\n", abiNames[ins->rs1_rs2_imm.rs1], abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm);
+            // TRACE("BLTU %s, %s, %d\n", abiNames[ins->rs1_rs2_imm.rs1], abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm);
+            // TRACE("BGEU %s, %s, %d\n", abiNames[ins->rs1_rs2_imm.rs1], abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm);
+            ExecBeq | ExecBne | ExecBlt | ExecBge | ExecBltu | ExecBgeu => {
+                format!(
+                    "{}\t{}, {}, {}",
+                    opcode,
+                    Disassembler::abi_name(extract_rs1(ins)),
+                    Disassembler::abi_name(extract_rs2(ins)),
+                    extract_bimmediate(ins)
+                )
+            }
+        }
     }
 
     fn gen_rd_rm_rs1(&mut self, opcode: ExecFnRdRs1Rm, ins: u32) -> Self::Item {
@@ -756,26 +845,80 @@ impl Decoder for Disassembler {
     }
 
     fn gen_rd_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2, ins: u32) -> Self::Item {
-        format!(
-            "{}\t{}, {}, {}",
-            opcode,
-            extract_rd(ins),
-            extract_rs1(ins),
-            extract_rs2(ins)
-        )
+        match opcode {
+            // TODO
+            // TRACE("ADD %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("MUL %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("SUB %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("SLL %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("MULH %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("SLT %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("MULHSU %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("SLTU %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("MULHU %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("XOR %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("DIV %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("SRL %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("DIVU %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("SRA %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("OR %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("REM %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("AND %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            // TRACE("REMU %s, %s, %s\n", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]);
+            ExecAdd | ExecMul | ExecSub | ExecSll | ExecMulh | ExecSlt | ExecMulhsu | ExecSltu
+            | ExecMulhu | ExecXor | ExecDiv | ExecSrl | ExecDivu | ExecSra | ExecOr | ExecRem
+            | ExecAnd | ExecRemu => {
+                format!(
+                    "{}\t{}, {}, {}",
+                    opcode,
+                    Disassembler::abi_name(extract_rd(ins)),
+                    Disassembler::abi_name(extract_rs1(ins)),
+                    Disassembler::abi_name(extract_rs2(ins))
+                )
+            }
+            // TODO
+            ExecFsgnjS | ExecFminS | ExecFleS | ExecFsgnjnS | ExecFmaxS | ExecFltS
+            | ExecFsgnjxS | ExecFeqS => {
+                format!(
+                    "{}\t{}, {}, {}",
+                    opcode,
+                    extract_rd(ins),
+                    extract_rs1(ins),
+                    extract_rs2(ins)
+                )
+            }
+        }
     }
 
-    fn gen_imm12hi_imm12lo_rs1_rs2(&mut self, opcode: ExecFnRs1Rs2Imm, ins: u32) -> Self::Item {
-        format!(
-            "{}\t{}, {}, {}",
-            opcode,
-            extract_rs1(ins),
-            extract_rs2(ins),
-            extract_simmediate(ins)
-        )
+    fn gen_imm12hi_imm12lo_rs1_rs2(&mut self, opcode: ExecFnImm12Rs1Rs2, ins: u32) -> Self::Item {
+        match opcode {
+            // TRACE("SB %s, %d(%s)\n", abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm, abiNames[ins->rs1_rs2_imm.rs1]);
+            // TRACE("SH %s, %d(%s)\n", abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm, abiNames[ins->rs1_rs2_imm.rs1]);
+            // TRACE("SW %s, %d(%s)\n", abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm, abiNames[ins->rs1_rs2_imm.rs1]);
+            ExecSb | ExecSh | ExecSw => {
+                format!(
+                    "{}\t{}, {}({})",
+                    opcode,
+                    Disassembler::abi_name(extract_rs2(ins)),
+                    extract_bimmediate(ins),
+                    Disassembler::abi_name(extract_rs1(ins)),
+                )
+            }
+
+            // TRACE("FSW %s, %d(%s)\n", fabiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm, abiNames[ins->rs1_rs2_imm.rs1]);
+            ExecFsw => {
+                format!(
+                    "{}\t{}, {}({})",
+                    opcode,
+                    Disassembler::fabi_name(extract_rs2(ins)),
+                    extract_bimmediate(ins),
+                    Disassembler::abi_name(extract_rs1(ins)),
+                )
+            }
+        }
     }
 
-    fn gen_imm20_rd(&mut self, opcode: ExecFnRdImm, ins: u32) -> Self::Item {
+    fn gen_imm20_rd(&mut self, opcode: ExecFnImm20Rd, ins: u32) -> Self::Item {
         format!(
             "{}\t{}, {}",
             opcode,
@@ -784,14 +927,23 @@ impl Decoder for Disassembler {
         )
     }
 
-    fn gen_rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Imm, ins: u32) -> Self::Item {
-        format!(
-            "{}\t{}, {}, {}",
-            opcode,
-            extract_rd(ins),
-            extract_rs1(ins),
-            extract_iimmediate(ins)
-        )
+    fn gen_rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Shamtw, ins: u32) -> Self::Item {
+        match opcode {
+            // TRACE("SLLI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
+            // TRACE("SLTI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
+            // TRACE("SLTIU %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
+            // TRACE("SRLI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
+            // TRACE("SRAI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
+            ExecSlli | ExecSlti | ExecSltiu | ExecSrli | ExecSrai => {
+                format!(
+                    "{}\t{}, {}, {}",
+                    opcode,
+                    Disassembler::abi_name(extract_rd(ins)),
+                    Disassembler::abi_name(extract_rs1(ins)),
+                    extract_iimmediate(ins)
+                )
+            }
+        }
     }
 
     fn gen_fm_pred_rd_rs1_succ(&mut self, opcode: ExecFnRdFmPredRdRs1Succ, ins: u32) -> Self::Item {
@@ -804,14 +956,66 @@ impl Decoder for Disassembler {
         )
     }
 
-    fn gen_imm12_rd_rs1(&mut self, opcode: ExecFnRdRs1Imm, ins: u32) -> Self::Item {
-        format!(
-            "{}\t{}, {}, {}",
-            opcode,
-            extract_rd(ins),
-            extract_rs1(ins),
-            extract_iimmediate(ins)
-        )
+    fn gen_imm12_rd_rs1(&mut self, opcode: ExecFnImm12RdRs1, ins: u32) -> Self::Item {
+        match opcode {
+            // TRACE("LB %s, %d(%s)\n", abiNames[ins->rd_rs1_imm.rd], ins->rd_rs1_imm.imm, abiNames[ins->rd_rs1_imm.rs1]);
+            // TRACE("LH %s, %d(%s)\n", abiNames[ins->rd_rs1_imm.rd], ins->rd_rs1_imm.imm, abiNames[ins->rd_rs1_imm.rs1]);
+            // TRACE("LW %s, %d(%s)\n", abiNames[ins->rd_rs1_imm.rd], ins->rd_rs1_imm.imm, abiNames[ins->rd_rs1_imm.rs1]);
+            // TRACE("LBU %s, %d(%s)\n", abiNames[ins->rd_rs1_imm.rd], ins->rd_rs1_imm.imm, abiNames[ins->rd_rs1_imm.rs1]);
+            // TRACE("LHU %s, %d(%s)\n", abiNames[ins->rd_rs1_imm.rd], ins->rd_rs1_imm.imm, abiNames[ins->rd_rs1_imm.rs1]);
+            ExecLb | ExecLh | ExecLw | ExecLbu | ExecLhu => {
+                format!(
+                    "{}\t{}, {}({})",
+                    opcode,
+                    Disassembler::abi_name(extract_rd(ins)),
+                    extract_iimmediate(ins),
+                    Disassembler::abi_name(extract_rs1(ins)),
+                )
+            }
+            // TODO:
+            ExecFlw => {
+                format!(
+                    "{}\t{}, {}, {}",
+                    opcode,
+                    extract_rd(ins),
+                    extract_rs1(ins),
+                    extract_iimmediate(ins)
+                )
+            }
+            // TODO:
+            ExecFenceI => {
+                format!(
+                    "{}\t{}, {}, {}",
+                    opcode,
+                    extract_rd(ins),
+                    extract_rs1(ins),
+                    extract_iimmediate(ins)
+                )
+            }
+            // TRACE("ADDI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
+            // TRACE("XORI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
+            // TRACE("ORI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
+            // TRACE("ANDI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
+            ExecAddi | ExecXori | ExecOri | ExecAndi => {
+                format!(
+                    "{}\t{}, {}, {}",
+                    opcode,
+                    Disassembler::abi_name(extract_rd(ins)),
+                    Disassembler::abi_name(extract_rs1(ins)),
+                    extract_iimmediate(ins)
+                )
+            }
+            // TODO:
+            ExecJalr => {
+                format!(
+                    "{}\t{}, {}, {}",
+                    opcode,
+                    extract_rd(ins),
+                    extract_rs1(ins),
+                    extract_iimmediate(ins)
+                )
+            }
+        }
     }
 }
 
@@ -857,8 +1061,8 @@ fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> T {
                                 _ => {}
                             }
                         }
-                        0x2 => return decoder.gen_imm12_rd_rs1(ExecSlti, ins), // slti
-                        0x3 => return decoder.gen_imm12_rd_rs1(ExecSltiu, ins), // sltiu
+                        0x2 => return decoder.gen_rd_rs1_shamtw(ExecSlti, ins), // slti
+                        0x3 => return decoder.gen_rd_rs1_shamtw(ExecSltiu, ins), // sltiu
                         0x4 => return decoder.gen_imm12_rd_rs1(ExecXori, ins), // xori
                         0x5 => {
                             match bits(ins, 31, 25) {
