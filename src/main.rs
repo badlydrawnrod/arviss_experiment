@@ -215,6 +215,8 @@ enum ExecFnImm12RdRs1 {
     ExecFlw,
     ExecFenceI,
     ExecAddi,
+    ExecSlti,
+    ExecSltiu,
     ExecXori,
     ExecOri,
     ExecAndi,
@@ -232,6 +234,8 @@ impl fmt::Display for ExecFnImm12RdRs1 {
             ExecFlw => "flw",
             ExecFenceI => "fence.i",
             ExecAddi => "addi",
+            ExecSlti => "slti",
+            ExecSltiu => "sltiu",
             ExecXori => "xori",
             ExecOri => "ori",
             ExecAndi => "andi",
@@ -244,8 +248,6 @@ impl fmt::Display for ExecFnImm12RdRs1 {
 #[derive(Debug)]
 enum ExecFnRdRs1Shamtw {
     ExecSlli,
-    ExecSlti,
-    ExecSltiu,
     ExecSrli,
     ExecSrai,
 }
@@ -254,8 +256,6 @@ impl fmt::Display for ExecFnRdRs1Shamtw {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             ExecSlli => "slli",
-            ExecSlti => "slti",
-            ExecSltiu => "sltiu",
             ExecSrli => "srli",
             ExecSrai => "srai",
         };
@@ -930,11 +930,9 @@ impl Decoder for Disassembler {
     fn gen_rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Shamtw, ins: u32) -> Self::Item {
         match opcode {
             // TRACE("SLLI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
-            // TRACE("SLTI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
-            // TRACE("SLTIU %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
             // TRACE("SRLI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
             // TRACE("SRAI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
-            ExecSlli | ExecSlti | ExecSltiu | ExecSrli | ExecSrai => {
+            ExecSlli | ExecSrli | ExecSrai => {
                 format!(
                     "{}\t{}, {}, {}",
                     opcode,
@@ -993,10 +991,12 @@ impl Decoder for Disassembler {
                 )
             }
             // TRACE("ADDI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
+            // TRACE("SLTI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
+            // TRACE("SLTIU %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
             // TRACE("XORI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
             // TRACE("ORI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
             // TRACE("ANDI %s, %s, %d\n", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm);
-            ExecAddi | ExecXori | ExecOri | ExecAndi => {
+            ExecAddi | ExecSlti | ExecSltiu | ExecXori | ExecOri | ExecAndi => {
                 format!(
                     "{}\t{}, {}, {}",
                     opcode,
@@ -1061,8 +1061,8 @@ fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> T {
                                 _ => {}
                             }
                         }
-                        0x2 => return decoder.gen_rd_rs1_shamtw(ExecSlti, ins), // slti
-                        0x3 => return decoder.gen_rd_rs1_shamtw(ExecSltiu, ins), // sltiu
+                        0x2 => return decoder.gen_imm12_rd_rs1(ExecSlti, ins), // slti
+                        0x3 => return decoder.gen_imm12_rd_rs1(ExecSltiu, ins), // sltiu
                         0x4 => return decoder.gen_imm12_rd_rs1(ExecXori, ins), // xori
                         0x5 => {
                             match bits(ins, 31, 25) {
