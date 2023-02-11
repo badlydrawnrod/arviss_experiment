@@ -1,5 +1,5 @@
-use crate::Decoder;
 use crate::extract::*;
+use crate::Decoder;
 use crate::{
     ExecFnBimm12Rs1Rs2::{self, *},
     ExecFnImm12RdRs1::{self, *},
@@ -334,15 +334,9 @@ impl Decoder for Disassembler {
                     Disassembler::abi_name(extract_rs1(ins)),
                 )
             }
-            // TODO:
+            // "FENCE.I""
             ExecFenceI => {
-                format!(
-                    "{}\t{}, {}, {}",
-                    opcode,
-                    extract_rd(ins),
-                    extract_rs1(ins),
-                    extract_iimmediate(ins)
-                )
+                format!("{}", opcode)
             }
             // "ADDI %s, %s, %d", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm
             // "SLTI %s, %s, %d", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm
