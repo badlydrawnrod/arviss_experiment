@@ -336,14 +336,14 @@ impl fmt::Display for ExecFnRdRs1Rs2 {
             ExecRem => "rem",
             ExecAnd => "and",
             ExecRemu => "remu",
-            ExecFsgnjS => "fsgnjs",
-            ExecFminS => "fmins",
-            ExecFleS => "fles",
-            ExecFsgnjnS => "fsgnjns",
-            ExecFmaxS => "fmaxs",
-            ExecFltS => "flts",
-            ExecFsgnjxS => "fsgnjxs",
-            ExecFeqS => "feqs",
+            ExecFsgnjS => "fsgnj.s",
+            ExecFminS => "fmin.s",
+            ExecFleS => "fle.s",
+            ExecFsgnjnS => "fsgnjn.s",
+            ExecFmaxS => "fmax.s",
+            ExecFltS => "flt.s",
+            ExecFsgnjxS => "fsgnjx.s",
+            ExecFeqS => "feq.s",
         };
         write!(f, "{}", s)
     }
@@ -848,32 +848,57 @@ impl Decoder for Disassembler {
     }
 
     fn gen_rd_rm_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2Rm, ins: u32) -> Self::Item {
-        // TODO
+        // "FADD.S %s, %s, %s, %s", fabiNames[ins->rd_rs1_rs2_rm.rd], fabiNames[ins->rd_rs1_rs2_rm.rs1], fabiNames[ins->rd_rs1_rs2_rm.rs2], roundingModes[ins->rd_rs1_rs2_rm.rm])
+        // "FSUB.S %s, %s, %s, %s", fabiNames[ins->rd_rs1_rs2_rm.rd], fabiNames[ins->rd_rs1_rs2_rm.rs1], fabiNames[ins->rd_rs1_rs2_rm.rs2], roundingModes[ins->rd_rs1_rs2_rm.rm])
+        // "FMUL.S %s, %s, %s, %s", fabiNames[ins->rd_rs1_rs2_rm.rd], fabiNames[ins->rd_rs1_rs2_rm.rs1], fabiNames[ins->rd_rs1_rs2_rm.rs2], roundingModes[ins->rd_rs1_rs2_rm.rm])
+        // "FDIV.S %s, %s, %s, %s", fabiNames[ins->rd_rs1_rs2_rm.rd], fabiNames[ins->rd_rs1_rs2_rm.rs1], fabiNames[ins->rd_rs1_rs2_rm.rs2], roundingModes[ins->rd_rs1_rs2_rm.rm])
         format!(
             "{}\t{}, {}, {}, {}",
             opcode,
-            extract_rd(ins),
-            extract_rs1(ins),
-            extract_rs2(ins),
-            extract_rm(ins)
+            Disassembler::fabi_name(extract_rd(ins)),
+            Disassembler::fabi_name(extract_rs1(ins)),
+            Disassembler::fabi_name(extract_rs2(ins)),
+            Disassembler::rounding_mode(extract_rm(ins))
         )
     }
 
     fn gen_rd_rs1(&mut self, opcode: ExecFnRdRs1, ins: u32) -> Self::Item {
-        // TODO
-        format!("{}\t{}, {}", opcode, extract_rd(ins), extract_rs1(ins))
+        // "FMV.X.W %s, %s", abiNames[ins->rd_rs1.rd], fabiNames[ins->rd_rs1.rs1])
+        // "FMV.W.X %s, %s", fabiNames[ins->rd_rs1.rd], abiNames[ins->rd_rs1.rs1])
+        // "FCLASS.S %s, %s", abiNames[ins->rd_rs1.rd], fabiNames[ins->rd_rs1.rs1])
+        match opcode {
+            ExecFmvXW | ExecFclassS => {
+                format!(
+                    "{}\t{}, {}",
+                    opcode,
+                    Disassembler::abi_name(extract_rd(ins)),
+                    Disassembler::fabi_name(extract_rs1(ins))
+                )
+            }
+            ExecFmvWX => {
+                format!(
+                    "{}\t{}, {}",
+                    opcode,
+                    Disassembler::fabi_name(extract_rd(ins)),
+                    Disassembler::abi_name(extract_rs1(ins))
+                )
+            }
+        }
     }
 
     fn gen_rd_rm_rs1_rs2_rs3(&mut self, opcode: ExecFnRdRs1Rs2Rs3Rm, ins: u32) -> Self::Item {
-        // TODO
+        // "FMADD.S %s, %s, %s, %s, %s", fabiNames[ins->rd_rs1_rs2_rs3_rm.rd], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs1], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs2], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs3], roundingModes[ins->rd_rs1_rs2_rs3_rm.rm])
+        // "FMSUB.S %s, %s, %s, %s, %s", fabiNames[ins->rd_rs1_rs2_rs3_rm.rd], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs1], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs2], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs3], roundingModes[ins->rd_rs1_rs2_rs3_rm.rm])
+        // "FNMSUB.S %s, %s, %s, %s, %s", fabiNames[ins->rd_rs1_rs2_rs3_rm.rd], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs1], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs2], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs3], roundingModes[ins->rd_rs1_rs2_rs3_rm.rm])
+        // "FNMADD.S %s, %s, %s, %s, %s", fabiNames[ins->rd_rs1_rs2_rs3_rm.rd], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs1], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs2], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs3], roundingModes[ins->rd_rs1_rs2_rs3_rm.rm])
         format!(
             "{}\t{}, {}, {}, {}, {}",
             opcode,
-            extract_rd(ins),
-            extract_rs1(ins),
-            extract_rs2(ins),
-            extract_rs3(ins),
-            extract_rm(ins)
+            Disassembler::fabi_name(extract_rd(ins)),
+            Disassembler::fabi_name(extract_rs1(ins)),
+            Disassembler::fabi_name(extract_rs2(ins)),
+            Disassembler::fabi_name(extract_rs3(ins)),
+            Disassembler::rounding_mode(extract_rm(ins))
         )
     }
 
@@ -908,15 +933,30 @@ impl Decoder for Disassembler {
                     Disassembler::abi_name(extract_rs2(ins))
                 )
             }
-            // TODO
-            ExecFsgnjS | ExecFminS | ExecFleS | ExecFsgnjnS | ExecFmaxS | ExecFltS
-            | ExecFsgnjxS | ExecFeqS => {
+            // "FLE.S %s, %s, %s", abiNames[ins->rd_rs1_rs2.rd], fabiNames[ins->rd_rs1_rs2.rs1], fabiNames[ins->rd_rs1_rs2.rs2])
+            // "FLT.S %s, %s, %s", abiNames[ins->rd_rs1_rs2.rd], fabiNames[ins->rd_rs1_rs2.rs1], fabiNames[ins->rd_rs1_rs2.rs2])
+            // "FEQ.S %s, %s, %s", abiNames[ins->rd_rs1_rs2.rd], fabiNames[ins->rd_rs1_rs2.rs1], fabiNames[ins->rd_rs1_rs2.rs2])
+            ExecFleS | ExecFltS | ExecFeqS => {
                 format!(
                     "{}\t{}, {}, {}",
                     opcode,
-                    extract_rd(ins),
-                    extract_rs1(ins),
-                    extract_rs2(ins)
+                    Disassembler::abi_name(extract_rd(ins)),
+                    Disassembler::fabi_name(extract_rs1(ins)),
+                    Disassembler::fabi_name(extract_rs2(ins))
+                )
+            }
+            // "FSGNJ.S %s, %s, %s", fabiNames[ins->rd_rs1_rs2.rd], fabiNames[ins->rd_rs1_rs2.rs1], fabiNames[ins->rd_rs1_rs2.rs2])
+            // "FMIN.S %s, %s, %s", fabiNames[ins->rd_rs1_rs2.rd], fabiNames[ins->rd_rs1_rs2.rs1], fabiNames[ins->rd_rs1_rs2.rs2])
+            // "FSGNJN.S %s, %s, %s", fabiNames[ins->rd_rs1_rs2.rd], fabiNames[ins->rd_rs1_rs2.rs1], fabiNames[ins->rd_rs1_rs2.rs2])
+            // "FMAX.S %s, %s, %s", fabiNames[ins->rd_rs1_rs2.rd], fabiNames[ins->rd_rs1_rs2.rs1], fabiNames[ins->rd_rs1_rs2.rs2])
+            // "FSGNJX.S %s, %s, %s", fabiNames[ins->rd_rs1_rs2.rd], fabiNames[ins->rd_rs1_rs2.rs1], fabiNames[ins->rd_rs1_rs2.rs2])
+            ExecFsgnjS | ExecFminS | ExecFsgnjnS | ExecFmaxS | ExecFsgnjxS => {
+                format!(
+                    "{}\t{}, {}, {}",
+                    opcode,
+                    Disassembler::fabi_name(extract_rd(ins)),
+                    Disassembler::fabi_name(extract_rs1(ins)),
+                    Disassembler::fabi_name(extract_rs2(ins))
                 )
             }
         }
@@ -951,11 +991,12 @@ impl Decoder for Disassembler {
     }
 
     fn gen_imm20_rd(&mut self, opcode: ExecFnImm20Rd, ins: u32) -> Self::Item {
-        // TODO
+        // TRACE("AUIPC %s, %d\n", abiNames[ins->rd_imm.rd], ins->rd_imm.imm >> 12);
+        // TRACE("LUI %s, %d\n", abiNames[ins->rd_imm.rd], ins->rd_imm.imm >> 12);
         format!(
             "{}\t{}, {}",
             opcode,
-            extract_rd(ins),
+            Disassembler::abi_name(extract_rd(ins)),
             extract_uimmediate(ins) >> 12 // TODO: Does the shift belong here, or with extract_uimmediate()?
         )
     }
@@ -977,15 +1018,10 @@ impl Decoder for Disassembler {
         }
     }
 
-    fn gen_fm_pred_rd_rs1_succ(&mut self, opcode: ExecFnRdFmPredRdRs1Succ, ins: u32) -> Self::Item {
-        // TODO
-        format!(
-            "{}\t{}, {}, {}",
-            opcode,
-            extract_fm(ins),
-            extract_rd(ins),
-            extract_rs1(ins)
-        )
+    fn gen_fm_pred_rd_rs1_succ(&mut self, opcode: ExecFnRdFmPredRdRs1Succ, _ins: u32) -> Self::Item {
+        // "FENCE"
+        // We're totally ignoring FENCE.TSO as it's optional.
+        format!("{}\t", opcode)
     }
 
     fn gen_imm12_rd_rs1(&mut self, opcode: ExecFnImm12RdRs1, ins: u32) -> Self::Item {
