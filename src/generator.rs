@@ -98,15 +98,15 @@ struct Generator;
 impl Decoder for Generator {
     type Item = DecodedInstruction;
 
-    fn gen_trap(&mut self, opcode: ExecFnTrap, ins: u32) -> DecodedInstruction {
+    fn trap(&mut self, opcode: ExecFnTrap, ins: u32) -> DecodedInstruction {
         DecodedInstruction::Ins { opcode, ins }
     }
 
-    fn gen_no_args(&mut self, opcode: ExecFnNoArgs, _ins: u32) -> DecodedInstruction {
+    fn no_args(&mut self, opcode: ExecFnNoArgs, _ins: u32) -> DecodedInstruction {
         DecodedInstruction::NoArgs { opcode }
     }
 
-    fn gen_jimm20_rd(&mut self, opcode: ExecFnJimm20Rd, ins: u32) -> DecodedInstruction {
+    fn jimm20_rd(&mut self, opcode: ExecFnJimm20Rd, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdJImm20 {
             opcode: opcode,
             rd: extract_rd(ins),
@@ -114,7 +114,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn gen_bimm12hi_bimm12lo_rs1_rs2(
+    fn bimm12hi_bimm12lo_rs1_rs2(
         &mut self,
         opcode: ExecFnBimm12Rs1Rs2,
         ins: u32,
@@ -127,7 +127,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn gen_rd_rm_rs1(&mut self, opcode: ExecFnRdRs1Rm, ins: u32) -> DecodedInstruction {
+    fn rd_rm_rs1(&mut self, opcode: ExecFnRdRs1Rm, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdRs1Rm {
             opcode,
             rd: extract_rd(ins),
@@ -136,7 +136,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn gen_rd_rm_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2Rm, ins: u32) -> DecodedInstruction {
+    fn rd_rm_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2Rm, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdRs1Rs2Rm {
             opcode,
             rd: extract_rd(ins),
@@ -146,7 +146,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn gen_rd_rs1(&mut self, opcode: ExecFnRdRs1, ins: u32) -> DecodedInstruction {
+    fn rd_rs1(&mut self, opcode: ExecFnRdRs1, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdRs1 {
             opcode,
             rd: extract_rd(ins),
@@ -154,7 +154,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn gen_rd_rm_rs1_rs2_rs3(
+    fn rd_rm_rs1_rs2_rs3(
         &mut self,
         opcode: ExecFnRdRs1Rs2Rs3Rm,
         ins: u32,
@@ -169,7 +169,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn gen_rd_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2, ins: u32) -> DecodedInstruction {
+    fn rd_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdRs1Rs2 {
             opcode,
             rd: extract_rd(ins),
@@ -178,7 +178,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn gen_imm12hi_imm12lo_rs1_rs2(
+    fn imm12hi_imm12lo_rs1_rs2(
         &mut self,
         opcode: ExecFnImm12Rs1Rs2,
         ins: u32,
@@ -191,7 +191,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn gen_imm20_rd(&mut self, opcode: ExecFnImm20Rd, ins: u32) -> DecodedInstruction {
+    fn imm20_rd(&mut self, opcode: ExecFnImm20Rd, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdImm20 {
             opcode,
             rd: extract_rd(ins),
@@ -199,7 +199,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn gen_rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Shamtw, ins: u32) -> DecodedInstruction {
+    fn rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Shamtw, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdRs1Shamtw {
             opcode,
             rd: extract_rd(ins),
@@ -208,7 +208,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn gen_fm_pred_rd_rs1_succ(
+    fn fm_pred_rd_rs1_succ(
         &mut self,
         opcode: ExecFnRdFmPredRdRs1Succ,
         ins: u32,
@@ -221,7 +221,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn gen_imm12_rd_rs1(&mut self, opcode: ExecFnImm12RdRs1, ins: u32) -> DecodedInstruction {
+    fn imm12_rd_rs1(&mut self, opcode: ExecFnImm12RdRs1, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdRs1Imm12 {
             opcode,
             rd: extract_rd(ins),

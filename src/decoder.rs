@@ -347,21 +347,20 @@ use ExecFnTrap::*;
 pub trait Decoder {
     type Item;
 
-    fn gen_trap(&mut self, opcode: ExecFnTrap, ins: u32) -> Self::Item;
-    fn gen_no_args(&mut self, opcode: ExecFnNoArgs, ins: u32) -> Self::Item;
-    fn gen_jimm20_rd(&mut self, opcode: ExecFnJimm20Rd, ins: u32) -> Self::Item;
-    fn gen_bimm12hi_bimm12lo_rs1_rs2(&mut self, opcode: ExecFnBimm12Rs1Rs2, ins: u32)
-        -> Self::Item;
-    fn gen_rd_rm_rs1(&mut self, opcode: ExecFnRdRs1Rm, ins: u32) -> Self::Item;
-    fn gen_rd_rm_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2Rm, ins: u32) -> Self::Item;
-    fn gen_rd_rs1(&mut self, opcode: ExecFnRdRs1, ins: u32) -> Self::Item;
-    fn gen_rd_rm_rs1_rs2_rs3(&mut self, opcode: ExecFnRdRs1Rs2Rs3Rm, ins: u32) -> Self::Item;
-    fn gen_rd_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2, ins: u32) -> Self::Item;
-    fn gen_imm12hi_imm12lo_rs1_rs2(&mut self, opcode: ExecFnImm12Rs1Rs2, ins: u32) -> Self::Item;
-    fn gen_imm20_rd(&mut self, opcode: ExecFnImm20Rd, ins: u32) -> Self::Item;
-    fn gen_rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Shamtw, ins: u32) -> Self::Item;
-    fn gen_fm_pred_rd_rs1_succ(&mut self, opcode: ExecFnRdFmPredRdRs1Succ, ins: u32) -> Self::Item;
-    fn gen_imm12_rd_rs1(&mut self, opcode: ExecFnImm12RdRs1, ins: u32) -> Self::Item;
+    fn trap(&mut self, opcode: ExecFnTrap, ins: u32) -> Self::Item;
+    fn no_args(&mut self, opcode: ExecFnNoArgs, ins: u32) -> Self::Item;
+    fn jimm20_rd(&mut self, opcode: ExecFnJimm20Rd, ins: u32) -> Self::Item;
+    fn bimm12hi_bimm12lo_rs1_rs2(&mut self, opcode: ExecFnBimm12Rs1Rs2, ins: u32) -> Self::Item;
+    fn rd_rm_rs1(&mut self, opcode: ExecFnRdRs1Rm, ins: u32) -> Self::Item;
+    fn rd_rm_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2Rm, ins: u32) -> Self::Item;
+    fn rd_rs1(&mut self, opcode: ExecFnRdRs1, ins: u32) -> Self::Item;
+    fn rd_rm_rs1_rs2_rs3(&mut self, opcode: ExecFnRdRs1Rs2Rs3Rm, ins: u32) -> Self::Item;
+    fn rd_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2, ins: u32) -> Self::Item;
+    fn imm12hi_imm12lo_rs1_rs2(&mut self, opcode: ExecFnImm12Rs1Rs2, ins: u32) -> Self::Item;
+    fn imm20_rd(&mut self, opcode: ExecFnImm20Rd, ins: u32) -> Self::Item;
+    fn rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Shamtw, ins: u32) -> Self::Item;
+    fn fm_pred_rd_rs1_succ(&mut self, opcode: ExecFnRdFmPredRdRs1Succ, ins: u32) -> Self::Item;
+    fn imm12_rd_rs1(&mut self, opcode: ExecFnImm12RdRs1, ins: u32) -> Self::Item;
 }
 
 fn bits(n: u32, hi: u32, lo: u32) -> u32 {
@@ -377,63 +376,63 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
             match bits(ins, 6, 2) {
                 0x0 => {
                     match bits(ins, 14, 12) {
-                        0x0 => return decoder.gen_imm12_rd_rs1(ExecLb, ins), // lb
-                        0x1 => return decoder.gen_imm12_rd_rs1(ExecLh, ins), // lh
-                        0x2 => return decoder.gen_imm12_rd_rs1(ExecLw, ins), // lw
-                        0x4 => return decoder.gen_imm12_rd_rs1(ExecLbu, ins), // lbu
-                        0x5 => return decoder.gen_imm12_rd_rs1(ExecLhu, ins), // lhu
+                        0x0 => return decoder.imm12_rd_rs1(ExecLb, ins), // lb
+                        0x1 => return decoder.imm12_rd_rs1(ExecLh, ins), // lh
+                        0x2 => return decoder.imm12_rd_rs1(ExecLw, ins), // lw
+                        0x4 => return decoder.imm12_rd_rs1(ExecLbu, ins), // lbu
+                        0x5 => return decoder.imm12_rd_rs1(ExecLhu, ins), // lhu
                         _ => {}
                     }
                 }
                 0x1 => {
                     match bits(ins, 14, 12) {
-                        0x2 => return decoder.gen_imm12_rd_rs1(ExecFlw, ins), // flw
+                        0x2 => return decoder.imm12_rd_rs1(ExecFlw, ins), // flw
                         _ => {}
                     }
                 }
                 0x3 => {
                     match bits(ins, 14, 12) {
-                        0x0 => return decoder.gen_fm_pred_rd_rs1_succ(ExecFence, ins), // fence
-                        0x1 => return decoder.gen_imm12_rd_rs1(ExecFenceI, ins),       // fence.i
+                        0x0 => return decoder.fm_pred_rd_rs1_succ(ExecFence, ins), // fence
+                        0x1 => return decoder.imm12_rd_rs1(ExecFenceI, ins),       // fence.i
                         _ => {}
                     }
                 }
                 0x4 => {
                     match bits(ins, 14, 12) {
-                        0x0 => return decoder.gen_imm12_rd_rs1(ExecAddi, ins), // addi
+                        0x0 => return decoder.imm12_rd_rs1(ExecAddi, ins), // addi
                         0x1 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.gen_rd_rs1_shamtw(ExecSlli, ins), // slli
+                                0x0 => return decoder.rd_rs1_shamtw(ExecSlli, ins), // slli
                                 _ => {}
                             }
                         }
-                        0x2 => return decoder.gen_imm12_rd_rs1(ExecSlti, ins), // slti
-                        0x3 => return decoder.gen_imm12_rd_rs1(ExecSltiu, ins), // sltiu
-                        0x4 => return decoder.gen_imm12_rd_rs1(ExecXori, ins), // xori
+                        0x2 => return decoder.imm12_rd_rs1(ExecSlti, ins), // slti
+                        0x3 => return decoder.imm12_rd_rs1(ExecSltiu, ins), // sltiu
+                        0x4 => return decoder.imm12_rd_rs1(ExecXori, ins), // xori
                         0x5 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.gen_rd_rs1_shamtw(ExecSrli, ins), // srli
-                                0x20 => return decoder.gen_rd_rs1_shamtw(ExecSrai, ins), // srai
+                                0x0 => return decoder.rd_rs1_shamtw(ExecSrli, ins), // srli
+                                0x20 => return decoder.rd_rs1_shamtw(ExecSrai, ins), // srai
                                 _ => {}
                             }
                         }
-                        0x6 => return decoder.gen_imm12_rd_rs1(ExecOri, ins), // ori
-                        0x7 => return decoder.gen_imm12_rd_rs1(ExecAndi, ins), // andi
+                        0x6 => return decoder.imm12_rd_rs1(ExecOri, ins), // ori
+                        0x7 => return decoder.imm12_rd_rs1(ExecAndi, ins), // andi
                         _ => {}
                     }
                 }
-                0x5 => return decoder.gen_imm20_rd(ExecAuipc, ins), // auipc
+                0x5 => return decoder.imm20_rd(ExecAuipc, ins), // auipc
                 0x8 => {
                     match bits(ins, 14, 12) {
-                        0x0 => return decoder.gen_imm12hi_imm12lo_rs1_rs2(ExecSb, ins), // sb
-                        0x1 => return decoder.gen_imm12hi_imm12lo_rs1_rs2(ExecSh, ins), // sh
-                        0x2 => return decoder.gen_imm12hi_imm12lo_rs1_rs2(ExecSw, ins), // sw
+                        0x0 => return decoder.imm12hi_imm12lo_rs1_rs2(ExecSb, ins), // sb
+                        0x1 => return decoder.imm12hi_imm12lo_rs1_rs2(ExecSh, ins), // sh
+                        0x2 => return decoder.imm12hi_imm12lo_rs1_rs2(ExecSw, ins), // sw
                         _ => {}
                     }
                 }
                 0x9 => {
                     match bits(ins, 14, 12) {
-                        0x2 => return decoder.gen_imm12hi_imm12lo_rs1_rs2(ExecFsw, ins), // fsw
+                        0x2 => return decoder.imm12hi_imm12lo_rs1_rs2(ExecFsw, ins), // fsw
                         _ => {}
                     }
                 }
@@ -441,87 +440,87 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                     match bits(ins, 14, 12) {
                         0x0 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.gen_rd_rs1_rs2(ExecAdd, ins), // add
-                                0x1 => return decoder.gen_rd_rs1_rs2(ExecMul, ins), // mul
-                                0x20 => return decoder.gen_rd_rs1_rs2(ExecSub, ins), // sub
+                                0x0 => return decoder.rd_rs1_rs2(ExecAdd, ins), // add
+                                0x1 => return decoder.rd_rs1_rs2(ExecMul, ins), // mul
+                                0x20 => return decoder.rd_rs1_rs2(ExecSub, ins), // sub
                                 _ => {}
                             }
                         }
                         0x1 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.gen_rd_rs1_rs2(ExecSll, ins), // sll
-                                0x1 => return decoder.gen_rd_rs1_rs2(ExecMulh, ins), // mulh
+                                0x0 => return decoder.rd_rs1_rs2(ExecSll, ins), // sll
+                                0x1 => return decoder.rd_rs1_rs2(ExecMulh, ins), // mulh
                                 _ => {}
                             }
                         }
                         0x2 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.gen_rd_rs1_rs2(ExecSlt, ins), // slt
-                                0x1 => return decoder.gen_rd_rs1_rs2(ExecMulhsu, ins), // mulhsu
+                                0x0 => return decoder.rd_rs1_rs2(ExecSlt, ins), // slt
+                                0x1 => return decoder.rd_rs1_rs2(ExecMulhsu, ins), // mulhsu
                                 _ => {}
                             }
                         }
                         0x3 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.gen_rd_rs1_rs2(ExecSltu, ins), // sltu
-                                0x1 => return decoder.gen_rd_rs1_rs2(ExecMulhu, ins), // mulhu
+                                0x0 => return decoder.rd_rs1_rs2(ExecSltu, ins), // sltu
+                                0x1 => return decoder.rd_rs1_rs2(ExecMulhu, ins), // mulhu
                                 _ => {}
                             }
                         }
                         0x4 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.gen_rd_rs1_rs2(ExecXor, ins), // xor
-                                0x1 => return decoder.gen_rd_rs1_rs2(ExecDiv, ins), // div
+                                0x0 => return decoder.rd_rs1_rs2(ExecXor, ins), // xor
+                                0x1 => return decoder.rd_rs1_rs2(ExecDiv, ins), // div
                                 _ => {}
                             }
                         }
                         0x5 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.gen_rd_rs1_rs2(ExecSrl, ins), // srl
-                                0x1 => return decoder.gen_rd_rs1_rs2(ExecDivu, ins), // divu
-                                0x20 => return decoder.gen_rd_rs1_rs2(ExecSra, ins), // sra
+                                0x0 => return decoder.rd_rs1_rs2(ExecSrl, ins), // srl
+                                0x1 => return decoder.rd_rs1_rs2(ExecDivu, ins), // divu
+                                0x20 => return decoder.rd_rs1_rs2(ExecSra, ins), // sra
                                 _ => {}
                             }
                         }
                         0x6 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.gen_rd_rs1_rs2(ExecOr, ins), // or
-                                0x1 => return decoder.gen_rd_rs1_rs2(ExecRem, ins), // rem
+                                0x0 => return decoder.rd_rs1_rs2(ExecOr, ins),  // or
+                                0x1 => return decoder.rd_rs1_rs2(ExecRem, ins), // rem
                                 _ => {}
                             }
                         }
                         0x7 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.gen_rd_rs1_rs2(ExecAnd, ins), // and
-                                0x1 => return decoder.gen_rd_rs1_rs2(ExecRemu, ins), // remu
+                                0x0 => return decoder.rd_rs1_rs2(ExecAnd, ins), // and
+                                0x1 => return decoder.rd_rs1_rs2(ExecRemu, ins), // remu
                                 _ => {}
                             }
                         }
                         _ => {}
                     }
                 }
-                0xd => return decoder.gen_imm20_rd(ExecLui, ins), // lui
+                0xd => return decoder.imm20_rd(ExecLui, ins), // lui
                 0x10 => {
                     match bits(ins, 26, 25) {
-                        0x0 => return decoder.gen_rd_rm_rs1_rs2_rs3(ExecFmaddS, ins), // fmadd.s
+                        0x0 => return decoder.rd_rm_rs1_rs2_rs3(ExecFmaddS, ins), // fmadd.s
                         _ => {}
                     }
                 }
                 0x11 => {
                     match bits(ins, 26, 25) {
-                        0x0 => return decoder.gen_rd_rm_rs1_rs2_rs3(ExecFmsubS, ins), // fmsub.s
+                        0x0 => return decoder.rd_rm_rs1_rs2_rs3(ExecFmsubS, ins), // fmsub.s
                         _ => {}
                     }
                 }
                 0x12 => {
                     match bits(ins, 26, 25) {
-                        0x0 => return decoder.gen_rd_rm_rs1_rs2_rs3(ExecFnmsubS, ins), // fnmsub.s
+                        0x0 => return decoder.rd_rm_rs1_rs2_rs3(ExecFnmsubS, ins), // fnmsub.s
                         _ => {}
                     }
                 }
                 0x13 => {
                     match bits(ins, 26, 25) {
-                        0x0 => return decoder.gen_rd_rm_rs1_rs2_rs3(ExecFnmaddS, ins), // fnmadd.s
+                        0x0 => return decoder.rd_rm_rs1_rs2_rs3(ExecFnmaddS, ins), // fnmadd.s
                         _ => {}
                     }
                 }
@@ -531,18 +530,18 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                             match bits(ins, 14, 12) {
                                 0x0 => {
                                     match bits(ins, 31, 27) {
-                                        0x4 => return decoder.gen_rd_rs1_rs2(ExecFsgnjS, ins), // fsgnj.s
-                                        0x5 => return decoder.gen_rd_rs1_rs2(ExecFminS, ins), // fmin.s
-                                        0x14 => return decoder.gen_rd_rs1_rs2(ExecFleS, ins), // fle.s
+                                        0x4 => return decoder.rd_rs1_rs2(ExecFsgnjS, ins), // fsgnj.s
+                                        0x5 => return decoder.rd_rs1_rs2(ExecFminS, ins),  // fmin.s
+                                        0x14 => return decoder.rd_rs1_rs2(ExecFleS, ins),  // fle.s
                                         0x1c => {
                                             match bits(ins, 24, 20) {
-                                                0x0 => return decoder.gen_rd_rs1(ExecFmvXW, ins), // fmv.x.w
+                                                0x0 => return decoder.rd_rs1(ExecFmvXW, ins), // fmv.x.w
                                                 _ => {}
                                             }
                                         }
                                         0x1e => {
                                             match bits(ins, 24, 20) {
-                                                0x0 => return decoder.gen_rd_rs1(ExecFmvWX, ins), // fmv.w.x
+                                                0x0 => return decoder.rd_rs1(ExecFmvWX, ins), // fmv.w.x
                                                 _ => {}
                                             }
                                         }
@@ -551,12 +550,12 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                                 }
                                 0x1 => {
                                     match bits(ins, 31, 27) {
-                                        0x4 => return decoder.gen_rd_rs1_rs2(ExecFsgnjnS, ins), // fsgnjn.s
-                                        0x5 => return decoder.gen_rd_rs1_rs2(ExecFmaxS, ins), // fmax.s
-                                        0x14 => return decoder.gen_rd_rs1_rs2(ExecFltS, ins), // flt.s
+                                        0x4 => return decoder.rd_rs1_rs2(ExecFsgnjnS, ins), // fsgnjn.s
+                                        0x5 => return decoder.rd_rs1_rs2(ExecFmaxS, ins), // fmax.s
+                                        0x14 => return decoder.rd_rs1_rs2(ExecFltS, ins), // flt.s
                                         0x1c => {
                                             match bits(ins, 24, 20) {
-                                                0x0 => return decoder.gen_rd_rs1(ExecFclassS, ins), // fclass.s
+                                                0x0 => return decoder.rd_rs1(ExecFclassS, ins), // fclass.s
                                                 _ => {}
                                             }
                                         }
@@ -565,35 +564,35 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                                 }
                                 0x2 => {
                                     match bits(ins, 31, 27) {
-                                        0x4 => return decoder.gen_rd_rs1_rs2(ExecFsgnjxS, ins), // fsgnjx.s
-                                        0x14 => return decoder.gen_rd_rs1_rs2(ExecFeqS, ins), // feq.s
+                                        0x4 => return decoder.rd_rs1_rs2(ExecFsgnjxS, ins), // fsgnjx.s
+                                        0x14 => return decoder.rd_rs1_rs2(ExecFeqS, ins),   // feq.s
                                         _ => {}
                                     }
                                 }
                                 _ => {}
                             }
                             match bits(ins, 31, 27) {
-                                0x0 => return decoder.gen_rd_rm_rs1_rs2(ExecFaddS, ins), // fadd.s
-                                0x1 => return decoder.gen_rd_rm_rs1_rs2(ExecFsubS, ins), // fsub.s
-                                0x2 => return decoder.gen_rd_rm_rs1_rs2(ExecFmulS, ins), // fmul.s
-                                0x3 => return decoder.gen_rd_rm_rs1_rs2(ExecFdivS, ins), // fdiv.s
+                                0x0 => return decoder.rd_rm_rs1_rs2(ExecFaddS, ins), // fadd.s
+                                0x1 => return decoder.rd_rm_rs1_rs2(ExecFsubS, ins), // fsub.s
+                                0x2 => return decoder.rd_rm_rs1_rs2(ExecFmulS, ins), // fmul.s
+                                0x3 => return decoder.rd_rm_rs1_rs2(ExecFdivS, ins), // fdiv.s
                                 0xb => {
                                     match bits(ins, 24, 20) {
-                                        0x0 => return decoder.gen_rd_rm_rs1(ExecFsqrtS, ins), // fsqrt.s
+                                        0x0 => return decoder.rd_rm_rs1(ExecFsqrtS, ins), // fsqrt.s
                                         _ => {}
                                     }
                                 }
                                 0x18 => {
                                     match bits(ins, 24, 20) {
-                                        0x0 => return decoder.gen_rd_rm_rs1(ExecFcvtWS, ins), // fcvt.w.s
-                                        0x1 => return decoder.gen_rd_rm_rs1(ExecFcvtWuS, ins), // fcvt.wu.s
+                                        0x0 => return decoder.rd_rm_rs1(ExecFcvtWS, ins), // fcvt.w.s
+                                        0x1 => return decoder.rd_rm_rs1(ExecFcvtWuS, ins), // fcvt.wu.s
                                         _ => {}
                                     }
                                 }
                                 0x1a => {
                                     match bits(ins, 24, 20) {
-                                        0x0 => return decoder.gen_rd_rm_rs1(ExecFcvtSW, ins), // fcvt.s.w
-                                        0x1 => return decoder.gen_rd_rm_rs1(ExecFcvtSWu, ins), // fcvt.s.wu
+                                        0x0 => return decoder.rd_rm_rs1(ExecFcvtSW, ins), // fcvt.s.w
+                                        0x1 => return decoder.rd_rm_rs1(ExecFcvtSWu, ins), // fcvt.s.wu
                                         _ => {}
                                     }
                                 }
@@ -605,22 +604,22 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                 }
                 0x18 => {
                     match bits(ins, 14, 12) {
-                        0x0 => return decoder.gen_bimm12hi_bimm12lo_rs1_rs2(ExecBeq, ins), // beq
-                        0x1 => return decoder.gen_bimm12hi_bimm12lo_rs1_rs2(ExecBne, ins), // bne
-                        0x4 => return decoder.gen_bimm12hi_bimm12lo_rs1_rs2(ExecBlt, ins), // blt
-                        0x5 => return decoder.gen_bimm12hi_bimm12lo_rs1_rs2(ExecBge, ins), // bge
-                        0x6 => return decoder.gen_bimm12hi_bimm12lo_rs1_rs2(ExecBltu, ins), // bltu
-                        0x7 => return decoder.gen_bimm12hi_bimm12lo_rs1_rs2(ExecBgeu, ins), // bgeu
+                        0x0 => return decoder.bimm12hi_bimm12lo_rs1_rs2(ExecBeq, ins), // beq
+                        0x1 => return decoder.bimm12hi_bimm12lo_rs1_rs2(ExecBne, ins), // bne
+                        0x4 => return decoder.bimm12hi_bimm12lo_rs1_rs2(ExecBlt, ins), // blt
+                        0x5 => return decoder.bimm12hi_bimm12lo_rs1_rs2(ExecBge, ins), // bge
+                        0x6 => return decoder.bimm12hi_bimm12lo_rs1_rs2(ExecBltu, ins), // bltu
+                        0x7 => return decoder.bimm12hi_bimm12lo_rs1_rs2(ExecBgeu, ins), // bgeu
                         _ => {}
                     }
                 }
                 0x19 => {
                     match bits(ins, 14, 12) {
-                        0x0 => return decoder.gen_imm12_rd_rs1(ExecJalr, ins), // jalr
+                        0x0 => return decoder.imm12_rd_rs1(ExecJalr, ins), // jalr
                         _ => {}
                     }
                 }
-                0x1b => return decoder.gen_jimm20_rd(ExecJal, ins), // jal
+                0x1b => return decoder.jimm20_rd(ExecJal, ins), // jal
                 0x1c => {
                     match bits(ins, 14, 12) {
                         0x0 => {
@@ -629,7 +628,7 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                                     match bits(ins, 19, 15) {
                                         0x0 => {
                                             match bits(ins, 11, 7) {
-                                                0x0 => return decoder.gen_no_args(ExecEcall, ins), // ecall
+                                                0x0 => return decoder.no_args(ExecEcall, ins), // ecall
                                                 _ => {}
                                             }
                                         }
@@ -640,7 +639,7 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                                     match bits(ins, 19, 15) {
                                         0x0 => {
                                             match bits(ins, 11, 7) {
-                                                0x0 => return decoder.gen_no_args(ExecEbreak, ins), // ebreak
+                                                0x0 => return decoder.no_args(ExecEbreak, ins), // ebreak
                                                 _ => {}
                                             }
                                         }
@@ -651,7 +650,7 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                                     match bits(ins, 19, 15) {
                                         0x0 => {
                                             match bits(ins, 11, 7) {
-                                                0x0 => return decoder.gen_no_args(ExecSret, ins), // sret
+                                                0x0 => return decoder.no_args(ExecSret, ins), // sret
                                                 _ => {}
                                             }
                                         }
@@ -662,7 +661,7 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                                     match bits(ins, 19, 15) {
                                         0x0 => {
                                             match bits(ins, 11, 7) {
-                                                0x0 => return decoder.gen_no_args(ExecMret, ins), // mret
+                                                0x0 => return decoder.no_args(ExecMret, ins), // mret
                                                 _ => {}
                                             }
                                         }
@@ -681,5 +680,5 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
         _ => {}
     }
     // Illegal instruction.
-    return decoder.gen_trap(ExecIllegalInstruction, ins);
+    return decoder.trap(ExecIllegalInstruction, ins);
 }
