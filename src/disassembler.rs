@@ -96,7 +96,7 @@ impl Decoder for Disassembler {
             // "BGE %s, %s, %d", abiNames[ins->rs1_rs2_imm.rs1], abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm
             // "BLTU %s, %s, %d", abiNames[ins->rs1_rs2_imm.rs1], abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm
             // "BGEU %s, %s, %d", abiNames[ins->rs1_rs2_imm.rs1], abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm
-            ExecBeq | ExecBne | ExecBlt | ExecBge | ExecBltu | ExecBgeu => {
+            Beq | Bne | Blt | Bge | Bltu | Bgeu => {
                 format!(
                     "{}\t{}, {}, {}",
                     opcode,
@@ -143,7 +143,7 @@ impl Decoder for Disassembler {
         // "FMV.W.X %s, %s", fabiNames[ins->rd_rs1.rd], abiNames[ins->rd_rs1.rs1])
         // "FCLASS.S %s, %s", abiNames[ins->rd_rs1.rd], fabiNames[ins->rd_rs1.rs1])
         match opcode {
-            ExecFmvXW | ExecFclassS => {
+            FmvXW | FclassS => {
                 format!(
                     "{}\t{}, {}",
                     opcode,
@@ -151,7 +151,7 @@ impl Decoder for Disassembler {
                     Disassembler::fabi_name(extract_rs1(ins))
                 )
             }
-            ExecFmvWX => {
+            FmvWX => {
                 format!(
                     "{}\t{}, {}",
                     opcode,
@@ -198,9 +198,8 @@ impl Decoder for Disassembler {
             // "REM %s, %s, %s", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]
             // "AND %s, %s, %s", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]
             // "REMU %s, %s, %s", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]
-            ExecAdd | ExecMul | ExecSub | ExecSll | ExecMulh | ExecSlt | ExecMulhsu | ExecSltu
-            | ExecMulhu | ExecXor | ExecDiv | ExecSrl | ExecDivu | ExecSra | ExecOr | ExecRem
-            | ExecAnd | ExecRemu => {
+            Add | Mul | Sub | Sll | Mulh | Slt | Mulhsu | Sltu | Mulhu | Xor | Div | Srl | Divu
+            | Sra | Or | Rem | And | Remu => {
                 format!(
                     "{}\t{}, {}, {}",
                     opcode,
@@ -212,7 +211,7 @@ impl Decoder for Disassembler {
             // "FLE.S %s, %s, %s", abiNames[ins->rd_rs1_rs2.rd], fabiNames[ins->rd_rs1_rs2.rs1], fabiNames[ins->rd_rs1_rs2.rs2])
             // "FLT.S %s, %s, %s", abiNames[ins->rd_rs1_rs2.rd], fabiNames[ins->rd_rs1_rs2.rs1], fabiNames[ins->rd_rs1_rs2.rs2])
             // "FEQ.S %s, %s, %s", abiNames[ins->rd_rs1_rs2.rd], fabiNames[ins->rd_rs1_rs2.rs1], fabiNames[ins->rd_rs1_rs2.rs2])
-            ExecFleS | ExecFltS | ExecFeqS => {
+            FleS | FltS | FeqS => {
                 format!(
                     "{}\t{}, {}, {}",
                     opcode,
@@ -226,7 +225,7 @@ impl Decoder for Disassembler {
             // "FSGNJN.S %s, %s, %s", fabiNames[ins->rd_rs1_rs2.rd], fabiNames[ins->rd_rs1_rs2.rs1], fabiNames[ins->rd_rs1_rs2.rs2])
             // "FMAX.S %s, %s, %s", fabiNames[ins->rd_rs1_rs2.rd], fabiNames[ins->rd_rs1_rs2.rs1], fabiNames[ins->rd_rs1_rs2.rs2])
             // "FSGNJX.S %s, %s, %s", fabiNames[ins->rd_rs1_rs2.rd], fabiNames[ins->rd_rs1_rs2.rs1], fabiNames[ins->rd_rs1_rs2.rs2])
-            ExecFsgnjS | ExecFminS | ExecFsgnjnS | ExecFmaxS | ExecFsgnjxS => {
+            FsgnjS | FminS | FsgnjnS | FmaxS | FsgnjxS => {
                 format!(
                     "{}\t{}, {}, {}",
                     opcode,
@@ -243,7 +242,7 @@ impl Decoder for Disassembler {
             // "SB %s, %d(%s)", abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm, abiNames[ins->rs1_rs2_imm.rs1]
             // "SH %s, %d(%s)", abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm, abiNames[ins->rs1_rs2_imm.rs1]
             // "SW %s, %d(%s)", abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm, abiNames[ins->rs1_rs2_imm.rs1]
-            ExecSb | ExecSh | ExecSw => {
+            Sb | Sh | Sw => {
                 format!(
                     "{}\t{}, {}({})",
                     opcode,
@@ -254,7 +253,7 @@ impl Decoder for Disassembler {
             }
 
             // "FSW %s, %d(%s)", fabiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm, abiNames[ins->rs1_rs2_imm.rs1]
-            ExecFsw => {
+            Fsw => {
                 format!(
                     "{}\t{}, {}({})",
                     opcode,
@@ -282,7 +281,7 @@ impl Decoder for Disassembler {
             // "SLLI %s, %s, %d", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm
             // "SRLI %s, %s, %d", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm
             // "SRAI %s, %s, %d", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm
-            ExecSlli | ExecSrli | ExecSrai => {
+            Slli | Srli | Srai => {
                 format!(
                     "{}\t{}, {}, {}",
                     opcode,
@@ -307,7 +306,7 @@ impl Decoder for Disassembler {
             // "LW %s, %d(%s)", abiNames[ins->rd_rs1_imm.rd], ins->rd_rs1_imm.imm, abiNames[ins->rd_rs1_imm.rs1]
             // "LBU %s, %d(%s)", abiNames[ins->rd_rs1_imm.rd], ins->rd_rs1_imm.imm, abiNames[ins->rd_rs1_imm.rs1]
             // "LHU %s, %d(%s)", abiNames[ins->rd_rs1_imm.rd], ins->rd_rs1_imm.imm, abiNames[ins->rd_rs1_imm.rs1]
-            ExecLb | ExecLh | ExecLw | ExecLbu | ExecLhu => {
+            Lb | Lh | Lw | Lbu | Lhu => {
                 format!(
                     "{}\t{}, {}({})",
                     opcode,
@@ -317,7 +316,7 @@ impl Decoder for Disassembler {
                 )
             }
             // "FLW %s, %d(%s)", fabiNames[ins->rd_rs1_imm.rd], ins->rd_rs1_imm.imm, abiNames[ins->rd_rs1_imm.rs1]
-            ExecFlw => {
+            Flw => {
                 format!(
                     "{}\t{}, {}({})",
                     opcode,
@@ -327,7 +326,7 @@ impl Decoder for Disassembler {
                 )
             }
             // "FENCE.I""
-            ExecFenceI => {
+            FenceI => {
                 format!("{}", opcode)
             }
             // "ADDI %s, %s, %d", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm
@@ -336,7 +335,7 @@ impl Decoder for Disassembler {
             // "XORI %s, %s, %d", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm
             // "ORI %s, %s, %d", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm
             // "ANDI %s, %s, %d", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm
-            ExecAddi | ExecSlti | ExecSltiu | ExecXori | ExecOri | ExecAndi => {
+            Addi | Slti | Sltiu | Xori | Ori | Andi => {
                 format!(
                     "{}\t{}, {}, {}",
                     opcode,
@@ -346,7 +345,7 @@ impl Decoder for Disassembler {
                 )
             }
             // "JALR %s, %s, %d", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm
-            ExecJalr => {
+            Jalr => {
                 format!(
                     "{}\t{}, {}, {}",
                     opcode,

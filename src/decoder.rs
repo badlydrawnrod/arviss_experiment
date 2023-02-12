@@ -2,26 +2,26 @@ use std::fmt;
 
 #[derive(Debug)]
 pub enum CacheLineIndex {
-    ExecFetchDecodeReplace,
+    FetchDecodeReplace,
 }
 
 #[derive(Debug)]
 pub enum NoArgs {
-    ExecEcall,
-    ExecEbreak,
-    ExecUret,
-    ExecSret,
-    ExecMret,
+    Ecall,
+    Ebreak,
+    Uret,
+    Sret,
+    Mret,
 }
 
 impl fmt::Display for NoArgs {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            ExecEcall => "ecall",
-            ExecEbreak => "ebreak",
-            ExecUret => "uret",
-            ExecSret => "sret",
-            ExecMret => "mret",
+            Ecall => "ecall",
+            Ebreak => "ebreak",
+            Uret => "uret",
+            Sret => "sret",
+            Mret => "mret",
         };
         write!(f, "{}", s)
     }
@@ -29,13 +29,13 @@ impl fmt::Display for NoArgs {
 
 #[derive(Debug)]
 pub enum RdFmPredRdRs1Succ {
-    ExecFence,
+    Fence,
 }
 
 impl fmt::Display for RdFmPredRdRs1Succ {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            ExecFence => "fence",
+            Fence => "fence",
         };
         write!(f, "{}", s)
     }
@@ -43,15 +43,15 @@ impl fmt::Display for RdFmPredRdRs1Succ {
 
 #[derive(Debug)]
 pub enum Imm20Rd {
-    ExecAuipc,
-    ExecLui,
+    Auipc,
+    Lui,
 }
 
 impl fmt::Display for Imm20Rd {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            ExecAuipc => "auipc",
-            ExecLui => "lui",
+            Auipc => "auipc",
+            Lui => "lui",
         };
         write!(f, "{}", s)
     }
@@ -59,13 +59,13 @@ impl fmt::Display for Imm20Rd {
 
 #[derive(Debug)]
 pub enum Jimm20Rd {
-    ExecJal,
+    Jal,
 }
 
 impl fmt::Display for Jimm20Rd {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            ExecJal => "jal",
+            Jal => "jal",
         };
         write!(f, "{}", s)
     }
@@ -73,17 +73,17 @@ impl fmt::Display for Jimm20Rd {
 
 #[derive(Debug)]
 pub enum RdRs1 {
-    ExecFmvXW,
-    ExecFmvWX,
-    ExecFclassS,
+    FmvXW,
+    FmvWX,
+    FclassS,
 }
 
 impl fmt::Display for RdRs1 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            ExecFmvXW => "fmv.x.w",
-            ExecFmvWX => "fmv.w.x",
-            ExecFclassS => "fclass.s",
+            FmvXW => "fmv.x.w",
+            FmvWX => "fmv.w.x",
+            FclassS => "fclass.s",
         };
         write!(f, "{}", s)
     }
@@ -91,39 +91,39 @@ impl fmt::Display for RdRs1 {
 
 #[derive(Debug)]
 pub enum Imm12RdRs1 {
-    ExecLb,
-    ExecLh,
-    ExecLw,
-    ExecLbu,
-    ExecLhu,
-    ExecFlw,
-    ExecFenceI,
-    ExecAddi,
-    ExecSlti,
-    ExecSltiu,
-    ExecXori,
-    ExecOri,
-    ExecAndi,
-    ExecJalr,
+    Lb,
+    Lh,
+    Lw,
+    Lbu,
+    Lhu,
+    Flw,
+    FenceI,
+    Addi,
+    Slti,
+    Sltiu,
+    Xori,
+    Ori,
+    Andi,
+    Jalr,
 }
 
 impl fmt::Display for Imm12RdRs1 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            ExecLb => "lb",
-            ExecLh => "lh",
-            ExecLw => "lw",
-            ExecLbu => "lbu",
-            ExecLhu => "lhu",
-            ExecFlw => "flw",
-            ExecFenceI => "fence.i",
-            ExecAddi => "addi",
-            ExecSlti => "slti",
-            ExecSltiu => "sltiu",
-            ExecXori => "xori",
-            ExecOri => "ori",
-            ExecAndi => "andi",
-            ExecJalr => "jalr",
+            Lb => "lb",
+            Lh => "lh",
+            Lw => "lw",
+            Lbu => "lbu",
+            Lhu => "lhu",
+            Flw => "flw",
+            FenceI => "fence.i",
+            Addi => "addi",
+            Slti => "slti",
+            Sltiu => "sltiu",
+            Xori => "xori",
+            Ori => "ori",
+            Andi => "andi",
+            Jalr => "jalr",
         };
         write!(f, "{}", s)
     }
@@ -131,17 +131,17 @@ impl fmt::Display for Imm12RdRs1 {
 
 #[derive(Debug)]
 pub enum RdRs1Shamtw {
-    ExecSlli,
-    ExecSrli,
-    ExecSrai,
+    Slli,
+    Srli,
+    Srai,
 }
 
 impl fmt::Display for RdRs1Shamtw {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            ExecSlli => "slli",
-            ExecSrli => "srli",
-            ExecSrai => "srai",
+            Slli => "slli",
+            Srli => "srli",
+            Srai => "srai",
         };
         write!(f, "{}", s)
     }
@@ -149,21 +149,21 @@ impl fmt::Display for RdRs1Shamtw {
 
 #[derive(Debug)]
 pub enum RdRs1Rm {
-    ExecFsqrtS,
-    ExecFcvtWS,
-    ExecFcvtWuS,
-    ExecFcvtSW,
-    ExecFcvtSWu,
+    FsqrtS,
+    FcvtWS,
+    FcvtWuS,
+    FcvtSW,
+    FcvtSWu,
 }
 
 impl fmt::Display for RdRs1Rm {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            ExecFsqrtS => "fsqrt.s",
-            ExecFcvtWS => "fvct.w.s",
-            ExecFcvtWuS => "fcvt.wu.s",
-            ExecFcvtSW => "fcvt.s.w",
-            ExecFcvtSWu => "fvct.s.wu",
+            FsqrtS => "fsqrt.s",
+            FcvtWS => "fvct.w.s",
+            FcvtWuS => "fcvt.wu.s",
+            FcvtSW => "fcvt.s.w",
+            FcvtSWu => "fvct.s.wu",
         };
         write!(f, "{}", s)
     }
@@ -171,63 +171,63 @@ impl fmt::Display for RdRs1Rm {
 
 #[derive(Debug)]
 pub enum RdRs1Rs2 {
-    ExecAdd,
-    ExecMul,
-    ExecSub,
-    ExecSll,
-    ExecMulh,
-    ExecSlt,
-    ExecMulhsu,
-    ExecSltu,
-    ExecMulhu,
-    ExecXor,
-    ExecDiv,
-    ExecSrl,
-    ExecDivu,
-    ExecSra,
-    ExecOr,
-    ExecRem,
-    ExecAnd,
-    ExecRemu,
-    ExecFsgnjS,
-    ExecFminS,
-    ExecFleS,
-    ExecFsgnjnS,
-    ExecFmaxS,
-    ExecFltS,
-    ExecFsgnjxS,
-    ExecFeqS,
+    Add,
+    Mul,
+    Sub,
+    Sll,
+    Mulh,
+    Slt,
+    Mulhsu,
+    Sltu,
+    Mulhu,
+    Xor,
+    Div,
+    Srl,
+    Divu,
+    Sra,
+    Or,
+    Rem,
+    And,
+    Remu,
+    FsgnjS,
+    FminS,
+    FleS,
+    FsgnjnS,
+    FmaxS,
+    FltS,
+    FsgnjxS,
+    FeqS,
 }
 
 impl fmt::Display for RdRs1Rs2 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            ExecAdd => "add",
-            ExecMul => "mul",
-            ExecSub => "sub",
-            ExecSll => "sll",
-            ExecMulh => "mulh",
-            ExecSlt => "slt",
-            ExecMulhsu => "mulhsu",
-            ExecSltu => "sltu",
-            ExecMulhu => "mulhu",
-            ExecXor => "xor",
-            ExecDiv => "div",
-            ExecSrl => "srl",
-            ExecDivu => "divu",
-            ExecSra => "sra",
-            ExecOr => "or",
-            ExecRem => "rem",
-            ExecAnd => "and",
-            ExecRemu => "remu",
-            ExecFsgnjS => "fsgnj.s",
-            ExecFminS => "fmin.s",
-            ExecFleS => "fle.s",
-            ExecFsgnjnS => "fsgnjn.s",
-            ExecFmaxS => "fmax.s",
-            ExecFltS => "flt.s",
-            ExecFsgnjxS => "fsgnjx.s",
-            ExecFeqS => "feq.s",
+            Add => "add",
+            Mul => "mul",
+            Sub => "sub",
+            Sll => "sll",
+            Mulh => "mulh",
+            Slt => "slt",
+            Mulhsu => "mulhsu",
+            Sltu => "sltu",
+            Mulhu => "mulhu",
+            Xor => "xor",
+            Div => "div",
+            Srl => "srl",
+            Divu => "divu",
+            Sra => "sra",
+            Or => "or",
+            Rem => "rem",
+            And => "and",
+            Remu => "remu",
+            FsgnjS => "fsgnj.s",
+            FminS => "fmin.s",
+            FleS => "fle.s",
+            FsgnjnS => "fsgnjn.s",
+            FmaxS => "fmax.s",
+            FltS => "flt.s",
+            FsgnjxS => "fsgnjx.s",
+            FeqS => "feq.s",
         };
         write!(f, "{}", s)
     }
@@ -235,19 +235,19 @@ impl fmt::Display for RdRs1Rs2 {
 
 #[derive(Debug)]
 pub enum Imm12Rs1Rs2 {
-    ExecSb,
-    ExecSh,
-    ExecSw,
-    ExecFsw,
+    Sb,
+    Sh,
+    Sw,
+    Fsw,
 }
 
 impl fmt::Display for Imm12Rs1Rs2 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            ExecSb => "sb",
-            ExecSh => "sh",
-            ExecSw => "sw",
-            ExecFsw => "fsw",
+            Sb => "sb",
+            Sh => "sh",
+            Sw => "sw",
+            Fsw => "fsw",
         };
         write!(f, "{}", s)
     }
@@ -255,23 +255,23 @@ impl fmt::Display for Imm12Rs1Rs2 {
 
 #[derive(Debug)]
 pub enum Bimm12Rs1Rs2 {
-    ExecBeq,
-    ExecBne,
-    ExecBlt,
-    ExecBge,
-    ExecBltu,
-    ExecBgeu,
+    Beq,
+    Bne,
+    Blt,
+    Bge,
+    Bltu,
+    Bgeu,
 }
 
 impl fmt::Display for Bimm12Rs1Rs2 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            ExecBeq => "beq",
-            ExecBne => "bne",
-            ExecBlt => "blt",
-            ExecBge => "bge",
-            ExecBltu => "bltu",
-            ExecBgeu => "bgeu",
+            Beq => "beq",
+            Bne => "bne",
+            Blt => "blt",
+            Bge => "bge",
+            Bltu => "bltu",
+            Bgeu => "bgeu",
         };
         write!(f, "{}", s)
     }
@@ -279,19 +279,19 @@ impl fmt::Display for Bimm12Rs1Rs2 {
 
 #[derive(Debug)]
 pub enum RdRs1Rs2Rm {
-    ExecFaddS,
-    ExecFsubS,
-    ExecFmulS,
-    ExecFdivS,
+    FaddS,
+    FsubS,
+    FmulS,
+    FdivS,
 }
 
 impl fmt::Display for RdRs1Rs2Rm {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            ExecFaddS => "fadd.s",
-            ExecFsubS => "fsub.s",
-            ExecFmulS => "fmul.s",
-            ExecFdivS => "fdiv.s",
+            FaddS => "fadd.s",
+            FsubS => "fsub.s",
+            FmulS => "fmul.s",
+            FdivS => "fdiv.s",
         };
         write!(f, "{}", s)
     }
@@ -299,19 +299,19 @@ impl fmt::Display for RdRs1Rs2Rm {
 
 #[derive(Debug)]
 pub enum RdRs1Rs2Rs3Rm {
-    ExecFmaddS,
-    ExecFmsubS,
-    ExecFnmsubS,
-    ExecFnmaddS,
+    FmaddS,
+    FmsubS,
+    FnmsubS,
+    FnmaddS,
 }
 
 impl fmt::Display for RdRs1Rs2Rs3Rm {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
-            ExecFmaddS => "fmadd.s",
-            ExecFmsubS => "fmsub.s",
-            ExecFnmsubS => "fnmsub.s",
-            ExecFnmaddS => "fnmadd.s",
+            FmaddS => "fmadd.s",
+            FmsubS => "fmsub.s",
+            FnmsubS => "fnmsub.s",
+            FnmaddS => "fnmadd.s",
         };
         write!(f, "{}", s)
     }
@@ -319,7 +319,7 @@ impl fmt::Display for RdRs1Rs2Rs3Rm {
 
 #[derive(Debug)]
 pub enum Trap {
-    ExecIllegalInstruction,
+    IllegalInstruction,
 }
 
 impl fmt::Display for Trap {
@@ -376,63 +376,63 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
             match bits(ins, 6, 2) {
                 0x0 => {
                     match bits(ins, 14, 12) {
-                        0x0 => return decoder.imm12_rd_rs1(ExecLb, ins), // lb
-                        0x1 => return decoder.imm12_rd_rs1(ExecLh, ins), // lh
-                        0x2 => return decoder.imm12_rd_rs1(ExecLw, ins), // lw
-                        0x4 => return decoder.imm12_rd_rs1(ExecLbu, ins), // lbu
-                        0x5 => return decoder.imm12_rd_rs1(ExecLhu, ins), // lhu
+                        0x0 => return decoder.imm12_rd_rs1(Lb, ins),  // lb
+                        0x1 => return decoder.imm12_rd_rs1(Lh, ins),  // lh
+                        0x2 => return decoder.imm12_rd_rs1(Lw, ins),  // lw
+                        0x4 => return decoder.imm12_rd_rs1(Lbu, ins), // lbu
+                        0x5 => return decoder.imm12_rd_rs1(Lhu, ins), // lhu
                         _ => {}
                     }
                 }
                 0x1 => {
                     match bits(ins, 14, 12) {
-                        0x2 => return decoder.imm12_rd_rs1(ExecFlw, ins), // flw
+                        0x2 => return decoder.imm12_rd_rs1(Flw, ins), // flw
                         _ => {}
                     }
                 }
                 0x3 => {
                     match bits(ins, 14, 12) {
-                        0x0 => return decoder.fm_pred_rd_rs1_succ(ExecFence, ins), // fence
-                        0x1 => return decoder.imm12_rd_rs1(ExecFenceI, ins),       // fence.i
+                        0x0 => return decoder.fm_pred_rd_rs1_succ(Fence, ins), // fence
+                        0x1 => return decoder.imm12_rd_rs1(FenceI, ins),       // fence.i
                         _ => {}
                     }
                 }
                 0x4 => {
                     match bits(ins, 14, 12) {
-                        0x0 => return decoder.imm12_rd_rs1(ExecAddi, ins), // addi
+                        0x0 => return decoder.imm12_rd_rs1(Addi, ins), // addi
                         0x1 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.rd_rs1_shamtw(ExecSlli, ins), // slli
+                                0x0 => return decoder.rd_rs1_shamtw(Slli, ins), // slli
                                 _ => {}
                             }
                         }
-                        0x2 => return decoder.imm12_rd_rs1(ExecSlti, ins), // slti
-                        0x3 => return decoder.imm12_rd_rs1(ExecSltiu, ins), // sltiu
-                        0x4 => return decoder.imm12_rd_rs1(ExecXori, ins), // xori
+                        0x2 => return decoder.imm12_rd_rs1(Slti, ins), // slti
+                        0x3 => return decoder.imm12_rd_rs1(Sltiu, ins), // sltiu
+                        0x4 => return decoder.imm12_rd_rs1(Xori, ins), // xori
                         0x5 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.rd_rs1_shamtw(ExecSrli, ins), // srli
-                                0x20 => return decoder.rd_rs1_shamtw(ExecSrai, ins), // srai
+                                0x0 => return decoder.rd_rs1_shamtw(Srli, ins), // srli
+                                0x20 => return decoder.rd_rs1_shamtw(Srai, ins), // srai
                                 _ => {}
                             }
                         }
-                        0x6 => return decoder.imm12_rd_rs1(ExecOri, ins), // ori
-                        0x7 => return decoder.imm12_rd_rs1(ExecAndi, ins), // andi
+                        0x6 => return decoder.imm12_rd_rs1(Ori, ins), // ori
+                        0x7 => return decoder.imm12_rd_rs1(Andi, ins), // andi
                         _ => {}
                     }
                 }
-                0x5 => return decoder.imm20_rd(ExecAuipc, ins), // auipc
+                0x5 => return decoder.imm20_rd(Auipc, ins), // auipc
                 0x8 => {
                     match bits(ins, 14, 12) {
-                        0x0 => return decoder.imm12hi_imm12lo_rs1_rs2(ExecSb, ins), // sb
-                        0x1 => return decoder.imm12hi_imm12lo_rs1_rs2(ExecSh, ins), // sh
-                        0x2 => return decoder.imm12hi_imm12lo_rs1_rs2(ExecSw, ins), // sw
+                        0x0 => return decoder.imm12hi_imm12lo_rs1_rs2(Sb, ins), // sb
+                        0x1 => return decoder.imm12hi_imm12lo_rs1_rs2(Sh, ins), // sh
+                        0x2 => return decoder.imm12hi_imm12lo_rs1_rs2(Sw, ins), // sw
                         _ => {}
                     }
                 }
                 0x9 => {
                     match bits(ins, 14, 12) {
-                        0x2 => return decoder.imm12hi_imm12lo_rs1_rs2(ExecFsw, ins), // fsw
+                        0x2 => return decoder.imm12hi_imm12lo_rs1_rs2(Fsw, ins), // fsw
                         _ => {}
                     }
                 }
@@ -440,87 +440,87 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                     match bits(ins, 14, 12) {
                         0x0 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.rd_rs1_rs2(ExecAdd, ins), // add
-                                0x1 => return decoder.rd_rs1_rs2(ExecMul, ins), // mul
-                                0x20 => return decoder.rd_rs1_rs2(ExecSub, ins), // sub
+                                0x0 => return decoder.rd_rs1_rs2(Add, ins),  // add
+                                0x1 => return decoder.rd_rs1_rs2(Mul, ins),  // mul
+                                0x20 => return decoder.rd_rs1_rs2(Sub, ins), // sub
                                 _ => {}
                             }
                         }
                         0x1 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.rd_rs1_rs2(ExecSll, ins), // sll
-                                0x1 => return decoder.rd_rs1_rs2(ExecMulh, ins), // mulh
+                                0x0 => return decoder.rd_rs1_rs2(Sll, ins),  // sll
+                                0x1 => return decoder.rd_rs1_rs2(Mulh, ins), // mulh
                                 _ => {}
                             }
                         }
                         0x2 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.rd_rs1_rs2(ExecSlt, ins), // slt
-                                0x1 => return decoder.rd_rs1_rs2(ExecMulhsu, ins), // mulhsu
+                                0x0 => return decoder.rd_rs1_rs2(Slt, ins),    // slt
+                                0x1 => return decoder.rd_rs1_rs2(Mulhsu, ins), // mulhsu
                                 _ => {}
                             }
                         }
                         0x3 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.rd_rs1_rs2(ExecSltu, ins), // sltu
-                                0x1 => return decoder.rd_rs1_rs2(ExecMulhu, ins), // mulhu
+                                0x0 => return decoder.rd_rs1_rs2(Sltu, ins),  // sltu
+                                0x1 => return decoder.rd_rs1_rs2(Mulhu, ins), // mulhu
                                 _ => {}
                             }
                         }
                         0x4 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.rd_rs1_rs2(ExecXor, ins), // xor
-                                0x1 => return decoder.rd_rs1_rs2(ExecDiv, ins), // div
+                                0x0 => return decoder.rd_rs1_rs2(Xor, ins), // xor
+                                0x1 => return decoder.rd_rs1_rs2(Div, ins), // div
                                 _ => {}
                             }
                         }
                         0x5 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.rd_rs1_rs2(ExecSrl, ins), // srl
-                                0x1 => return decoder.rd_rs1_rs2(ExecDivu, ins), // divu
-                                0x20 => return decoder.rd_rs1_rs2(ExecSra, ins), // sra
+                                0x0 => return decoder.rd_rs1_rs2(Srl, ins),  // srl
+                                0x1 => return decoder.rd_rs1_rs2(Divu, ins), // divu
+                                0x20 => return decoder.rd_rs1_rs2(Sra, ins), // sra
                                 _ => {}
                             }
                         }
                         0x6 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.rd_rs1_rs2(ExecOr, ins),  // or
-                                0x1 => return decoder.rd_rs1_rs2(ExecRem, ins), // rem
+                                0x0 => return decoder.rd_rs1_rs2(Or, ins),  // or
+                                0x1 => return decoder.rd_rs1_rs2(Rem, ins), // rem
                                 _ => {}
                             }
                         }
                         0x7 => {
                             match bits(ins, 31, 25) {
-                                0x0 => return decoder.rd_rs1_rs2(ExecAnd, ins), // and
-                                0x1 => return decoder.rd_rs1_rs2(ExecRemu, ins), // remu
+                                0x0 => return decoder.rd_rs1_rs2(And, ins),  // and
+                                0x1 => return decoder.rd_rs1_rs2(Remu, ins), // remu
                                 _ => {}
                             }
                         }
                         _ => {}
                     }
                 }
-                0xd => return decoder.imm20_rd(ExecLui, ins), // lui
+                0xd => return decoder.imm20_rd(Lui, ins), // lui
                 0x10 => {
                     match bits(ins, 26, 25) {
-                        0x0 => return decoder.rd_rm_rs1_rs2_rs3(ExecFmaddS, ins), // fmadd.s
+                        0x0 => return decoder.rd_rm_rs1_rs2_rs3(FmaddS, ins), // fmadd.s
                         _ => {}
                     }
                 }
                 0x11 => {
                     match bits(ins, 26, 25) {
-                        0x0 => return decoder.rd_rm_rs1_rs2_rs3(ExecFmsubS, ins), // fmsub.s
+                        0x0 => return decoder.rd_rm_rs1_rs2_rs3(FmsubS, ins), // fmsub.s
                         _ => {}
                     }
                 }
                 0x12 => {
                     match bits(ins, 26, 25) {
-                        0x0 => return decoder.rd_rm_rs1_rs2_rs3(ExecFnmsubS, ins), // fnmsub.s
+                        0x0 => return decoder.rd_rm_rs1_rs2_rs3(FnmsubS, ins), // fnmsub.s
                         _ => {}
                     }
                 }
                 0x13 => {
                     match bits(ins, 26, 25) {
-                        0x0 => return decoder.rd_rm_rs1_rs2_rs3(ExecFnmaddS, ins), // fnmadd.s
+                        0x0 => return decoder.rd_rm_rs1_rs2_rs3(FnmaddS, ins), // fnmadd.s
                         _ => {}
                     }
                 }
@@ -530,18 +530,18 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                             match bits(ins, 14, 12) {
                                 0x0 => {
                                     match bits(ins, 31, 27) {
-                                        0x4 => return decoder.rd_rs1_rs2(ExecFsgnjS, ins), // fsgnj.s
-                                        0x5 => return decoder.rd_rs1_rs2(ExecFminS, ins),  // fmin.s
-                                        0x14 => return decoder.rd_rs1_rs2(ExecFleS, ins),  // fle.s
+                                        0x4 => return decoder.rd_rs1_rs2(FsgnjS, ins), // fsgnj.s
+                                        0x5 => return decoder.rd_rs1_rs2(FminS, ins),  // fmin.s
+                                        0x14 => return decoder.rd_rs1_rs2(FleS, ins),  // fle.s
                                         0x1c => {
                                             match bits(ins, 24, 20) {
-                                                0x0 => return decoder.rd_rs1(ExecFmvXW, ins), // fmv.x.w
+                                                0x0 => return decoder.rd_rs1(FmvXW, ins), // fmv.x.w
                                                 _ => {}
                                             }
                                         }
                                         0x1e => {
                                             match bits(ins, 24, 20) {
-                                                0x0 => return decoder.rd_rs1(ExecFmvWX, ins), // fmv.w.x
+                                                0x0 => return decoder.rd_rs1(FmvWX, ins), // fmv.w.x
                                                 _ => {}
                                             }
                                         }
@@ -550,12 +550,12 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                                 }
                                 0x1 => {
                                     match bits(ins, 31, 27) {
-                                        0x4 => return decoder.rd_rs1_rs2(ExecFsgnjnS, ins), // fsgnjn.s
-                                        0x5 => return decoder.rd_rs1_rs2(ExecFmaxS, ins), // fmax.s
-                                        0x14 => return decoder.rd_rs1_rs2(ExecFltS, ins), // flt.s
+                                        0x4 => return decoder.rd_rs1_rs2(FsgnjnS, ins), // fsgnjn.s
+                                        0x5 => return decoder.rd_rs1_rs2(FmaxS, ins),   // fmax.s
+                                        0x14 => return decoder.rd_rs1_rs2(FltS, ins),   // flt.s
                                         0x1c => {
                                             match bits(ins, 24, 20) {
-                                                0x0 => return decoder.rd_rs1(ExecFclassS, ins), // fclass.s
+                                                0x0 => return decoder.rd_rs1(FclassS, ins), // fclass.s
                                                 _ => {}
                                             }
                                         }
@@ -564,35 +564,35 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                                 }
                                 0x2 => {
                                     match bits(ins, 31, 27) {
-                                        0x4 => return decoder.rd_rs1_rs2(ExecFsgnjxS, ins), // fsgnjx.s
-                                        0x14 => return decoder.rd_rs1_rs2(ExecFeqS, ins),   // feq.s
+                                        0x4 => return decoder.rd_rs1_rs2(FsgnjxS, ins), // fsgnjx.s
+                                        0x14 => return decoder.rd_rs1_rs2(FeqS, ins),   // feq.s
                                         _ => {}
                                     }
                                 }
                                 _ => {}
                             }
                             match bits(ins, 31, 27) {
-                                0x0 => return decoder.rd_rm_rs1_rs2(ExecFaddS, ins), // fadd.s
-                                0x1 => return decoder.rd_rm_rs1_rs2(ExecFsubS, ins), // fsub.s
-                                0x2 => return decoder.rd_rm_rs1_rs2(ExecFmulS, ins), // fmul.s
-                                0x3 => return decoder.rd_rm_rs1_rs2(ExecFdivS, ins), // fdiv.s
+                                0x0 => return decoder.rd_rm_rs1_rs2(FaddS, ins), // fadd.s
+                                0x1 => return decoder.rd_rm_rs1_rs2(FsubS, ins), // fsub.s
+                                0x2 => return decoder.rd_rm_rs1_rs2(FmulS, ins), // fmul.s
+                                0x3 => return decoder.rd_rm_rs1_rs2(FdivS, ins), // fdiv.s
                                 0xb => {
                                     match bits(ins, 24, 20) {
-                                        0x0 => return decoder.rd_rm_rs1(ExecFsqrtS, ins), // fsqrt.s
+                                        0x0 => return decoder.rd_rm_rs1(FsqrtS, ins), // fsqrt.s
                                         _ => {}
                                     }
                                 }
                                 0x18 => {
                                     match bits(ins, 24, 20) {
-                                        0x0 => return decoder.rd_rm_rs1(ExecFcvtWS, ins), // fcvt.w.s
-                                        0x1 => return decoder.rd_rm_rs1(ExecFcvtWuS, ins), // fcvt.wu.s
+                                        0x0 => return decoder.rd_rm_rs1(FcvtWS, ins), // fcvt.w.s
+                                        0x1 => return decoder.rd_rm_rs1(FcvtWuS, ins), // fcvt.wu.s
                                         _ => {}
                                     }
                                 }
                                 0x1a => {
                                     match bits(ins, 24, 20) {
-                                        0x0 => return decoder.rd_rm_rs1(ExecFcvtSW, ins), // fcvt.s.w
-                                        0x1 => return decoder.rd_rm_rs1(ExecFcvtSWu, ins), // fcvt.s.wu
+                                        0x0 => return decoder.rd_rm_rs1(FcvtSW, ins), // fcvt.s.w
+                                        0x1 => return decoder.rd_rm_rs1(FcvtSWu, ins), // fcvt.s.wu
                                         _ => {}
                                     }
                                 }
@@ -604,22 +604,22 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                 }
                 0x18 => {
                     match bits(ins, 14, 12) {
-                        0x0 => return decoder.bimm12hi_bimm12lo_rs1_rs2(ExecBeq, ins), // beq
-                        0x1 => return decoder.bimm12hi_bimm12lo_rs1_rs2(ExecBne, ins), // bne
-                        0x4 => return decoder.bimm12hi_bimm12lo_rs1_rs2(ExecBlt, ins), // blt
-                        0x5 => return decoder.bimm12hi_bimm12lo_rs1_rs2(ExecBge, ins), // bge
-                        0x6 => return decoder.bimm12hi_bimm12lo_rs1_rs2(ExecBltu, ins), // bltu
-                        0x7 => return decoder.bimm12hi_bimm12lo_rs1_rs2(ExecBgeu, ins), // bgeu
+                        0x0 => return decoder.bimm12hi_bimm12lo_rs1_rs2(Beq, ins), // beq
+                        0x1 => return decoder.bimm12hi_bimm12lo_rs1_rs2(Bne, ins), // bne
+                        0x4 => return decoder.bimm12hi_bimm12lo_rs1_rs2(Blt, ins), // blt
+                        0x5 => return decoder.bimm12hi_bimm12lo_rs1_rs2(Bge, ins), // bge
+                        0x6 => return decoder.bimm12hi_bimm12lo_rs1_rs2(Bltu, ins), // bltu
+                        0x7 => return decoder.bimm12hi_bimm12lo_rs1_rs2(Bgeu, ins), // bgeu
                         _ => {}
                     }
                 }
                 0x19 => {
                     match bits(ins, 14, 12) {
-                        0x0 => return decoder.imm12_rd_rs1(ExecJalr, ins), // jalr
+                        0x0 => return decoder.imm12_rd_rs1(Jalr, ins), // jalr
                         _ => {}
                     }
                 }
-                0x1b => return decoder.jimm20_rd(ExecJal, ins), // jal
+                0x1b => return decoder.jimm20_rd(Jal, ins), // jal
                 0x1c => {
                     match bits(ins, 14, 12) {
                         0x0 => {
@@ -628,7 +628,7 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                                     match bits(ins, 19, 15) {
                                         0x0 => {
                                             match bits(ins, 11, 7) {
-                                                0x0 => return decoder.no_args(ExecEcall, ins), // ecall
+                                                0x0 => return decoder.no_args(Ecall, ins), // ecall
                                                 _ => {}
                                             }
                                         }
@@ -639,7 +639,7 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                                     match bits(ins, 19, 15) {
                                         0x0 => {
                                             match bits(ins, 11, 7) {
-                                                0x0 => return decoder.no_args(ExecEbreak, ins), // ebreak
+                                                0x0 => return decoder.no_args(Ebreak, ins), // ebreak
                                                 _ => {}
                                             }
                                         }
@@ -650,7 +650,7 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                                     match bits(ins, 19, 15) {
                                         0x0 => {
                                             match bits(ins, 11, 7) {
-                                                0x0 => return decoder.no_args(ExecSret, ins), // sret
+                                                0x0 => return decoder.no_args(Sret, ins), // sret
                                                 _ => {}
                                             }
                                         }
@@ -661,7 +661,7 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
                                     match bits(ins, 19, 15) {
                                         0x0 => {
                                             match bits(ins, 11, 7) {
-                                                0x0 => return decoder.no_args(ExecMret, ins), // mret
+                                                0x0 => return decoder.no_args(Mret, ins), // mret
                                                 _ => {}
                                             }
                                         }
@@ -680,5 +680,5 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), ins: u32) -> 
         _ => {}
     }
     // Illegal instruction.
-    return decoder.trap(ExecIllegalInstruction, ins);
+    return decoder.trap(IllegalInstruction, ins);
 }
