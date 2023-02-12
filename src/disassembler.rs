@@ -1,16 +1,16 @@
 use crate::extract::*;
 use crate::Decoder;
 use crate::{
-    ExecFnBimm12Rs1Rs2::{self, *},
-    ExecFnImm12RdRs1::{self, *},
-    ExecFnImm12Rs1Rs2::{self, *},
-    ExecFnImm20Rd, ExecFnJimm20Rd, ExecFnNoArgs, ExecFnRdFmPredRdRs1Succ,
-    ExecFnRdRs1::{self, *},
-    ExecFnRdRs1Rm,
-    ExecFnRdRs1Rs2::{self, *},
-    ExecFnRdRs1Rs2Rm, ExecFnRdRs1Rs2Rs3Rm,
-    ExecFnRdRs1Shamtw::{self, *},
-    ExecFnTrap,
+    Bimm12Rs1Rs2::{self, *},
+    Imm12RdRs1::{self, *},
+    Imm12Rs1Rs2::{self, *},
+    Imm20Rd, Jimm20Rd, NoArgs, RdFmPredRdRs1Succ,
+    RdRs1::{self, *},
+    RdRs1Rm,
+    RdRs1Rs2::{self, *},
+    RdRs1Rs2Rm, RdRs1Rs2Rs3Rm,
+    RdRs1Shamtw::{self, *},
+    Trap,
 };
 
 pub struct Disassembler {}
@@ -64,12 +64,12 @@ impl Disassembler {
 impl Decoder for Disassembler {
     type Item = String;
 
-    fn trap(&mut self, opcode: ExecFnTrap, ins: u32) -> Self::Item {
+    fn trap(&mut self, opcode: Trap, ins: u32) -> Self::Item {
         // Illegal instruction.
         format!("{}\t0x{:04x}", opcode, ins)
     }
 
-    fn no_args(&mut self, opcode: ExecFnNoArgs, _ins: u32) -> Self::Item {
+    fn no_args(&mut self, opcode: NoArgs, _ins: u32) -> Self::Item {
         // "ECALL"
         // "EBREAK"
         // "URET"
@@ -78,7 +78,7 @@ impl Decoder for Disassembler {
         format!("{}", opcode)
     }
 
-    fn jimm20_rd(&mut self, opcode: ExecFnJimm20Rd, ins: u32) -> Self::Item {
+    fn jimm20_rd(&mut self, opcode: Jimm20Rd, ins: u32) -> Self::Item {
         // "JAL %s, %d", abiNames[ins->rd_imm.rd], ins->rd_imm.imm
         format!(
             "{}\t{}, {}",
@@ -88,11 +88,7 @@ impl Decoder for Disassembler {
         )
     }
 
-    fn bimm12hi_bimm12lo_rs1_rs2(
-        &mut self,
-        opcode: ExecFnBimm12Rs1Rs2,
-        ins: u32,
-    ) -> Self::Item {
+    fn bimm12hi_bimm12lo_rs1_rs2(&mut self, opcode: Bimm12Rs1Rs2, ins: u32) -> Self::Item {
         match opcode {
             // "BEQ %s, %s, %d", abiNames[ins->rs1_rs2_imm.rs1], abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm
             // "BNE %s, %s, %d", abiNames[ins->rs1_rs2_imm.rs1], abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm
@@ -112,7 +108,7 @@ impl Decoder for Disassembler {
         }
     }
 
-    fn rd_rm_rs1(&mut self, opcode: ExecFnRdRs1Rm, ins: u32) -> Self::Item {
+    fn rd_rm_rs1(&mut self, opcode: RdRs1Rm, ins: u32) -> Self::Item {
         // "FSQRT.S %s, %s, %s", fabiNames[ins->rd_rs1_rm.rd], fabiNames[ins->rd_rs1_rm.rs1], roundingModes[ins->rd_rs1_rm.rm])
         // "FCVT.W.S %s, %s, %s", abiNames[ins->rd_rs1_rm.rd], fabiNames[ins->rd_rs1_rm.rs1], roundingModes[ins->rd_rs1_rm.rm])
         // "FCVT.WU.S %s, %s, %s", abiNames[ins->rd_rs1_rm.rd], fabiNames[ins->rd_rs1_rm.rs1], roundingModes[ins->rd_rs1_rm.rm])
@@ -127,7 +123,7 @@ impl Decoder for Disassembler {
         )
     }
 
-    fn rd_rm_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2Rm, ins: u32) -> Self::Item {
+    fn rd_rm_rs1_rs2(&mut self, opcode: RdRs1Rs2Rm, ins: u32) -> Self::Item {
         // "FADD.S %s, %s, %s, %s", fabiNames[ins->rd_rs1_rs2_rm.rd], fabiNames[ins->rd_rs1_rs2_rm.rs1], fabiNames[ins->rd_rs1_rs2_rm.rs2], roundingModes[ins->rd_rs1_rs2_rm.rm])
         // "FSUB.S %s, %s, %s, %s", fabiNames[ins->rd_rs1_rs2_rm.rd], fabiNames[ins->rd_rs1_rs2_rm.rs1], fabiNames[ins->rd_rs1_rs2_rm.rs2], roundingModes[ins->rd_rs1_rs2_rm.rm])
         // "FMUL.S %s, %s, %s, %s", fabiNames[ins->rd_rs1_rs2_rm.rd], fabiNames[ins->rd_rs1_rs2_rm.rs1], fabiNames[ins->rd_rs1_rs2_rm.rs2], roundingModes[ins->rd_rs1_rs2_rm.rm])
@@ -142,7 +138,7 @@ impl Decoder for Disassembler {
         )
     }
 
-    fn rd_rs1(&mut self, opcode: ExecFnRdRs1, ins: u32) -> Self::Item {
+    fn rd_rs1(&mut self, opcode: RdRs1, ins: u32) -> Self::Item {
         // "FMV.X.W %s, %s", abiNames[ins->rd_rs1.rd], fabiNames[ins->rd_rs1.rs1])
         // "FMV.W.X %s, %s", fabiNames[ins->rd_rs1.rd], abiNames[ins->rd_rs1.rs1])
         // "FCLASS.S %s, %s", abiNames[ins->rd_rs1.rd], fabiNames[ins->rd_rs1.rs1])
@@ -166,7 +162,7 @@ impl Decoder for Disassembler {
         }
     }
 
-    fn rd_rm_rs1_rs2_rs3(&mut self, opcode: ExecFnRdRs1Rs2Rs3Rm, ins: u32) -> Self::Item {
+    fn rd_rm_rs1_rs2_rs3(&mut self, opcode: RdRs1Rs2Rs3Rm, ins: u32) -> Self::Item {
         // "FMADD.S %s, %s, %s, %s, %s", fabiNames[ins->rd_rs1_rs2_rs3_rm.rd], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs1], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs2], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs3], roundingModes[ins->rd_rs1_rs2_rs3_rm.rm])
         // "FMSUB.S %s, %s, %s, %s, %s", fabiNames[ins->rd_rs1_rs2_rs3_rm.rd], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs1], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs2], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs3], roundingModes[ins->rd_rs1_rs2_rs3_rm.rm])
         // "FNMSUB.S %s, %s, %s, %s, %s", fabiNames[ins->rd_rs1_rs2_rs3_rm.rd], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs1], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs2], fabiNames[ins->rd_rs1_rs2_rs3_rm.rs3], roundingModes[ins->rd_rs1_rs2_rs3_rm.rm])
@@ -182,7 +178,7 @@ impl Decoder for Disassembler {
         )
     }
 
-    fn rd_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2, ins: u32) -> Self::Item {
+    fn rd_rs1_rs2(&mut self, opcode: RdRs1Rs2, ins: u32) -> Self::Item {
         match opcode {
             // "ADD %s, %s, %s", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]
             // "MUL %s, %s, %s", abiNames[ins->rd_rs1_rs2.rd], abiNames[ins->rd_rs1_rs2.rs1], abiNames[ins->rd_rs1_rs2.rs2]
@@ -242,7 +238,7 @@ impl Decoder for Disassembler {
         }
     }
 
-    fn imm12hi_imm12lo_rs1_rs2(&mut self, opcode: ExecFnImm12Rs1Rs2, ins: u32) -> Self::Item {
+    fn imm12hi_imm12lo_rs1_rs2(&mut self, opcode: Imm12Rs1Rs2, ins: u32) -> Self::Item {
         match opcode {
             // "SB %s, %d(%s)", abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm, abiNames[ins->rs1_rs2_imm.rs1]
             // "SH %s, %d(%s)", abiNames[ins->rs1_rs2_imm.rs2], ins->rs1_rs2_imm.imm, abiNames[ins->rs1_rs2_imm.rs1]
@@ -270,7 +266,7 @@ impl Decoder for Disassembler {
         }
     }
 
-    fn imm20_rd(&mut self, opcode: ExecFnImm20Rd, ins: u32) -> Self::Item {
+    fn imm20_rd(&mut self, opcode: Imm20Rd, ins: u32) -> Self::Item {
         // TRACE("AUIPC %s, %d\n", abiNames[ins->rd_imm.rd], ins->rd_imm.imm >> 12);
         // TRACE("LUI %s, %d\n", abiNames[ins->rd_imm.rd], ins->rd_imm.imm >> 12);
         format!(
@@ -281,7 +277,7 @@ impl Decoder for Disassembler {
         )
     }
 
-    fn rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Shamtw, ins: u32) -> Self::Item {
+    fn rd_rs1_shamtw(&mut self, opcode: RdRs1Shamtw, ins: u32) -> Self::Item {
         match opcode {
             // "SLLI %s, %s, %d", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm
             // "SRLI %s, %s, %d", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm
@@ -298,17 +294,13 @@ impl Decoder for Disassembler {
         }
     }
 
-    fn fm_pred_rd_rs1_succ(
-        &mut self,
-        opcode: ExecFnRdFmPredRdRs1Succ,
-        _ins: u32,
-    ) -> Self::Item {
+    fn fm_pred_rd_rs1_succ(&mut self, opcode: RdFmPredRdRs1Succ, _ins: u32) -> Self::Item {
         // "FENCE"
         // We're totally ignoring FENCE.TSO as it's optional.
         format!("{}\t", opcode)
     }
 
-    fn imm12_rd_rs1(&mut self, opcode: ExecFnImm12RdRs1, ins: u32) -> Self::Item {
+    fn imm12_rd_rs1(&mut self, opcode: Imm12RdRs1, ins: u32) -> Self::Item {
         match opcode {
             // "LB %s, %d(%s)", abiNames[ins->rd_rs1_imm.rd], ins->rd_rs1_imm.imm, abiNames[ins->rd_rs1_imm.rs1]
             // "LH %s, %d(%s)", abiNames[ins->rd_rs1_imm.rd], ins->rd_rs1_imm.imm, abiNames[ins->rd_rs1_imm.rs1]

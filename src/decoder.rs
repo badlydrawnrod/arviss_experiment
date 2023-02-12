@@ -1,12 +1,12 @@
 use std::fmt;
 
 #[derive(Debug)]
-pub enum ExecFnCacheLineIndex {
+pub enum CacheLineIndex {
     ExecFetchDecodeReplace,
 }
 
 #[derive(Debug)]
-pub enum ExecFnNoArgs {
+pub enum NoArgs {
     ExecEcall,
     ExecEbreak,
     ExecUret,
@@ -14,7 +14,7 @@ pub enum ExecFnNoArgs {
     ExecMret,
 }
 
-impl fmt::Display for ExecFnNoArgs {
+impl fmt::Display for NoArgs {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             ExecEcall => "ecall",
@@ -28,11 +28,11 @@ impl fmt::Display for ExecFnNoArgs {
 }
 
 #[derive(Debug)]
-pub enum ExecFnRdFmPredRdRs1Succ {
+pub enum RdFmPredRdRs1Succ {
     ExecFence,
 }
 
-impl fmt::Display for ExecFnRdFmPredRdRs1Succ {
+impl fmt::Display for RdFmPredRdRs1Succ {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             ExecFence => "fence",
@@ -42,12 +42,12 @@ impl fmt::Display for ExecFnRdFmPredRdRs1Succ {
 }
 
 #[derive(Debug)]
-pub enum ExecFnImm20Rd {
+pub enum Imm20Rd {
     ExecAuipc,
     ExecLui,
 }
 
-impl fmt::Display for ExecFnImm20Rd {
+impl fmt::Display for Imm20Rd {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             ExecAuipc => "auipc",
@@ -58,11 +58,11 @@ impl fmt::Display for ExecFnImm20Rd {
 }
 
 #[derive(Debug)]
-pub enum ExecFnJimm20Rd {
+pub enum Jimm20Rd {
     ExecJal,
 }
 
-impl fmt::Display for ExecFnJimm20Rd {
+impl fmt::Display for Jimm20Rd {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             ExecJal => "jal",
@@ -72,13 +72,13 @@ impl fmt::Display for ExecFnJimm20Rd {
 }
 
 #[derive(Debug)]
-pub enum ExecFnRdRs1 {
+pub enum RdRs1 {
     ExecFmvXW,
     ExecFmvWX,
     ExecFclassS,
 }
 
-impl fmt::Display for ExecFnRdRs1 {
+impl fmt::Display for RdRs1 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             ExecFmvXW => "fmv.x.w",
@@ -90,7 +90,7 @@ impl fmt::Display for ExecFnRdRs1 {
 }
 
 #[derive(Debug)]
-pub enum ExecFnImm12RdRs1 {
+pub enum Imm12RdRs1 {
     ExecLb,
     ExecLh,
     ExecLw,
@@ -107,7 +107,7 @@ pub enum ExecFnImm12RdRs1 {
     ExecJalr,
 }
 
-impl fmt::Display for ExecFnImm12RdRs1 {
+impl fmt::Display for Imm12RdRs1 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             ExecLb => "lb",
@@ -130,13 +130,13 @@ impl fmt::Display for ExecFnImm12RdRs1 {
 }
 
 #[derive(Debug)]
-pub enum ExecFnRdRs1Shamtw {
+pub enum RdRs1Shamtw {
     ExecSlli,
     ExecSrli,
     ExecSrai,
 }
 
-impl fmt::Display for ExecFnRdRs1Shamtw {
+impl fmt::Display for RdRs1Shamtw {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             ExecSlli => "slli",
@@ -148,7 +148,7 @@ impl fmt::Display for ExecFnRdRs1Shamtw {
 }
 
 #[derive(Debug)]
-pub enum ExecFnRdRs1Rm {
+pub enum RdRs1Rm {
     ExecFsqrtS,
     ExecFcvtWS,
     ExecFcvtWuS,
@@ -156,7 +156,7 @@ pub enum ExecFnRdRs1Rm {
     ExecFcvtSWu,
 }
 
-impl fmt::Display for ExecFnRdRs1Rm {
+impl fmt::Display for RdRs1Rm {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             ExecFsqrtS => "fsqrt.s",
@@ -170,7 +170,7 @@ impl fmt::Display for ExecFnRdRs1Rm {
 }
 
 #[derive(Debug)]
-pub enum ExecFnRdRs1Rs2 {
+pub enum RdRs1Rs2 {
     ExecAdd,
     ExecMul,
     ExecSub,
@@ -199,7 +199,7 @@ pub enum ExecFnRdRs1Rs2 {
     ExecFeqS,
 }
 
-impl fmt::Display for ExecFnRdRs1Rs2 {
+impl fmt::Display for RdRs1Rs2 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             ExecAdd => "add",
@@ -234,14 +234,14 @@ impl fmt::Display for ExecFnRdRs1Rs2 {
 }
 
 #[derive(Debug)]
-pub enum ExecFnImm12Rs1Rs2 {
+pub enum Imm12Rs1Rs2 {
     ExecSb,
     ExecSh,
     ExecSw,
     ExecFsw,
 }
 
-impl fmt::Display for ExecFnImm12Rs1Rs2 {
+impl fmt::Display for Imm12Rs1Rs2 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             ExecSb => "sb",
@@ -254,7 +254,7 @@ impl fmt::Display for ExecFnImm12Rs1Rs2 {
 }
 
 #[derive(Debug)]
-pub enum ExecFnBimm12Rs1Rs2 {
+pub enum Bimm12Rs1Rs2 {
     ExecBeq,
     ExecBne,
     ExecBlt,
@@ -263,7 +263,7 @@ pub enum ExecFnBimm12Rs1Rs2 {
     ExecBgeu,
 }
 
-impl fmt::Display for ExecFnBimm12Rs1Rs2 {
+impl fmt::Display for Bimm12Rs1Rs2 {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             ExecBeq => "beq",
@@ -278,14 +278,14 @@ impl fmt::Display for ExecFnBimm12Rs1Rs2 {
 }
 
 #[derive(Debug)]
-pub enum ExecFnRdRs1Rs2Rm {
+pub enum RdRs1Rs2Rm {
     ExecFaddS,
     ExecFsubS,
     ExecFmulS,
     ExecFdivS,
 }
 
-impl fmt::Display for ExecFnRdRs1Rs2Rm {
+impl fmt::Display for RdRs1Rs2Rm {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             ExecFaddS => "fadd.s",
@@ -298,14 +298,14 @@ impl fmt::Display for ExecFnRdRs1Rs2Rm {
 }
 
 #[derive(Debug)]
-pub enum ExecFnRdRs1Rs2Rs3Rm {
+pub enum RdRs1Rs2Rs3Rm {
     ExecFmaddS,
     ExecFmsubS,
     ExecFnmsubS,
     ExecFnmaddS,
 }
 
-impl fmt::Display for ExecFnRdRs1Rs2Rs3Rm {
+impl fmt::Display for RdRs1Rs2Rs3Rm {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         let s = match self {
             ExecFmaddS => "fmadd.s",
@@ -318,49 +318,49 @@ impl fmt::Display for ExecFnRdRs1Rs2Rs3Rm {
 }
 
 #[derive(Debug)]
-pub enum ExecFnTrap {
+pub enum Trap {
     ExecIllegalInstruction,
 }
 
-impl fmt::Display for ExecFnTrap {
+impl fmt::Display for Trap {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> fmt::Result {
         write!(f, "ill")
     }
 }
 
-use ExecFnBimm12Rs1Rs2::*;
-use ExecFnCacheLineIndex::*;
-use ExecFnImm12RdRs1::*;
-use ExecFnImm12Rs1Rs2::*;
-use ExecFnImm20Rd::*;
-use ExecFnJimm20Rd::*;
-use ExecFnNoArgs::*;
-use ExecFnRdFmPredRdRs1Succ::*;
-use ExecFnRdRs1::*;
-use ExecFnRdRs1Rm::*;
-use ExecFnRdRs1Rs2::*;
-use ExecFnRdRs1Rs2Rm::*;
-use ExecFnRdRs1Rs2Rs3Rm::*;
-use ExecFnRdRs1Shamtw::*;
-use ExecFnTrap::*;
+use Bimm12Rs1Rs2::*;
+use CacheLineIndex::*;
+use Imm12RdRs1::*;
+use Imm12Rs1Rs2::*;
+use Imm20Rd::*;
+use Jimm20Rd::*;
+use NoArgs::*;
+use RdFmPredRdRs1Succ::*;
+use RdRs1::*;
+use RdRs1Rm::*;
+use RdRs1Rs2::*;
+use RdRs1Rs2Rm::*;
+use RdRs1Rs2Rs3Rm::*;
+use RdRs1Shamtw::*;
+use Trap::*;
 
 pub trait Decoder {
     type Item;
 
-    fn trap(&mut self, opcode: ExecFnTrap, ins: u32) -> Self::Item;
-    fn no_args(&mut self, opcode: ExecFnNoArgs, ins: u32) -> Self::Item;
-    fn jimm20_rd(&mut self, opcode: ExecFnJimm20Rd, ins: u32) -> Self::Item;
-    fn bimm12hi_bimm12lo_rs1_rs2(&mut self, opcode: ExecFnBimm12Rs1Rs2, ins: u32) -> Self::Item;
-    fn rd_rm_rs1(&mut self, opcode: ExecFnRdRs1Rm, ins: u32) -> Self::Item;
-    fn rd_rm_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2Rm, ins: u32) -> Self::Item;
-    fn rd_rs1(&mut self, opcode: ExecFnRdRs1, ins: u32) -> Self::Item;
-    fn rd_rm_rs1_rs2_rs3(&mut self, opcode: ExecFnRdRs1Rs2Rs3Rm, ins: u32) -> Self::Item;
-    fn rd_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2, ins: u32) -> Self::Item;
-    fn imm12hi_imm12lo_rs1_rs2(&mut self, opcode: ExecFnImm12Rs1Rs2, ins: u32) -> Self::Item;
-    fn imm20_rd(&mut self, opcode: ExecFnImm20Rd, ins: u32) -> Self::Item;
-    fn rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Shamtw, ins: u32) -> Self::Item;
-    fn fm_pred_rd_rs1_succ(&mut self, opcode: ExecFnRdFmPredRdRs1Succ, ins: u32) -> Self::Item;
-    fn imm12_rd_rs1(&mut self, opcode: ExecFnImm12RdRs1, ins: u32) -> Self::Item;
+    fn trap(&mut self, opcode: Trap, ins: u32) -> Self::Item;
+    fn no_args(&mut self, opcode: NoArgs, ins: u32) -> Self::Item;
+    fn jimm20_rd(&mut self, opcode: Jimm20Rd, ins: u32) -> Self::Item;
+    fn bimm12hi_bimm12lo_rs1_rs2(&mut self, opcode: Bimm12Rs1Rs2, ins: u32) -> Self::Item;
+    fn rd_rm_rs1(&mut self, opcode: RdRs1Rm, ins: u32) -> Self::Item;
+    fn rd_rm_rs1_rs2(&mut self, opcode: RdRs1Rs2Rm, ins: u32) -> Self::Item;
+    fn rd_rs1(&mut self, opcode: RdRs1, ins: u32) -> Self::Item;
+    fn rd_rm_rs1_rs2_rs3(&mut self, opcode: RdRs1Rs2Rs3Rm, ins: u32) -> Self::Item;
+    fn rd_rs1_rs2(&mut self, opcode: RdRs1Rs2, ins: u32) -> Self::Item;
+    fn imm12hi_imm12lo_rs1_rs2(&mut self, opcode: Imm12Rs1Rs2, ins: u32) -> Self::Item;
+    fn imm20_rd(&mut self, opcode: Imm20Rd, ins: u32) -> Self::Item;
+    fn rd_rs1_shamtw(&mut self, opcode: RdRs1Shamtw, ins: u32) -> Self::Item;
+    fn fm_pred_rd_rs1_succ(&mut self, opcode: RdFmPredRdRs1Succ, ins: u32) -> Self::Item;
+    fn imm12_rd_rs1(&mut self, opcode: Imm12RdRs1, ins: u32) -> Self::Item;
 }
 
 fn bits(n: u32, hi: u32, lo: u32) -> u32 {

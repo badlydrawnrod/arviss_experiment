@@ -1,94 +1,93 @@
 use crate::extract::*;
 use crate::Decoder;
 use crate::{
-    ExecFnBimm12Rs1Rs2, ExecFnImm12RdRs1, ExecFnImm12Rs1Rs2, ExecFnImm20Rd, ExecFnJimm20Rd,
-    ExecFnNoArgs, ExecFnRdFmPredRdRs1Succ, ExecFnRdRs1, ExecFnRdRs1Rm, ExecFnRdRs1Rs2,
-    ExecFnRdRs1Rs2Rm, ExecFnRdRs1Rs2Rs3Rm, ExecFnRdRs1Shamtw, ExecFnTrap,
+    Bimm12Rs1Rs2, Imm12RdRs1, Imm12Rs1Rs2, Imm20Rd, Jimm20Rd, NoArgs, RdFmPredRdRs1Succ, RdRs1,
+    RdRs1Rm, RdRs1Rs2, RdRs1Rs2Rm, RdRs1Rs2Rs3Rm, RdRs1Shamtw, Trap,
 };
 
 #[derive(Debug)]
 enum DecodedInstruction {
     NoArgs {
-        opcode: ExecFnNoArgs, // Which opcodes are viable for these parameters.
+        opcode: NoArgs, // Which opcodes are viable for these parameters.
     },
     Fdr {
         cache_line: u32, // The instruction's cache line.
         index: u32,      // The instruction's index in the cache line.
     },
     RdFmPredRdRs1Succ {
-        opcode: ExecFnRdFmPredRdRs1Succ, // Which opcodes are viable for these parameters.
-        fm: u8,                          // Fence "mode".
-        rd: u8,                          // Destination register. Currently ignored.
-        rs1: u8,                         // Source register. Currently ignored.
+        opcode: RdFmPredRdRs1Succ, // Which opcodes are viable for these parameters.
+        fm: u8,                    // Fence "mode".
+        rd: u8,                    // Destination register. Currently ignored.
+        rs1: u8,                   // Source register. Currently ignored.
     },
     RdImm20 {
-        opcode: ExecFnImm20Rd, // Which opcodes are viable for these parameters.
-        rd: u8,                // Destination register.
-        imm: i32,              // Immediate operand.
+        opcode: Imm20Rd, // Which opcodes are viable for these parameters.
+        rd: u8,          // Destination register.
+        imm: i32,        // Immediate operand.
     },
     RdJImm20 {
-        opcode: ExecFnJimm20Rd, // Which opcodes are viable for these parameters.
-        rd: u8,                 // Destination register.
-        imm: i32,               // Immediate operand.
+        opcode: Jimm20Rd, // Which opcodes are viable for these parameters.
+        rd: u8,           // Destination register.
+        imm: i32,         // Immediate operand.
     },
     RdRs1 {
-        opcode: ExecFnRdRs1, // Which opcodes are viable for these parameters.
-        rd: u8,              // Destination register.
-        rs1: u8,             // Source register.
+        opcode: RdRs1, // Which opcodes are viable for these parameters.
+        rd: u8,        // Destination register.
+        rs1: u8,       // Source register.
     },
     RdRs1Imm12 {
-        opcode: ExecFnImm12RdRs1, // Which opcodes are viable for these parameters.
-        rd: u8,                   // Destination register.
-        rs1: u8,                  // Source register.
-        imm: i32,                 // Immediate operand.
+        opcode: Imm12RdRs1, // Which opcodes are viable for these parameters.
+        rd: u8,             // Destination register.
+        rs1: u8,            // Source register.
+        imm: i32,           // Immediate operand.
     },
     RdRs1Shamtw {
-        opcode: ExecFnRdRs1Shamtw, // Which opcodes are viable for these parameters.
-        rd: u8,                    // Destination register.
-        rs1: u8,                   // Source register.
-        imm: i32,                  // Immediate operand.
+        opcode: RdRs1Shamtw, // Which opcodes are viable for these parameters.
+        rd: u8,              // Destination register.
+        rs1: u8,             // Source register.
+        imm: i32,            // Immediate operand.
     },
     RdRs1Rs2 {
-        opcode: ExecFnRdRs1Rs2, // Which opcodes are viable for these parameters.
-        rd: u8,                 // Destination register.
-        rs1: u8,                // First source register.
-        rs2: u8,                // Second source register.
+        opcode: RdRs1Rs2, // Which opcodes are viable for these parameters.
+        rd: u8,           // Destination register.
+        rs1: u8,          // First source register.
+        rs2: u8,          // Second source register.
     },
     Rs1Rs2Imm12 {
-        opcode: ExecFnImm12Rs1Rs2, // Which opcodes are viable for these parameters.
-        rs1: u8,                   // First source register.
-        rs2: u8,                   // Second source register.
-        imm: i32,                  // Immediate operand.
+        opcode: Imm12Rs1Rs2, // Which opcodes are viable for these parameters.
+        rs1: u8,             // First source register.
+        rs2: u8,             // Second source register.
+        imm: i32,            // Immediate operand.
     },
     Rs1Rs2BImm12 {
-        opcode: ExecFnBimm12Rs1Rs2, // Which opcodes are viable for these parameters.
-        rs1: u8,                    // First source register.
-        rs2: u8,                    // Second source register.
-        imm: i32,                   // Immediate operand.
+        opcode: Bimm12Rs1Rs2, // Which opcodes are viable for these parameters.
+        rs1: u8,              // First source register.
+        rs2: u8,              // Second source register.
+        imm: i32,             // Immediate operand.
     },
     RdRs1Rs2Rs3Rm {
-        opcode: ExecFnRdRs1Rs2Rs3Rm, // Which opcodes are viable for these parameters.
-        rd: u8,                      // Destination register.
-        rs1: u8,                     // First source register.
-        rs2: u8,                     // Second source register.
-        rs3: u8,                     // Third source register.
+        opcode: RdRs1Rs2Rs3Rm, // Which opcodes are viable for these parameters.
+        rd: u8,                // Destination register.
+        rs1: u8,               // First source register.
+        rs2: u8,               // Second source register.
+        rs3: u8,               // Third source register.
         rm: u8,
     },
     RdRs1Rm {
-        opcode: ExecFnRdRs1Rm, // Which opcodes are viable for these parameters.
-        rd: u8,                // Destination register.
-        rs1: u8,               // Source register.
-        rm: u8,                // Rounding mode.
+        opcode: RdRs1Rm, // Which opcodes are viable for these parameters.
+        rd: u8,          // Destination register.
+        rs1: u8,         // Source register.
+        rm: u8,          // Rounding mode.
     },
     RdRs1Rs2Rm {
-        opcode: ExecFnRdRs1Rs2Rm, // Which opcodes are viable for these parameters.
-        rd: u8,                   // Destination register.
-        rs1: u8,                  // First source register.
-        rs2: u8,                  // Second source register.
-        rm: u8,                   // Rounding mode.
+        opcode: RdRs1Rs2Rm, // Which opcodes are viable for these parameters.
+        rd: u8,             // Destination register.
+        rs1: u8,            // First source register.
+        rs2: u8,            // Second source register.
+        rm: u8,             // Rounding mode.
     },
     Ins {
-        opcode: ExecFnTrap, // Which opcodes are viable for these parameters.
+        opcode: Trap, // Which opcodes are viable for these parameters.
         ins: u32,
     },
 }
@@ -98,15 +97,15 @@ struct Generator;
 impl Decoder for Generator {
     type Item = DecodedInstruction;
 
-    fn trap(&mut self, opcode: ExecFnTrap, ins: u32) -> DecodedInstruction {
+    fn trap(&mut self, opcode: Trap, ins: u32) -> DecodedInstruction {
         DecodedInstruction::Ins { opcode, ins }
     }
 
-    fn no_args(&mut self, opcode: ExecFnNoArgs, _ins: u32) -> DecodedInstruction {
+    fn no_args(&mut self, opcode: NoArgs, _ins: u32) -> DecodedInstruction {
         DecodedInstruction::NoArgs { opcode }
     }
 
-    fn jimm20_rd(&mut self, opcode: ExecFnJimm20Rd, ins: u32) -> DecodedInstruction {
+    fn jimm20_rd(&mut self, opcode: Jimm20Rd, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdJImm20 {
             opcode: opcode,
             rd: extract_rd(ins),
@@ -114,11 +113,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn bimm12hi_bimm12lo_rs1_rs2(
-        &mut self,
-        opcode: ExecFnBimm12Rs1Rs2,
-        ins: u32,
-    ) -> DecodedInstruction {
+    fn bimm12hi_bimm12lo_rs1_rs2(&mut self, opcode: Bimm12Rs1Rs2, ins: u32) -> DecodedInstruction {
         DecodedInstruction::Rs1Rs2BImm12 {
             opcode,
             rs1: extract_rs1(ins),
@@ -127,7 +122,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn rd_rm_rs1(&mut self, opcode: ExecFnRdRs1Rm, ins: u32) -> DecodedInstruction {
+    fn rd_rm_rs1(&mut self, opcode: RdRs1Rm, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdRs1Rm {
             opcode,
             rd: extract_rd(ins),
@@ -136,7 +131,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn rd_rm_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2Rm, ins: u32) -> DecodedInstruction {
+    fn rd_rm_rs1_rs2(&mut self, opcode: RdRs1Rs2Rm, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdRs1Rs2Rm {
             opcode,
             rd: extract_rd(ins),
@@ -146,7 +141,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn rd_rs1(&mut self, opcode: ExecFnRdRs1, ins: u32) -> DecodedInstruction {
+    fn rd_rs1(&mut self, opcode: RdRs1, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdRs1 {
             opcode,
             rd: extract_rd(ins),
@@ -154,11 +149,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn rd_rm_rs1_rs2_rs3(
-        &mut self,
-        opcode: ExecFnRdRs1Rs2Rs3Rm,
-        ins: u32,
-    ) -> DecodedInstruction {
+    fn rd_rm_rs1_rs2_rs3(&mut self, opcode: RdRs1Rs2Rs3Rm, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdRs1Rs2Rs3Rm {
             opcode,
             rd: extract_rd(ins),
@@ -169,7 +160,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn rd_rs1_rs2(&mut self, opcode: ExecFnRdRs1Rs2, ins: u32) -> DecodedInstruction {
+    fn rd_rs1_rs2(&mut self, opcode: RdRs1Rs2, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdRs1Rs2 {
             opcode,
             rd: extract_rd(ins),
@@ -178,11 +169,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn imm12hi_imm12lo_rs1_rs2(
-        &mut self,
-        opcode: ExecFnImm12Rs1Rs2,
-        ins: u32,
-    ) -> DecodedInstruction {
+    fn imm12hi_imm12lo_rs1_rs2(&mut self, opcode: Imm12Rs1Rs2, ins: u32) -> DecodedInstruction {
         DecodedInstruction::Rs1Rs2Imm12 {
             opcode,
             rs1: extract_rs1(ins),
@@ -191,7 +178,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn imm20_rd(&mut self, opcode: ExecFnImm20Rd, ins: u32) -> DecodedInstruction {
+    fn imm20_rd(&mut self, opcode: Imm20Rd, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdImm20 {
             opcode,
             rd: extract_rd(ins),
@@ -199,7 +186,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn rd_rs1_shamtw(&mut self, opcode: ExecFnRdRs1Shamtw, ins: u32) -> DecodedInstruction {
+    fn rd_rs1_shamtw(&mut self, opcode: RdRs1Shamtw, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdRs1Shamtw {
             opcode,
             rd: extract_rd(ins),
@@ -208,11 +195,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn fm_pred_rd_rs1_succ(
-        &mut self,
-        opcode: ExecFnRdFmPredRdRs1Succ,
-        ins: u32,
-    ) -> DecodedInstruction {
+    fn fm_pred_rd_rs1_succ(&mut self, opcode: RdFmPredRdRs1Succ, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdFmPredRdRs1Succ {
             opcode,
             fm: extract_fm(ins),
@@ -221,7 +204,7 @@ impl Decoder for Generator {
         }
     }
 
-    fn imm12_rd_rs1(&mut self, opcode: ExecFnImm12RdRs1, ins: u32) -> DecodedInstruction {
+    fn imm12_rd_rs1(&mut self, opcode: Imm12RdRs1, ins: u32) -> DecodedInstruction {
         DecodedInstruction::RdRs1Imm12 {
             opcode,
             rd: extract_rd(ins),
