@@ -20,12 +20,12 @@ enum DecodedInstruction {
         rd: u8,                    // Destination register. Currently ignored.
         rs1: u8,                   // Source register. Currently ignored.
     },
-    RdImm20 {
+    Imm20Rd {
         opcode: Imm20Rd, // Which opcodes are viable for these parameters.
         rd: u8,          // Destination register.
         imm: i32,        // Immediate operand.
     },
-    RdJImm20 {
+    Jimm20Rd {
         opcode: Jimm20Rd, // Which opcodes are viable for these parameters.
         rd: u8,           // Destination register.
         imm: i32,         // Immediate operand.
@@ -35,7 +35,7 @@ enum DecodedInstruction {
         rd: u8,        // Destination register.
         rs1: u8,       // Source register.
     },
-    RdRs1Imm12 {
+    Imm12RdRs1 {
         opcode: Imm12RdRs1, // Which opcodes are viable for these parameters.
         rd: u8,             // Destination register.
         rs1: u8,            // Source register.
@@ -53,13 +53,13 @@ enum DecodedInstruction {
         rs1: u8,          // First source register.
         rs2: u8,          // Second source register.
     },
-    Rs1Rs2Imm12 {
+    Imm12Rs1Rs2 {
         opcode: Imm12Rs1Rs2, // Which opcodes are viable for these parameters.
         rs1: u8,             // First source register.
         rs2: u8,             // Second source register.
         imm: i32,            // Immediate operand.
     },
-    Rs1Rs2BImm12 {
+    Bimm12Rs1Rs2 {
         opcode: Bimm12Rs1Rs2, // Which opcodes are viable for these parameters.
         rs1: u8,              // First source register.
         rs2: u8,              // Second source register.
@@ -86,7 +86,7 @@ enum DecodedInstruction {
         rs2: u8,            // Second source register.
         rm: u8,             // Rounding mode.
     },
-    Ins {
+    Trap {
         opcode: Trap, // Which opcodes are viable for these parameters.
         ins: u32,
     },
@@ -98,7 +98,7 @@ impl Decoder for Generator {
     type Item = DecodedInstruction;
 
     fn trap(&mut self, opcode: Trap, ins: u32) -> DecodedInstruction {
-        DecodedInstruction::Ins { opcode, ins }
+        DecodedInstruction::Trap { opcode, ins }
     }
 
     fn no_args(&mut self, opcode: NoArgs, _ins: u32) -> DecodedInstruction {
@@ -106,7 +106,7 @@ impl Decoder for Generator {
     }
 
     fn jimm20_rd(&mut self, opcode: Jimm20Rd, ins: u32) -> DecodedInstruction {
-        DecodedInstruction::RdJImm20 {
+        DecodedInstruction::Jimm20Rd {
             opcode: opcode,
             rd: extract_rd(ins),
             imm: extract_jimmediate(ins),
@@ -114,7 +114,7 @@ impl Decoder for Generator {
     }
 
     fn bimm12hi_bimm12lo_rs1_rs2(&mut self, opcode: Bimm12Rs1Rs2, ins: u32) -> DecodedInstruction {
-        DecodedInstruction::Rs1Rs2BImm12 {
+        DecodedInstruction::Bimm12Rs1Rs2 {
             opcode,
             rs1: extract_rs1(ins),
             rs2: extract_rs2(ins),
@@ -170,7 +170,7 @@ impl Decoder for Generator {
     }
 
     fn imm12hi_imm12lo_rs1_rs2(&mut self, opcode: Imm12Rs1Rs2, ins: u32) -> DecodedInstruction {
-        DecodedInstruction::Rs1Rs2Imm12 {
+        DecodedInstruction::Imm12Rs1Rs2 {
             opcode,
             rs1: extract_rs1(ins),
             rs2: extract_rs2(ins),
@@ -179,7 +179,7 @@ impl Decoder for Generator {
     }
 
     fn imm20_rd(&mut self, opcode: Imm20Rd, ins: u32) -> DecodedInstruction {
-        DecodedInstruction::RdImm20 {
+        DecodedInstruction::Imm20Rd {
             opcode,
             rd: extract_rd(ins),
             imm: extract_uimmediate(ins),
@@ -205,7 +205,7 @@ impl Decoder for Generator {
     }
 
     fn imm12_rd_rs1(&mut self, opcode: Imm12RdRs1, ins: u32) -> DecodedInstruction {
-        DecodedInstruction::RdRs1Imm12 {
+        DecodedInstruction::Imm12RdRs1 {
             opcode,
             rd: extract_rd(ins),
             rs1: extract_rs1(ins),
