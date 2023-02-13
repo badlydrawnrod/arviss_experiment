@@ -247,7 +247,7 @@ impl Decoder for Disassembler {
                     "{}\t{}, {}({})",
                     opcode,
                     Disassembler::abi_name(extract_rs2(ins)),
-                    extract_bimmediate(ins),
+                    extract_simmediate(ins),
                     Disassembler::abi_name(extract_rs1(ins)),
                 )
             }
@@ -258,7 +258,7 @@ impl Decoder for Disassembler {
                     "{}\t{}, {}({})",
                     opcode,
                     Disassembler::fabi_name(extract_rs2(ins)),
-                    extract_bimmediate(ins),
+                    extract_simmediate(ins),
                     Disassembler::abi_name(extract_rs1(ins)),
                 )
             }
