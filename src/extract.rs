@@ -52,3 +52,7 @@ pub fn extract_jimmediate(ins: u32) -> i32 {
     let imm10_1 = ((ins & 0x7fe00000) >> 20) as i32; // inst[30:21] -> imm[10:1]
     imm20 | imm19_12 | imm11 | imm10_1
 }
+
+pub fn extract_shamtw(ins: u32) -> u8 {
+    ((ins >> 20) & 0x1f) as u8
+}
