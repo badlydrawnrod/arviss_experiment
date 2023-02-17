@@ -84,19 +84,19 @@ def generate_rust_code(d, level=0):
 
 def generate_rust_code_v2(d, level=0):
     lut = {
-        "bimm12hi_bimm12lo_rs1_rs2": "b_type({0}, extract_bimmediate(machine_code), extract_rs1(machine_code), extract_rs2(machine_code))",
-        "fm_pred_rd_rs1_succ": "fence({0}, extract_fm(machine_code), extract_rd(machine_code), extract_rs1(machine_code))",
-        "imm12_rd_rs1":  "i_type({0}, extract_iimmediate(machine_code), extract_rd(machine_code), extract_rs1(machine_code))",
-        "imm12hi_imm12lo_rs1_rs2": "s_type({0}, extract_simmediate(machine_code), extract_rs1(machine_code), extract_rs2(machine_code))",
-        "imm20_rd": "u_type({0}, extract_uimmediate(machine_code), extract_rd(machine_code))",
-        "jimm20_rd": "j_type({0}, extract_jimmediate(machine_code), extract_rd(machine_code))",
+        "bimm12hi_bimm12lo_rs1_rs2": "b_type({0}, extract::bimmediate(machine_code), extract::rs1(machine_code), extract::rs2(machine_code))",
+        "fm_pred_rd_rs1_succ": "fence({0}, extract::fm(machine_code), extract::rd(machine_code), extract::rs1(machine_code))",
+        "imm12_rd_rs1":  "i_type({0}, extract::iimmediate(machine_code), extract::rd(machine_code), extract::rs1(machine_code))",
+        "imm12hi_imm12lo_rs1_rs2": "s_type({0}, extract::simmediate(machine_code), extract::rs1(machine_code), extract::rs2(machine_code))",
+        "imm20_rd": "u_type({0}, extract::uimmediate(machine_code), extract::rd(machine_code))",
+        "jimm20_rd": "j_type({0}, extract::jimmediate(machine_code), extract::rd(machine_code))",
         "no_args": "no_args({0})",
-        "rd_rm_rs1": "rd_rm_rs1({0}, extract_rd(machine_code), extract_rm(machine_code), extract_rs1(machine_code))",
-        "rd_rm_rs1_rs2": "rd_rm_rs1_rs2({0}, extract_rd(machine_code), extract_rm(machine_code), extract_rs1(machine_code), extract_rs2(machine_code))",
-        "rd_rm_rs1_rs2_rs3": "rd_rm_rs1_rs2_rs3({0}, extract_rd(machine_code), extract_rm(machine_code), extract_rs1(machine_code), extract_rs2(machine_code), extract_rs3(machine_code))",
-        "rd_rs1": "rd_rs1({0}, extract_rd(machine_code), extract_rs1(machine_code))",
-        "rd_rs1_rs2": "rd_rs1_rs2({0}, extract_rd(machine_code), extract_rs1(machine_code), extract_rs2(machine_code))",
-        "rd_rs1_shamtw": "rd_rs1_shamtw({0}, extract_rd(machine_code), extract_rs1(machine_code), extract_shamtw(machine_code))",
+        "rd_rm_rs1": "rd_rm_rs1({0}, extract::rd(machine_code), extract::rm(machine_code), extract::rs1(machine_code))",
+        "rd_rm_rs1_rs2": "rd_rm_rs1_rs2({0}, extract::rd(machine_code), extract::rm(machine_code), extract::rs1(machine_code), extract::rs2(machine_code))",
+        "rd_rm_rs1_rs2_rs3": "rd_rm_rs1_rs2_rs3({0}, extract::rd(machine_code), extract::rm(machine_code), extract::rs1(machine_code), extract::rs2(machine_code), extract::rs3(machine_code))",
+        "rd_rs1": "rd_rs1({0}, extract::rd(machine_code), extract::rs1(machine_code))",
+        "rd_rs1_rs2": "rd_rs1_rs2({0}, extract::rd(machine_code), extract::rs1(machine_code), extract::rs2(machine_code))",
+        "rd_rs1_shamtw": "rd_rs1_shamtw({0}, extract::rd(machine_code), extract::rs1(machine_code), extract::shamtw(machine_code))",
     }
     spaces = "    "
     indent = spaces * (level + 1)

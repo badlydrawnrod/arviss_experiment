@@ -1,4 +1,4 @@
-use crate::extract::*;
+use crate::extract;
 use std::fmt;
 
 #[derive(Debug)]
@@ -427,41 +427,41 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                         0x0 => {
                             return decoder.i_type(
                                 Lb,
-                                extract_iimmediate(machine_code),
-                                extract_rd(machine_code),
-                                extract_rs1(machine_code),
+                                extract::iimmediate(machine_code),
+                                extract::rd(machine_code),
+                                extract::rs1(machine_code),
                             )
                         } // lb
                         0x1 => {
                             return decoder.i_type(
                                 Lh,
-                                extract_iimmediate(machine_code),
-                                extract_rd(machine_code),
-                                extract_rs1(machine_code),
+                                extract::iimmediate(machine_code),
+                                extract::rd(machine_code),
+                                extract::rs1(machine_code),
                             )
                         } // lh
                         0x2 => {
                             return decoder.i_type(
                                 Lw,
-                                extract_iimmediate(machine_code),
-                                extract_rd(machine_code),
-                                extract_rs1(machine_code),
+                                extract::iimmediate(machine_code),
+                                extract::rd(machine_code),
+                                extract::rs1(machine_code),
                             )
                         } // lw
                         0x4 => {
                             return decoder.i_type(
                                 Lbu,
-                                extract_iimmediate(machine_code),
-                                extract_rd(machine_code),
-                                extract_rs1(machine_code),
+                                extract::iimmediate(machine_code),
+                                extract::rd(machine_code),
+                                extract::rs1(machine_code),
                             )
                         } // lbu
                         0x5 => {
                             return decoder.i_type(
                                 Lhu,
-                                extract_iimmediate(machine_code),
-                                extract_rd(machine_code),
-                                extract_rs1(machine_code),
+                                extract::iimmediate(machine_code),
+                                extract::rd(machine_code),
+                                extract::rs1(machine_code),
                             )
                         } // lhu
                         _ => {}
@@ -472,9 +472,9 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                         0x2 => {
                             return decoder.i_type(
                                 Flw,
-                                extract_iimmediate(machine_code),
-                                extract_rd(machine_code),
-                                extract_rs1(machine_code),
+                                extract::iimmediate(machine_code),
+                                extract::rd(machine_code),
+                                extract::rs1(machine_code),
                             )
                         } // flw
                         _ => {}
@@ -485,17 +485,17 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                         0x0 => {
                             return decoder.fence(
                                 Fence,
-                                extract_fm(machine_code),
-                                extract_rd(machine_code),
-                                extract_rs1(machine_code),
+                                extract::fm(machine_code),
+                                extract::rd(machine_code),
+                                extract::rs1(machine_code),
                             )
                         } // fence
                         0x1 => {
                             return decoder.i_type(
                                 FenceI,
-                                extract_iimmediate(machine_code),
-                                extract_rd(machine_code),
-                                extract_rs1(machine_code),
+                                extract::iimmediate(machine_code),
+                                extract::rd(machine_code),
+                                extract::rs1(machine_code),
                             )
                         } // fence.i
                         _ => {}
@@ -506,9 +506,9 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                         0x0 => {
                             return decoder.i_type(
                                 Addi,
-                                extract_iimmediate(machine_code),
-                                extract_rd(machine_code),
-                                extract_rs1(machine_code),
+                                extract::iimmediate(machine_code),
+                                extract::rd(machine_code),
+                                extract::rs1(machine_code),
                             )
                         } // addi
                         0x1 => {
@@ -516,9 +516,9 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                 0x0 => {
                                     return decoder.rd_rs1_shamtw(
                                         Slli,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_shamtw(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::shamtw(machine_code),
                                     )
                                 } // slli
                                 _ => {}
@@ -527,25 +527,25 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                         0x2 => {
                             return decoder.i_type(
                                 Slti,
-                                extract_iimmediate(machine_code),
-                                extract_rd(machine_code),
-                                extract_rs1(machine_code),
+                                extract::iimmediate(machine_code),
+                                extract::rd(machine_code),
+                                extract::rs1(machine_code),
                             )
                         } // slti
                         0x3 => {
                             return decoder.i_type(
                                 Sltiu,
-                                extract_iimmediate(machine_code),
-                                extract_rd(machine_code),
-                                extract_rs1(machine_code),
+                                extract::iimmediate(machine_code),
+                                extract::rd(machine_code),
+                                extract::rs1(machine_code),
                             )
                         } // sltiu
                         0x4 => {
                             return decoder.i_type(
                                 Xori,
-                                extract_iimmediate(machine_code),
-                                extract_rd(machine_code),
-                                extract_rs1(machine_code),
+                                extract::iimmediate(machine_code),
+                                extract::rd(machine_code),
+                                extract::rs1(machine_code),
                             )
                         } // xori
                         0x5 => {
@@ -553,17 +553,17 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                 0x0 => {
                                     return decoder.rd_rs1_shamtw(
                                         Srli,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_shamtw(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::shamtw(machine_code),
                                     )
                                 } // srli
                                 0x20 => {
                                     return decoder.rd_rs1_shamtw(
                                         Srai,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_shamtw(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::shamtw(machine_code),
                                     )
                                 } // srai
                                 _ => {}
@@ -572,17 +572,17 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                         0x6 => {
                             return decoder.i_type(
                                 Ori,
-                                extract_iimmediate(machine_code),
-                                extract_rd(machine_code),
-                                extract_rs1(machine_code),
+                                extract::iimmediate(machine_code),
+                                extract::rd(machine_code),
+                                extract::rs1(machine_code),
                             )
                         } // ori
                         0x7 => {
                             return decoder.i_type(
                                 Andi,
-                                extract_iimmediate(machine_code),
-                                extract_rd(machine_code),
-                                extract_rs1(machine_code),
+                                extract::iimmediate(machine_code),
+                                extract::rd(machine_code),
+                                extract::rs1(machine_code),
                             )
                         } // andi
                         _ => {}
@@ -591,8 +591,8 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                 0x5 => {
                     return decoder.u_type(
                         Auipc,
-                        extract_uimmediate(machine_code),
-                        extract_rd(machine_code),
+                        extract::uimmediate(machine_code),
+                        extract::rd(machine_code),
                     )
                 } // auipc
                 0x8 => {
@@ -600,25 +600,25 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                         0x0 => {
                             return decoder.s_type(
                                 Sb,
-                                extract_simmediate(machine_code),
-                                extract_rs1(machine_code),
-                                extract_rs2(machine_code),
+                                extract::simmediate(machine_code),
+                                extract::rs1(machine_code),
+                                extract::rs2(machine_code),
                             )
                         } // sb
                         0x1 => {
                             return decoder.s_type(
                                 Sh,
-                                extract_simmediate(machine_code),
-                                extract_rs1(machine_code),
-                                extract_rs2(machine_code),
+                                extract::simmediate(machine_code),
+                                extract::rs1(machine_code),
+                                extract::rs2(machine_code),
                             )
                         } // sh
                         0x2 => {
                             return decoder.s_type(
                                 Sw,
-                                extract_simmediate(machine_code),
-                                extract_rs1(machine_code),
-                                extract_rs2(machine_code),
+                                extract::simmediate(machine_code),
+                                extract::rs1(machine_code),
+                                extract::rs2(machine_code),
                             )
                         } // sw
                         _ => {}
@@ -629,9 +629,9 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                         0x2 => {
                             return decoder.s_type(
                                 Fsw,
-                                extract_simmediate(machine_code),
-                                extract_rs1(machine_code),
-                                extract_rs2(machine_code),
+                                extract::simmediate(machine_code),
+                                extract::rs1(machine_code),
+                                extract::rs2(machine_code),
                             )
                         } // fsw
                         _ => {}
@@ -644,25 +644,25 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                 0x0 => {
                                     return decoder.rd_rs1_rs2(
                                         Add,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // add
                                 0x1 => {
                                     return decoder.rd_rs1_rs2(
                                         Mul,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // mul
                                 0x20 => {
                                     return decoder.rd_rs1_rs2(
                                         Sub,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // sub
                                 _ => {}
@@ -673,17 +673,17 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                 0x0 => {
                                     return decoder.rd_rs1_rs2(
                                         Sll,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // sll
                                 0x1 => {
                                     return decoder.rd_rs1_rs2(
                                         Mulh,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // mulh
                                 _ => {}
@@ -694,17 +694,17 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                 0x0 => {
                                     return decoder.rd_rs1_rs2(
                                         Slt,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // slt
                                 0x1 => {
                                     return decoder.rd_rs1_rs2(
                                         Mulhsu,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // mulhsu
                                 _ => {}
@@ -715,17 +715,17 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                 0x0 => {
                                     return decoder.rd_rs1_rs2(
                                         Sltu,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // sltu
                                 0x1 => {
                                     return decoder.rd_rs1_rs2(
                                         Mulhu,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // mulhu
                                 _ => {}
@@ -736,17 +736,17 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                 0x0 => {
                                     return decoder.rd_rs1_rs2(
                                         Xor,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // xor
                                 0x1 => {
                                     return decoder.rd_rs1_rs2(
                                         Div,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // div
                                 _ => {}
@@ -757,25 +757,25 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                 0x0 => {
                                     return decoder.rd_rs1_rs2(
                                         Srl,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // srl
                                 0x1 => {
                                     return decoder.rd_rs1_rs2(
                                         Divu,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // divu
                                 0x20 => {
                                     return decoder.rd_rs1_rs2(
                                         Sra,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // sra
                                 _ => {}
@@ -786,17 +786,17 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                 0x0 => {
                                     return decoder.rd_rs1_rs2(
                                         Or,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // or
                                 0x1 => {
                                     return decoder.rd_rs1_rs2(
                                         Rem,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // rem
                                 _ => {}
@@ -807,17 +807,17 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                 0x0 => {
                                     return decoder.rd_rs1_rs2(
                                         And,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // and
                                 0x1 => {
                                     return decoder.rd_rs1_rs2(
                                         Remu,
-                                        extract_rd(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // remu
                                 _ => {}
@@ -829,8 +829,8 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                 0xd => {
                     return decoder.u_type(
                         Lui,
-                        extract_uimmediate(machine_code),
-                        extract_rd(machine_code),
+                        extract::uimmediate(machine_code),
+                        extract::rd(machine_code),
                     )
                 } // lui
                 0x10 => {
@@ -838,11 +838,11 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                         0x0 => {
                             return decoder.rd_rm_rs1_rs2_rs3(
                                 FmaddS,
-                                extract_rd(machine_code),
-                                extract_rm(machine_code),
-                                extract_rs1(machine_code),
-                                extract_rs2(machine_code),
-                                extract_rs3(machine_code),
+                                extract::rd(machine_code),
+                                extract::rm(machine_code),
+                                extract::rs1(machine_code),
+                                extract::rs2(machine_code),
+                                extract::rs3(machine_code),
                             )
                         } // fmadd.s
                         _ => {}
@@ -853,11 +853,11 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                         0x0 => {
                             return decoder.rd_rm_rs1_rs2_rs3(
                                 FmsubS,
-                                extract_rd(machine_code),
-                                extract_rm(machine_code),
-                                extract_rs1(machine_code),
-                                extract_rs2(machine_code),
-                                extract_rs3(machine_code),
+                                extract::rd(machine_code),
+                                extract::rm(machine_code),
+                                extract::rs1(machine_code),
+                                extract::rs2(machine_code),
+                                extract::rs3(machine_code),
                             )
                         } // fmsub.s
                         _ => {}
@@ -868,11 +868,11 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                         0x0 => {
                             return decoder.rd_rm_rs1_rs2_rs3(
                                 FnmsubS,
-                                extract_rd(machine_code),
-                                extract_rm(machine_code),
-                                extract_rs1(machine_code),
-                                extract_rs2(machine_code),
-                                extract_rs3(machine_code),
+                                extract::rd(machine_code),
+                                extract::rm(machine_code),
+                                extract::rs1(machine_code),
+                                extract::rs2(machine_code),
+                                extract::rs3(machine_code),
                             )
                         } // fnmsub.s
                         _ => {}
@@ -883,11 +883,11 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                         0x0 => {
                             return decoder.rd_rm_rs1_rs2_rs3(
                                 FnmaddS,
-                                extract_rd(machine_code),
-                                extract_rm(machine_code),
-                                extract_rs1(machine_code),
-                                extract_rs2(machine_code),
-                                extract_rs3(machine_code),
+                                extract::rd(machine_code),
+                                extract::rm(machine_code),
+                                extract::rs1(machine_code),
+                                extract::rs2(machine_code),
+                                extract::rs3(machine_code),
                             )
                         } // fnmadd.s
                         _ => {}
@@ -902,25 +902,25 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                         0x4 => {
                                             return decoder.rd_rs1_rs2(
                                                 FsgnjS,
-                                                extract_rd(machine_code),
-                                                extract_rs1(machine_code),
-                                                extract_rs2(machine_code),
+                                                extract::rd(machine_code),
+                                                extract::rs1(machine_code),
+                                                extract::rs2(machine_code),
                                             )
                                         } // fsgnj.s
                                         0x5 => {
                                             return decoder.rd_rs1_rs2(
                                                 FminS,
-                                                extract_rd(machine_code),
-                                                extract_rs1(machine_code),
-                                                extract_rs2(machine_code),
+                                                extract::rd(machine_code),
+                                                extract::rs1(machine_code),
+                                                extract::rs2(machine_code),
                                             )
                                         } // fmin.s
                                         0x14 => {
                                             return decoder.rd_rs1_rs2(
                                                 FleS,
-                                                extract_rd(machine_code),
-                                                extract_rs1(machine_code),
-                                                extract_rs2(machine_code),
+                                                extract::rd(machine_code),
+                                                extract::rs1(machine_code),
+                                                extract::rs2(machine_code),
                                             )
                                         } // fle.s
                                         0x1c => {
@@ -928,8 +928,8 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                                 0x0 => {
                                                     return decoder.rd_rs1(
                                                         FmvXW,
-                                                        extract_rd(machine_code),
-                                                        extract_rs1(machine_code),
+                                                        extract::rd(machine_code),
+                                                        extract::rs1(machine_code),
                                                     )
                                                 } // fmv.x.w
                                                 _ => {}
@@ -940,8 +940,8 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                                 0x0 => {
                                                     return decoder.rd_rs1(
                                                         FmvWX,
-                                                        extract_rd(machine_code),
-                                                        extract_rs1(machine_code),
+                                                        extract::rd(machine_code),
+                                                        extract::rs1(machine_code),
                                                     )
                                                 } // fmv.w.x
                                                 _ => {}
@@ -955,25 +955,25 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                         0x4 => {
                                             return decoder.rd_rs1_rs2(
                                                 FsgnjnS,
-                                                extract_rd(machine_code),
-                                                extract_rs1(machine_code),
-                                                extract_rs2(machine_code),
+                                                extract::rd(machine_code),
+                                                extract::rs1(machine_code),
+                                                extract::rs2(machine_code),
                                             )
                                         } // fsgnjn.s
                                         0x5 => {
                                             return decoder.rd_rs1_rs2(
                                                 FmaxS,
-                                                extract_rd(machine_code),
-                                                extract_rs1(machine_code),
-                                                extract_rs2(machine_code),
+                                                extract::rd(machine_code),
+                                                extract::rs1(machine_code),
+                                                extract::rs2(machine_code),
                                             )
                                         } // fmax.s
                                         0x14 => {
                                             return decoder.rd_rs1_rs2(
                                                 FltS,
-                                                extract_rd(machine_code),
-                                                extract_rs1(machine_code),
-                                                extract_rs2(machine_code),
+                                                extract::rd(machine_code),
+                                                extract::rs1(machine_code),
+                                                extract::rs2(machine_code),
                                             )
                                         } // flt.s
                                         0x1c => {
@@ -981,8 +981,8 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                                 0x0 => {
                                                     return decoder.rd_rs1(
                                                         FclassS,
-                                                        extract_rd(machine_code),
-                                                        extract_rs1(machine_code),
+                                                        extract::rd(machine_code),
+                                                        extract::rs1(machine_code),
                                                     )
                                                 } // fclass.s
                                                 _ => {}
@@ -996,17 +996,17 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                         0x4 => {
                                             return decoder.rd_rs1_rs2(
                                                 FsgnjxS,
-                                                extract_rd(machine_code),
-                                                extract_rs1(machine_code),
-                                                extract_rs2(machine_code),
+                                                extract::rd(machine_code),
+                                                extract::rs1(machine_code),
+                                                extract::rs2(machine_code),
                                             )
                                         } // fsgnjx.s
                                         0x14 => {
                                             return decoder.rd_rs1_rs2(
                                                 FeqS,
-                                                extract_rd(machine_code),
-                                                extract_rs1(machine_code),
-                                                extract_rs2(machine_code),
+                                                extract::rd(machine_code),
+                                                extract::rs1(machine_code),
+                                                extract::rs2(machine_code),
                                             )
                                         } // feq.s
                                         _ => {}
@@ -1018,37 +1018,37 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                 0x0 => {
                                     return decoder.rd_rm_rs1_rs2(
                                         FaddS,
-                                        extract_rd(machine_code),
-                                        extract_rm(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rm(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // fadd.s
                                 0x1 => {
                                     return decoder.rd_rm_rs1_rs2(
                                         FsubS,
-                                        extract_rd(machine_code),
-                                        extract_rm(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rm(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // fsub.s
                                 0x2 => {
                                     return decoder.rd_rm_rs1_rs2(
                                         FmulS,
-                                        extract_rd(machine_code),
-                                        extract_rm(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rm(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // fmul.s
                                 0x3 => {
                                     return decoder.rd_rm_rs1_rs2(
                                         FdivS,
-                                        extract_rd(machine_code),
-                                        extract_rm(machine_code),
-                                        extract_rs1(machine_code),
-                                        extract_rs2(machine_code),
+                                        extract::rd(machine_code),
+                                        extract::rm(machine_code),
+                                        extract::rs1(machine_code),
+                                        extract::rs2(machine_code),
                                     )
                                 } // fdiv.s
                                 0xb => {
@@ -1056,9 +1056,9 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                         0x0 => {
                                             return decoder.rd_rm_rs1(
                                                 FsqrtS,
-                                                extract_rd(machine_code),
-                                                extract_rm(machine_code),
-                                                extract_rs1(machine_code),
+                                                extract::rd(machine_code),
+                                                extract::rm(machine_code),
+                                                extract::rs1(machine_code),
                                             )
                                         } // fsqrt.s
                                         _ => {}
@@ -1069,17 +1069,17 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                         0x0 => {
                                             return decoder.rd_rm_rs1(
                                                 FcvtWS,
-                                                extract_rd(machine_code),
-                                                extract_rm(machine_code),
-                                                extract_rs1(machine_code),
+                                                extract::rd(machine_code),
+                                                extract::rm(machine_code),
+                                                extract::rs1(machine_code),
                                             )
                                         } // fcvt.w.s
                                         0x1 => {
                                             return decoder.rd_rm_rs1(
                                                 FcvtWuS,
-                                                extract_rd(machine_code),
-                                                extract_rm(machine_code),
-                                                extract_rs1(machine_code),
+                                                extract::rd(machine_code),
+                                                extract::rm(machine_code),
+                                                extract::rs1(machine_code),
                                             )
                                         } // fcvt.wu.s
                                         _ => {}
@@ -1090,17 +1090,17 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                         0x0 => {
                                             return decoder.rd_rm_rs1(
                                                 FcvtSW,
-                                                extract_rd(machine_code),
-                                                extract_rm(machine_code),
-                                                extract_rs1(machine_code),
+                                                extract::rd(machine_code),
+                                                extract::rm(machine_code),
+                                                extract::rs1(machine_code),
                                             )
                                         } // fcvt.s.w
                                         0x1 => {
                                             return decoder.rd_rm_rs1(
                                                 FcvtSWu,
-                                                extract_rd(machine_code),
-                                                extract_rm(machine_code),
-                                                extract_rs1(machine_code),
+                                                extract::rd(machine_code),
+                                                extract::rm(machine_code),
+                                                extract::rs1(machine_code),
                                             )
                                         } // fcvt.s.wu
                                         _ => {}
@@ -1117,49 +1117,49 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                         0x0 => {
                             return decoder.b_type(
                                 Beq,
-                                extract_bimmediate(machine_code),
-                                extract_rs1(machine_code),
-                                extract_rs2(machine_code),
+                                extract::bimmediate(machine_code),
+                                extract::rs1(machine_code),
+                                extract::rs2(machine_code),
                             )
                         } // beq
                         0x1 => {
                             return decoder.b_type(
                                 Bne,
-                                extract_bimmediate(machine_code),
-                                extract_rs1(machine_code),
-                                extract_rs2(machine_code),
+                                extract::bimmediate(machine_code),
+                                extract::rs1(machine_code),
+                                extract::rs2(machine_code),
                             )
                         } // bne
                         0x4 => {
                             return decoder.b_type(
                                 Blt,
-                                extract_bimmediate(machine_code),
-                                extract_rs1(machine_code),
-                                extract_rs2(machine_code),
+                                extract::bimmediate(machine_code),
+                                extract::rs1(machine_code),
+                                extract::rs2(machine_code),
                             )
                         } // blt
                         0x5 => {
                             return decoder.b_type(
                                 Bge,
-                                extract_bimmediate(machine_code),
-                                extract_rs1(machine_code),
-                                extract_rs2(machine_code),
+                                extract::bimmediate(machine_code),
+                                extract::rs1(machine_code),
+                                extract::rs2(machine_code),
                             )
                         } // bge
                         0x6 => {
                             return decoder.b_type(
                                 Bltu,
-                                extract_bimmediate(machine_code),
-                                extract_rs1(machine_code),
-                                extract_rs2(machine_code),
+                                extract::bimmediate(machine_code),
+                                extract::rs1(machine_code),
+                                extract::rs2(machine_code),
                             )
                         } // bltu
                         0x7 => {
                             return decoder.b_type(
                                 Bgeu,
-                                extract_bimmediate(machine_code),
-                                extract_rs1(machine_code),
-                                extract_rs2(machine_code),
+                                extract::bimmediate(machine_code),
+                                extract::rs1(machine_code),
+                                extract::rs2(machine_code),
                             )
                         } // bgeu
                         _ => {}
@@ -1170,9 +1170,9 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                         0x0 => {
                             return decoder.i_type(
                                 Jalr,
-                                extract_iimmediate(machine_code),
-                                extract_rd(machine_code),
-                                extract_rs1(machine_code),
+                                extract::iimmediate(machine_code),
+                                extract::rd(machine_code),
+                                extract::rs1(machine_code),
                             )
                         } // jalr
                         _ => {}
@@ -1181,8 +1181,8 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                 0x1b => {
                     return decoder.j_type(
                         Jal,
-                        extract_jimmediate(machine_code),
-                        extract_rd(machine_code),
+                        extract::jimmediate(machine_code),
+                        extract::rd(machine_code),
                     )
                 } // jal
                 0x1c => {
@@ -1245,5 +1245,5 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
         _ => {}
     }
     // Illegal instruction.
-    decoder.trap(IllegalInstruction, machine_code)
+    return decoder.trap(IllegalInstruction, machine_code);
 }
