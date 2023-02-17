@@ -85,7 +85,7 @@ def generate_rust_code(d, level=0):
 def generate_rust_code_v2(d, level=0):
     lut = {
         "bimm12hi_bimm12lo_rs1_rs2": "b_type({0}, extract_bimmediate(machine_code), extract_rs1(machine_code), extract_rs2(machine_code))",
-        "fm_pred_rd_rs1_succ": "fence({0})",
+        "fm_pred_rd_rs1_succ": "fence({0}, extract_fm(machine_code), extract_rd(machine_code), extract_rs1(machine_code))",
         "imm12_rd_rs1":  "i_type({0}, extract_iimmediate(machine_code), extract_rd(machine_code), extract_rs1(machine_code))",
         "imm12hi_imm12lo_rs1_rs2": "s_type({0}, extract_simmediate(machine_code), extract_rs1(machine_code), extract_rs2(machine_code))",
         "imm20_rd": "u_type({0}, extract_uimmediate(machine_code), extract_rd(machine_code))",

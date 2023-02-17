@@ -1,4 +1,4 @@
-use arviss_experiment::{decode2, Disassembler};
+use arviss_experiment::{decode, Disassembler};
 
 pub fn main() {
     let mut disassembler = Disassembler {};
@@ -28,7 +28,7 @@ pub fn main() {
         0x00_c0_80_e7, // jalr  12(ra)
         0x00_10_00_73, // ebreak
     ] {
-        let result = decode2(&mut disassembler, ins);
+        let result = decode(&mut disassembler, ins);
         println!("{:08x} {}", ins, result);
     }
 }
