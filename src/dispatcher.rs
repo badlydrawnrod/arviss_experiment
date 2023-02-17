@@ -1,9 +1,9 @@
 // TODO: this is for dispatching instructions and executing them, but it needs to be developed further.
 
-trait Dispatcher {
-    fn exec_add(&mut self, rd: u8, rs1: u8, imm: i32);
-    fn exec_ecall(&mut self);
-}
+// trait Dispatcher {
+//     fn exec_add(&mut self, rd: u8, rs1: u8, imm: i32);
+//     fn exec_ecall(&mut self);
+// }
 
 // impl Dispatcher for Disassembler {
 //     fn exec_add(&mut self, rd: u8, rs1: u8, imm: i32) {

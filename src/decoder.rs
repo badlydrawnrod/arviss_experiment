@@ -345,43 +345,6 @@ use RdRs1Rs2Rs3Rm::*;
 use RdRs1Shamtw::*;
 use Trap::*;
 
-pub trait OldDecoder {
-    type Item;
-
-    fn trap(&mut self, instruction: Trap, machine_code: u32) -> Self::Item;
-    fn no_args(&mut self, instruction: NoArgs, machine_code: u32) -> Self::Item;
-    fn jimm20_rd(&mut self, instruction: Jimm20Rd, machine_code: u32) -> Self::Item;
-    fn bimm12hi_bimm12lo_rs1_rs2(
-        &mut self,
-        instruction: Bimm12Rs1Rs2,
-        machine_code: u32,
-    ) -> Self::Item;
-    fn rd_rm_rs1(&mut self, instruction: RdRs1Rm, machine_code: u32) -> Self::Item;
-    fn rd_rm_rs1_rs2(&mut self, instruction: RdRs1Rs2Rm, machine_code: u32) -> Self::Item;
-    fn rd_rs1(&mut self, instruction: RdRs1, machine_code: u32) -> Self::Item;
-    fn rd_rm_rs1_rs2_rs3(&mut self, instruction: RdRs1Rs2Rs3Rm, machine_code: u32) -> Self::Item;
-    fn rd_rs1_rs2(&mut self, instruction: RdRs1Rs2, machine_code: u32) -> Self::Item;
-    fn imm12hi_imm12lo_rs1_rs2(
-        &mut self,
-        instruction: Imm12Rs1Rs2,
-        machine_code: u32,
-    ) -> Self::Item;
-    fn imm20_rd(&mut self, instruction: Imm20Rd, machine_code: u32) -> Self::Item;
-    fn rd_rs1_shamtw(&mut self, instruction: RdRs1Shamtw, machine_code: u32) -> Self::Item;
-    fn fm_pred_rd_rs1_succ(
-        &mut self,
-        instruction: RdFmPredRdRs1Succ,
-        machine_code: u32,
-    ) -> Self::Item;
-    fn imm12_rd_rs1(&mut self, instruction: Imm12RdRs1, machine_code: u32) -> Self::Item;
-}
-
-fn bits(n: u32, hi: u32, lo: u32) -> u32 {
-    let run = (hi - lo) + 1;
-    let mask = ((1 << run) - 1) << lo;
-    (n & mask) >> lo
-}
-
 pub trait Decoder {
     type Item;
 
@@ -415,6 +378,12 @@ pub trait Decoder {
     fn rd_rs1_rs2(&mut self, instruction: RdRs1Rs2, rd: u8, rs1: u8, rs2: u8) -> Self::Item;
     fn rd_rs1_shamtw(&mut self, instruction: RdRs1Shamtw, rd: u8, rs1: u8, shamt: u8)
         -> Self::Item;
+}
+
+fn bits(n: u32, hi: u32, lo: u32) -> u32 {
+    let run = (hi - lo) + 1;
+    let mask = ((1 << run) - 1) << lo;
+    (n & mask) >> lo
 }
 
 pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code: u32) -> T {
