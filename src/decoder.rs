@@ -10,9 +10,6 @@ pub enum CacheLineIndex {
 pub enum NoArgs {
     Ecall,
     Ebreak,
-    Uret,
-    Sret,
-    Mret,
 }
 
 impl fmt::Display for NoArgs {
@@ -20,9 +17,6 @@ impl fmt::Display for NoArgs {
         let s = match self {
             Ecall => "ecall",
             Ebreak => "ebreak",
-            Uret => "uret",
-            Sret => "sret",
-            Mret => "mret",
         };
         write!(f, "{}", s)
     }
@@ -98,7 +92,6 @@ pub enum Imm12RdRs1 {
     Lbu,
     Lhu,
     Flw,
-    FenceI,
     Addi,
     Slti,
     Sltiu,
@@ -117,7 +110,6 @@ impl fmt::Display for Imm12RdRs1 {
             Lbu => "lbu",
             Lhu => "lhu",
             Flw => "flw",
-            FenceI => "fence.i",
             Addi => "addi",
             Slti => "slti",
             Sltiu => "sltiu",
@@ -459,14 +451,6 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                 extract::rs1(machine_code),
                             )
                         } // fence
-                        0x1 => {
-                            return decoder.i_type(
-                                FenceI,
-                                extract::iimmediate(machine_code),
-                                extract::rd(machine_code),
-                                extract::rs1(machine_code),
-                            )
-                        } // fence.i
                         _ => {}
                     }
                 }
@@ -1174,28 +1158,6 @@ pub fn decode<T>(decoder: &mut (impl Decoder + Decoder<Item = T>), machine_code:
                                         0x0 => {
                                             match bits(machine_code, 11, 7) {
                                                 0x0 => return decoder.no_args(Ebreak), // ebreak
-                                                _ => {}
-                                            }
-                                        }
-                                        _ => {}
-                                    }
-                                }
-                                0x102 => {
-                                    match bits(machine_code, 19, 15) {
-                                        0x0 => {
-                                            match bits(machine_code, 11, 7) {
-                                                0x0 => return decoder.no_args(Sret), // sret
-                                                _ => {}
-                                            }
-                                        }
-                                        _ => {}
-                                    }
-                                }
-                                0x302 => {
-                                    match bits(machine_code, 19, 15) {
-                                        0x0 => {
-                                            match bits(machine_code, 11, 7) {
-                                                0x0 => return decoder.no_args(Mret), // mret
                                                 _ => {}
                                             }
                                         }

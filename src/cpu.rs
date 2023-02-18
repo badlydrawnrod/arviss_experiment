@@ -220,9 +220,6 @@ impl<T: Mem> Decoder for Cpu<T> {
                     }
                 }
             }
-            Imm12RdRs1::FenceI => {
-                // nop
-            }
             Imm12RdRs1::Addi => {
                 // rd <- rs1 + imm_i, pc += 4
                 self.xreg[rd] = self.xreg[rs1] + iimm;
@@ -368,9 +365,6 @@ impl<T: Mem> Decoder for Cpu<T> {
         match instruction {
             NoArgs::Ecall => todo!(),
             NoArgs::Ebreak => todo!(),
-            NoArgs::Uret => todo!(),
-            NoArgs::Sret => todo!(),
-            NoArgs::Mret => todo!(),
         }
     }
 

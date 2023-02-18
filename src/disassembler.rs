@@ -119,10 +119,6 @@ impl Decoder for Disassembler {
                     Disassembler::abi_name(rs1),
                 )
             }
-            // "FENCE.I""
-            FenceI => {
-                format!("{}", instruction)
-            }
             // "ADDI %s, %s, %d", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm
             // "SLTI %s, %s, %d", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm
             // "SLTIU %s, %s, %d", abiNames[ins->rd_rs1_imm.rd], abiNames[ins->rd_rs1_imm.rs1], ins->rd_rs1_imm.imm
