@@ -316,6 +316,7 @@ mret      11..7=0 19..15=0 31..20=0x302 14..12=0 6..2=0x1C 1..0=3
 
 if __name__ == "__main__":
     decoded = decode_to_tree(opcodes_to_parse.split("\n"))
+
     # generate_c_code(decoded)
     # generate_rust_code(decoded)
     generate_rust_code_v2(decoded)
