@@ -28,6 +28,20 @@ pub struct Cpu<T: Mem> {
     mem: T,
 }
 
+impl<T: Mem> Cpu<T> {
+    pub fn handle_trap(&self) {
+        println!("TRAP");
+    }
+
+    pub fn handle_ecall(&self) {
+        println!("ECALL");
+    }
+
+    pub fn handle_ebreak(&self) {
+        println!("EBREAK");
+    }
+}
+
 struct BasicMem;
 
 impl Mem for BasicMem {
@@ -71,7 +85,7 @@ impl<T: Mem> Decoder for Cpu<T> {
     type Item = ();
 
     fn trap(&mut self, instruction: Trap, machine_code: u32) -> Self::Item {
-        todo!()
+        self.handle_trap();
     }
 
     fn b_type(&mut self, instruction: Bimm12Rs1Rs2, bimm: i32, rs1: u8, rs2: u8) -> Self::Item {
@@ -134,7 +148,7 @@ impl<T: Mem> Decoder for Cpu<T> {
         }
     }
 
-    fn fence(&mut self, instruction: RdFmPredRdRs1Succ, _fm: u8, _rd: u8, _rs1: u8) -> Self::Item {
+    fn fence(&mut self, _instruction: RdFmPredRdRs1Succ, _fm: u8, _rd: u8, _rs1: u8) -> Self::Item {
         // nop
     }
 
@@ -152,7 +166,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
-                        todo!() // TODO: take a trap for a load access fault.
+                        self.handle_trap(); // TODO: it's a load access fault.
                     }
                 }
             }
@@ -165,7 +179,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
-                        todo!() // TODO: take a trap for a load access fault.
+                        self.handle_trap(); // TODO: it's a load access fault.
                     }
                 }
             }
@@ -178,7 +192,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
-                        todo!() // TODO: take a trap for a load access fault.
+                        self.handle_trap(); // TODO: it's a load access fault.
                     }
                 }
             }
@@ -191,7 +205,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
-                        todo!() // TODO: take a trap for a load access fault.
+                        self.handle_trap(); // TODO: it's a load access fault.
                     }
                 }
             }
@@ -204,7 +218,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
-                        todo!() // TODO: take a trap for a load access fault.
+                        self.handle_trap(); // TODO: it's a load access fault.
                     }
                 }
             }
@@ -216,7 +230,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.pc += 4;
                     }
                     Err(_) => {
-                        todo!() // TODO: take a trap for a load access fault.
+                        self.handle_trap(); // TODO: it's a load access fault.
                     }
                 }
             }
@@ -285,7 +299,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.pc += 4;
                     }
                     Err(_) => {
-                        todo!() // TODO: take a trap for a store access fault.
+                        self.handle_trap(); // TODO: it's a store access fault.
                     }
                 }
             }
@@ -299,7 +313,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.pc += 4;
                     }
                     Err(_) => {
-                        todo!() // TODO: take a trap for a store access fault.
+                        self.handle_trap(); // TODO: it's a store access fault.
                     }
                 }
             }
@@ -310,7 +324,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.pc += 4;
                     }
                     Err(_) => {
-                        todo!() // TODO: take a trap for a store access fault.
+                        self.handle_trap(); // TODO: it's a store access fault.
                     }
                 }
             }
@@ -322,7 +336,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.pc += 4;
                     }
                     Err(_) => {
-                        todo!() // TODO: take a trap for a store access fault.
+                        self.handle_trap(); // TODO: it's a store access fault.
                     }
                 }
             }
@@ -363,8 +377,8 @@ impl<T: Mem> Decoder for Cpu<T> {
 
     fn no_args(&mut self, instruction: NoArgs) -> Self::Item {
         match instruction {
-            NoArgs::Ecall => todo!(),
-            NoArgs::Ebreak => todo!(),
+            NoArgs::Ecall => self.handle_ecall(),
+            NoArgs::Ebreak => self.handle_ebreak(),
         }
     }
 
