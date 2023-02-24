@@ -1,91 +1,47 @@
 use crate::{
-    Bimm12Rs1Rs2, Decoder, Imm12RdRs1, Imm12Rs1Rs2, Imm20Rd, Jimm20Rd, NoArgs, RdFmPredRdRs1Succ,
-    RdRs1, RdRs1Rm, RdRs1Rs2, RdRs1Rs2Rm, RdRs1Rs2Rs3Rm, RdRs1Shamtw, Trap,
+    BasicMem, BasicTrapHandler, Bimm12Rs1Rs2, Decoder, Imm12RdRs1, Imm12Rs1Rs2, Imm20Rd, Jimm20Rd,
+    Mem, NoArgs, RdFmPredRdRs1Succ, RdRs1, RdRs1Rm, RdRs1Rs2, RdRs1Rs2Rm, RdRs1Rs2Rs3Rm,
+    RdRs1Shamtw, Trap, TrapHandler,
 };
 
-type Address = u32;
-
-pub enum BusCode {
-    LoadAccessFault,
-    StoreAccessFault,
-}
-
-type MemoryResult<T> = Result<T, BusCode>;
-
-pub trait Mem {
-    fn read8(&self, address: Address) -> MemoryResult<u8>;
-    fn read16(&self, address: Address) -> MemoryResult<u16>;
-    fn read32(&self, address: Address) -> MemoryResult<u32>;
-    fn write8(&mut self, address: Address, byte: u8) -> MemoryResult<()>;
-    fn write16(&mut self, address: Address, half_word: u16) -> MemoryResult<()>;
-    fn write32(&mut self, address: Address, word: u32) -> MemoryResult<()>;
-}
-
-pub struct Cpu<T: Mem> {
+// We have a CPU that owns some memory and a trap handler.
+pub struct Cpu<T, U>
+where
+    T: Mem,
+    U: TrapHandler,
+{
     pc: u32,         // The program counter.
     xreg: [u32; 32], // Regular registerx, x0-x31.
     freg: [f32; 32], // Floating point registers, f0-f31.
-    mem: T,
+    mem: T,          // Memory.
+    trap_handler: U, // Trap handler.
 }
 
-impl<T: Mem> Cpu<T> {
-    pub fn handle_trap(&self) {
-        println!("TRAP");
-    }
-
-    pub fn handle_ecall(&self) {
-        println!("ECALL");
-    }
-
-    pub fn handle_ebreak(&self) {
-        println!("EBREAK");
-    }
-}
-
-struct BasicMem;
-
-impl Mem for BasicMem {
-    fn read8(&self, address: Address) -> MemoryResult<u8> {
-        Ok(0)
-    }
-
-    fn read16(&self, address: Address) -> MemoryResult<u16> {
-        Ok(0)
-    }
-
-    fn read32(&self, address: Address) -> MemoryResult<u32> {
-        Ok(0)
-    }
-
-    fn write8(&mut self, address: Address, byte: u8) -> MemoryResult<()> {
-        Ok(())
-    }
-
-    fn write16(&mut self, address: Address, half_word: u16) -> MemoryResult<()> {
-        Ok(())
-    }
-
-    fn write32(&mut self, address: Address, word: u32) -> MemoryResult<()> {
-        Ok(())
-    }
-}
-
-impl Cpu<BasicMem> {
+// A Cpu implementation that uses BasicMem and BasicTrapHandler.
+impl Cpu<BasicMem, BasicTrapHandler> {
     pub fn new() -> Self {
-        Cpu {
+        Self {
             pc: 0,
             xreg: Default::default(),
             freg: Default::default(),
-            mem: BasicMem,
+            mem: BasicMem::new(),
+            trap_handler: BasicTrapHandler::new(),
         }
     }
 }
 
-impl<T: Mem> Decoder for Cpu<T> {
+pub type BasicCpu = Cpu<BasicMem, BasicTrapHandler>;
+
+// A Decoder implementation for any Cpu.
+impl<T, U> Decoder for Cpu<T, U>
+where
+    T: Mem,
+    U: TrapHandler<Item = ()>,
+{
     type Item = ();
 
     fn trap(&mut self, instruction: Trap, machine_code: u32) -> Self::Item {
-        self.handle_trap();
+        self.trap_handler.handle_trap();
     }
 
     fn b_type(&mut self, instruction: Bimm12Rs1Rs2, bimm: i32, rs1: u8, rs2: u8) -> Self::Item {
@@ -95,11 +51,12 @@ impl<T: Mem> Decoder for Cpu<T> {
         match instruction {
             Bimm12Rs1Rs2::Beq => {
                 // pc <- pc + ((rs1 == rs2) ? imm_b : 4)
-                self.pc += if self.xreg[rs1] == self.xreg[rs2] {
+                let offset = if self.xreg[rs1] == self.xreg[rs2] {
                     bimm
                 } else {
                     4
                 };
+                self.pc = self.pc.wrapping_add(offset);
             }
             Bimm12Rs1Rs2::Bne => {
                 // pc <- pc + ((rs1 != rs2) ? imm_b : 4)
@@ -166,7 +123,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
-                        self.handle_trap(); // TODO: it's a load access fault.
+                        self.trap_handler.handle_trap(); // TODO: it's a load access fault.
                     }
                 }
             }
@@ -179,7 +136,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
-                        self.handle_trap(); // TODO: it's a load access fault.
+                        self.trap_handler.handle_trap(); // TODO: it's a load access fault.
                     }
                 }
             }
@@ -192,7 +149,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
-                        self.handle_trap(); // TODO: it's a load access fault.
+                        self.trap_handler.handle_trap(); // TODO: it's a load access fault.
                     }
                 }
             }
@@ -205,7 +162,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
-                        self.handle_trap(); // TODO: it's a load access fault.
+                        self.trap_handler.handle_trap(); // TODO: it's a load access fault.
                     }
                 }
             }
@@ -218,7 +175,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
-                        self.handle_trap(); // TODO: it's a load access fault.
+                        self.trap_handler.handle_trap(); // TODO: it's a load access fault.
                     }
                 }
             }
@@ -230,13 +187,13 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.pc += 4;
                     }
                     Err(_) => {
-                        self.handle_trap(); // TODO: it's a load access fault.
+                        self.trap_handler.handle_trap(); // TODO: it's a load access fault.
                     }
                 }
             }
             Imm12RdRs1::Addi => {
                 // rd <- rs1 + imm_i, pc += 4
-                self.xreg[rd] = self.xreg[rs1] + iimm;
+                self.xreg[rd] = self.xreg[rs1].wrapping_add(iimm);
                 self.pc += 4;
                 self.xreg[0] = 0;
             }
@@ -299,7 +256,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.pc += 4;
                     }
                     Err(_) => {
-                        self.handle_trap(); // TODO: it's a store access fault.
+                        self.trap_handler.handle_trap(); // TODO: it's a store access fault.
                     }
                 }
             }
@@ -313,7 +270,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.pc += 4;
                     }
                     Err(_) => {
-                        self.handle_trap(); // TODO: it's a store access fault.
+                        self.trap_handler.handle_trap(); // TODO: it's a store access fault.
                     }
                 }
             }
@@ -324,7 +281,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.pc += 4;
                     }
                     Err(_) => {
-                        self.handle_trap(); // TODO: it's a store access fault.
+                        self.trap_handler.handle_trap(); // TODO: it's a store access fault.
                     }
                 }
             }
@@ -336,7 +293,7 @@ impl<T: Mem> Decoder for Cpu<T> {
                         self.pc += 4;
                     }
                     Err(_) => {
-                        self.handle_trap(); // TODO: it's a store access fault.
+                        self.trap_handler.handle_trap(); // TODO: it's a store access fault.
                     }
                 }
             }
@@ -377,8 +334,8 @@ impl<T: Mem> Decoder for Cpu<T> {
 
     fn no_args(&mut self, instruction: NoArgs) -> Self::Item {
         match instruction {
-            NoArgs::Ecall => self.handle_ecall(),
-            NoArgs::Ebreak => self.handle_ebreak(),
+            NoArgs::Ecall => self.trap_handler.handle_ecall(),
+            NoArgs::Ebreak => self.trap_handler.handle_ebreak(),
         }
     }
 
