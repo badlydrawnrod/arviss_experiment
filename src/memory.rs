@@ -137,7 +137,7 @@ mod tests {
     fn test_the_tty_is_writable() {
         let mut mem = BasicMem::new();
         for c in b"Hello, world!\n" {
-            mem.write8(TTY_DATA, *c);
+            mem.write8(TTY_DATA, *c).expect("Failed to write to TTY")
         }
     }
 }

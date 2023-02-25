@@ -1,7 +1,7 @@
 use crate::{
     BasicMem, BasicTrapHandler, Bimm12Rs1Rs2, Decoder, Imm12RdRs1, Imm12Rs1Rs2, Imm20Rd, Jimm20Rd,
     Mem, NoArgs, RdFmPredRdRs1Succ, RdRs1, RdRs1Rm, RdRs1Rs2, RdRs1Rs2Rm, RdRs1Rs2Rs3Rm,
-    RdRs1Shamtw, Trap, TrapHandler,
+    RdRs1Shamtw, Trap, TrapCause, TrapHandler,
 };
 
 // We have a CPU that owns some memory and a trap handler.
@@ -11,23 +11,19 @@ where
     T: Mem,
     U: TrapHandler,
 {
-    pub pc: u32,         // The program counter.
-    pub xreg: [u32; 32], // Regular registerx, x0-x31.
-    pub freg: [f32; 32], // Floating point registers, f0-f31.
-    pub mem: T,          // Memory.
-    pub trap_handler: U, // Trap handler.
+    pub pc: u32,           // The program counter.
+    pub xreg: [u32; 32],   // Regular registerx, x0-x31.
+    pub freg: [f32; 32],   // Floating point registers, f0-f31.
+    pub mcause: TrapCause, // The machine cause register, written to when a trap is taken into M-mode.
+    pub mtval: u32,        // The machine trap value register. Contains trap-specific informatin.
+    pub mem: T,            // Memory.
+    pub trap_handler: U,   // Trap handler.
 }
 
 // A Cpu implementation that uses BasicMem and BasicTrapHandler.
 impl Cpu<BasicMem, BasicTrapHandler> {
     pub fn new() -> Self {
-        Self {
-            pc: 0,
-            xreg: Default::default(),
-            freg: Default::default(),
-            mem: BasicMem::new(),
-            trap_handler: BasicTrapHandler::new(),
-        }
+        Self::with_mem(BasicMem::new())
     }
 
     pub fn with_mem(mem: BasicMem) -> Self {
@@ -35,6 +31,8 @@ impl Cpu<BasicMem, BasicTrapHandler> {
             pc: 0,
             xreg: Default::default(),
             freg: Default::default(),
+            mcause: TrapCause::Breakpoint,
+            mtval: 0,
             mem: mem,
             trap_handler: BasicTrapHandler::new(),
         }
@@ -52,7 +50,7 @@ where
     type Item = ();
 
     fn trap(&mut self, instruction: Trap, machine_code: u32) -> Self::Item {
-        self.trap_handler.handle_trap();
+        self.trap_handler.handle_trap(TrapCause::IllegalInstruction);
     }
 
     fn b_type(&mut self, instruction: Bimm12Rs1Rs2, bimm: i32, rs1: u8, rs2: u8) -> Self::Item {
@@ -139,7 +137,7 @@ where
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
-                        self.trap_handler.handle_trap(); // TODO: it's a load access fault.
+                        self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
                     }
                 }
             }
@@ -152,7 +150,7 @@ where
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
-                        self.trap_handler.handle_trap(); // TODO: it's a load access fault.
+                        self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
                     }
                 }
             }
@@ -165,7 +163,7 @@ where
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
-                        self.trap_handler.handle_trap(); // TODO: it's a load access fault.
+                        self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
                     }
                 }
             }
@@ -178,7 +176,7 @@ where
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
-                        self.trap_handler.handle_trap(); // TODO: it's a load access fault.
+                        self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
                     }
                 }
             }
@@ -191,7 +189,7 @@ where
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
-                        self.trap_handler.handle_trap(); // TODO: it's a load access fault.
+                        self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
                     }
                 }
             }
@@ -203,7 +201,7 @@ where
                         self.pc += 4;
                     }
                     Err(_) => {
-                        self.trap_handler.handle_trap(); // TODO: it's a load access fault.
+                        self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
                     }
                 }
             }
@@ -272,7 +270,7 @@ where
                         self.pc += 4;
                     }
                     Err(_) => {
-                        self.trap_handler.handle_trap(); // TODO: it's a store access fault.
+                        self.trap_handler.handle_trap(TrapCause::StoreAccessFault);
                     }
                 }
             }
@@ -286,7 +284,7 @@ where
                         self.pc += 4;
                     }
                     Err(_) => {
-                        self.trap_handler.handle_trap(); // TODO: it's a store access fault.
+                        self.trap_handler.handle_trap(TrapCause::StoreAccessFault);
                     }
                 }
             }
@@ -297,7 +295,7 @@ where
                         self.pc += 4;
                     }
                     Err(_) => {
-                        self.trap_handler.handle_trap(); // TODO: it's a store access fault.
+                        self.trap_handler.handle_trap(TrapCause::StoreAccessFault);
                     }
                 }
             }
@@ -309,7 +307,7 @@ where
                         self.pc += 4;
                     }
                     Err(_) => {
-                        self.trap_handler.handle_trap(); // TODO: it's a store access fault.
+                        self.trap_handler.handle_trap(TrapCause::StoreAccessFault);
                     }
                 }
             }
