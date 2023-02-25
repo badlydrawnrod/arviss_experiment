@@ -71,47 +71,52 @@ where
             }
             Bimm12Rs1Rs2::Bne => {
                 // pc <- pc + ((rs1 != rs2) ? imm_b : 4)
-                self.pc += if self.xreg[rs1] != self.xreg[rs2] {
+                let offset = if self.xreg[rs1] != self.xreg[rs2] {
                     bimm
                 } else {
                     4
                 };
+                self.pc = self.pc.wrapping_add(offset);
             }
             Bimm12Rs1Rs2::Blt => {
                 // Signed.
                 // pc <- pc + ((rs1 < rs2) ? imm_b : 4)
-                self.pc += if (self.xreg[rs1] as i32) < (self.xreg[rs2] as i32) {
+                let offset = if (self.xreg[rs1] as i32) < (self.xreg[rs2] as i32) {
                     bimm
                 } else {
                     4
                 };
+                self.pc = self.pc.wrapping_add(offset);
             }
             Bimm12Rs1Rs2::Bge => {
                 // Signed.
                 // pc <- pc + ((rs1 >= rs2) ? imm_b : 4)
-                self.pc += if (self.xreg[rs1] as i32) >= (self.xreg[rs2] as i32) {
+                let offset = if (self.xreg[rs1] as i32) >= (self.xreg[rs2] as i32) {
                     bimm
                 } else {
                     4
                 };
+                self.pc = self.pc.wrapping_add(offset);
             }
             Bimm12Rs1Rs2::Bltu => {
                 // Unsigned.
                 // pc <- pc + ((rs1 < rs2) ? imm_b : 4)
-                self.pc += if self.xreg[rs1] < self.xreg[rs2] {
+                let offset = if self.xreg[rs1] < self.xreg[rs2] {
                     bimm
                 } else {
                     4
                 };
+                self.pc = self.pc.wrapping_add(offset);
             }
             Bimm12Rs1Rs2::Bgeu => {
                 // Unsigned.
                 // pc <- pc + ((rs1 >= rs2) ? imm_b : 4)
-                self.pc += if self.xreg[rs1] >= self.xreg[rs2] {
+                let offset = if self.xreg[rs1] >= self.xreg[rs2] {
                     bimm
                 } else {
                     4
                 };
+                self.pc = self.pc.wrapping_add(offset);
             }
         }
     }

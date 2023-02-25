@@ -1,7 +1,6 @@
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
-use std::io::BufReader;
 
 use arviss_experiment::{decode, BasicCpu, BasicMem, Disassembler, Loader, Mem};
 
@@ -13,7 +12,7 @@ pub fn main() -> io::Result<()> {
     let mut buffer = Vec::new();
     f.read_to_end(&mut buffer)?;
 
-    // Write the image into memory.
+    // Copy the image from the buffer into simulator memory.
     let mut mem = BasicMem::new();
     let ins = buffer.as_slice();
     mem.write_bytes(0, ins)
@@ -31,8 +30,9 @@ pub fn main() -> io::Result<()> {
         let ins = cpu.mem.read32(pc).unwrap();
 
         // Disassemble.
-        let result = decode(&mut disassembler, ins);
-        println!("{:08x} {:08x} {}", pc, ins, result);
+        // TODO: toggle via command line
+        // let result = decode(&mut disassembler, ins);
+        // println!("{:08x} {:08x} {}", pc, ins, result);
         if ins == EBREAK {
             break;
         }

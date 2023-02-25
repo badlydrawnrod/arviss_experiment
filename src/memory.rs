@@ -62,6 +62,8 @@ impl Mem for BasicMem {
     fn read8(&self, address: Address) -> MemoryResult<u8> {
         if address >= MEMBASE && address < MEMBASE + MEMSIZE {
             Ok(self.mem[(address - MEMBASE) as usize])
+        } else if address == TTY_STATUS {
+            Ok(1)
         } else {
             Err(BusCode::LoadAccessFault)
         }
