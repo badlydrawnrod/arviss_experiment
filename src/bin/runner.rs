@@ -1,37 +1,53 @@
-use arviss_experiment::{decode, BasicCpu, Disassembler};
+use arviss_experiment::{decode, BasicCpu, BasicMem, Disassembler, Loader, Mem};
 
 pub fn main() {
-    let mut disassembler = Disassembler {};
-    let mut cpu = BasicCpu::new();
-
-    // TODO: poke this into memory and run it from there.
-    for ins in [
+    let ins: &[u8] = &[
         // _start:
-        0x00_00_51_97, // auipc gp, 5
-        0x80_01_81_93, // addi  gp, gp, -2048
+        0x97, 0x51, 0x00, 0x00, // auipc gp, 5
+        0x93, 0x81, 0x01, 0x80, // addi  gp, gp, -2048
         // .Lpcrel_hi1:
-        0x00_00_81_17, // auipc sp, 8
-        0xff_81_01_13, // addi  sp, sp, -8
-        0x00_01_04_33, // add   s0, sp, zero
+        0x17, 0x81, 0x00, 0x00, // auipc sp, 8
+        0x13, 0x01, 0x81, 0xff, // addi  sp, sp, -8
+        0x33, 0x04, 0x01, 0x00, // add   s0, sp, zero
         // .Lpcrel_hi2:
-        0x00_00_45_17, // auipc a0, 4
-        0xfe_c5_05_13, // addi  a0, a0, -20
+        0x17, 0x45, 0x00, 0x00, // auipc a0, 4
+        0x13, 0x05, 0xc5, 0xfe, // addi  a0, a0, -20
         // .Lpcrel_hi3:
-        0x00_00_45_97, // auipc a1, 4
-        0xfe_45_85_93, // addi  a1, a1, -28
-        0x00_00_06_13, // mv    a2, zero
+        0x97, 0x45, 0x00, 0x00, // auipc a1, 4
+        0x93, 0x85, 0x45, 0xfe, // addi  a1, a1, -28
+        0x13, 0x06, 0x00, 0x00, // mv    a2, zero
         // clear_bss:
-        0x00_b5_78_63, // bgeu  a0, a1, 16
-        0x00_c5_00_23, // sb    a2, 0(a0)
-        0x00_15_05_13, // addi  a0, a0, 1
-        0xfe_00_0a_e3, // beqz  zero, -12
+        0x63, 0x78, 0xb5, 0x00, // bgeu  a0, a1, 16
+        0x23, 0x00, 0xc5, 0x00, // sb    a2, 0(a0)
+        0x13, 0x05, 0x15, 0x00, // addi  a0, a0, 1
+        0xe3, 0x0a, 0x00, 0xfe, // beqz  zero, -12
         // finish_bss:
-        0x00_00_00_97, // auipc ra, 0
-        0x00_c0_80_e7, // jalr  12(ra)
-        0x00_10_00_73, // ebreak
-    ] {
+        0x97, 0x00, 0x00, 0x00, // auipc ra, 0
+        0x73, 0x00, 0x10, 0x00, // ebreak
+    ];
+
+    let mut mem = BasicMem::new();
+    mem.write_bytes(0, ins)
+        .expect("Failed to initialize memory.");
+
+    let mut disassembler = Disassembler {};
+    let mut cpu = BasicCpu::with_mem(mem);
+
+    const EBREAK: u32 = 0x00_10_00_73;
+    println!("pc       (pc)     Code");
+    loop {
+        // Fetch.
+        let pc = cpu.pc;
+        let ins = cpu.mem.read32(pc).unwrap();
+        
+        // Disassemble.
         let result = decode(&mut disassembler, ins);
-        println!("{:08x} {}", ins, result);
-        let result = decode(&mut cpu, ins);
+        println!("{:08x} {:08x} {}", pc, ins, result);
+        if ins == EBREAK {
+            break;
+        }
+        
+        // Decode and execute.
+        decode(&mut cpu, ins);
     }
 }

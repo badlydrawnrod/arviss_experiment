@@ -5,16 +5,17 @@ use crate::{
 };
 
 // We have a CPU that owns some memory and a trap handler.
+// TODO: should the fields be public? I've done so for convenience.
 pub struct Cpu<T, U>
 where
     T: Mem,
     U: TrapHandler,
 {
-    pc: u32,         // The program counter.
-    xreg: [u32; 32], // Regular registerx, x0-x31.
-    freg: [f32; 32], // Floating point registers, f0-f31.
-    mem: T,          // Memory.
-    trap_handler: U, // Trap handler.
+    pub pc: u32,         // The program counter.
+    pub xreg: [u32; 32], // Regular registerx, x0-x31.
+    pub freg: [f32; 32], // Floating point registers, f0-f31.
+    pub mem: T,          // Memory.
+    pub trap_handler: U, // Trap handler.
 }
 
 // A Cpu implementation that uses BasicMem and BasicTrapHandler.
@@ -25,6 +26,16 @@ impl Cpu<BasicMem, BasicTrapHandler> {
             xreg: Default::default(),
             freg: Default::default(),
             mem: BasicMem::new(),
+            trap_handler: BasicTrapHandler::new(),
+        }
+    }
+
+    pub fn with_mem(mem: BasicMem) -> Self {
+        Self {
+            pc: 0,
+            xreg: Default::default(),
+            freg: Default::default(),
+            mem: mem,
             trap_handler: BasicTrapHandler::new(),
         }
     }

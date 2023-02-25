@@ -1,5 +1,6 @@
-type Address = u32;
+pub type Address = u32;
 
+#[derive(Debug)]
 pub enum BusCode {
     LoadAccessFault,
     StoreAccessFault,
@@ -35,6 +36,25 @@ impl BasicMem {
         BasicMem {
             mem: [0; MEMSIZE as usize],
         }
+    }
+}
+
+pub trait Loader {
+    fn write_bytes(&mut self, start: Address, bytes: &[u8]) -> MemoryResult<()>;
+}
+
+impl Loader for BasicMem {
+    fn write_bytes(&mut self, start: Address, bytes: &[u8]) -> MemoryResult<()> {
+        let start = start as usize;
+        let end = start + bytes.len();
+        if start >= MEMBASE as usize && end <= (MEMBASE + MEMSIZE) as usize {
+            let start = start - MEMBASE as usize;
+            let end = end - MEMBASE as usize;
+            let dst = &mut self.mem[start..end];
+            dst.copy_from_slice(bytes);
+            return Ok(());
+        }
+        Err(BusCode::StoreAccessFault)
     }
 }
 
