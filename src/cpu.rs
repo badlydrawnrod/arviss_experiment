@@ -131,9 +131,10 @@ where
             Imm12RdRs1::Lb => {
                 // rd <- sx(m8(rs1 + imm_i)), pc += 4
                 match self.mem.read8(self.xreg[rs1] + iimm) {
+                    // TODO: wrapping
                     Ok(byte) => {
                         self.xreg[rd] = (((byte as i8) as i16) as i32) as u32; // TODO: this should be a function.
-                        self.pc += 4;
+                        self.pc = self.pc.wrapping_add(4);
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
@@ -144,9 +145,10 @@ where
             Imm12RdRs1::Lh => {
                 // rd <- sx(m16(rs1 + imm_i)), pc += 4
                 match self.mem.read16(self.xreg[rs1] + iimm) {
+                    // TODO: wrapping
                     Ok(half_word) => {
                         self.xreg[rd] = ((half_word as i16) as i32) as u32; // TODO: this should be a function.
-                        self.pc += 4;
+                        self.pc = self.pc.wrapping_add(4);
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
@@ -157,9 +159,10 @@ where
             Imm12RdRs1::Lw => {
                 // rd <- sx(m32(rs1 + imm_i)), pc += 4
                 match self.mem.read32(self.xreg[rs1] + iimm) {
+                    // TODO: wrapping
                     Ok(word) => {
                         self.xreg[rd] = word;
-                        self.pc += 4;
+                        self.pc = self.pc.wrapping_add(4);
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
@@ -170,9 +173,10 @@ where
             Imm12RdRs1::Lbu => {
                 // rd <- zx(m8(rs1 + imm_i)), pc += 4
                 match self.mem.read8(self.xreg[rs1] + iimm) {
+                    // TODO: wrapping
                     Ok(byte) => {
                         self.xreg[rd] = byte as u32;
-                        self.pc += 4;
+                        self.pc = self.pc.wrapping_add(4);
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
@@ -183,9 +187,10 @@ where
             Imm12RdRs1::Lhu => {
                 // rd <- zx(m16(rs1 + imm_i)), pc += 4
                 match self.mem.read16(self.xreg[rs1] + iimm) {
+                    // TODO: wrapping
                     Ok(half_word) => {
                         self.xreg[rd] = half_word as u32;
-                        self.pc += 4;
+                        self.pc = self.pc.wrapping_add(4);
                         self.xreg[0] = 0;
                     }
                     Err(_) => {
@@ -196,9 +201,10 @@ where
             Imm12RdRs1::Flw => {
                 // rd <- f32(rs1 + imm_i)
                 match self.mem.read32(self.xreg[rs1] + iimm) {
+                    // TODO: wrapping
                     Ok(word) => {
                         self.freg[rd] = f32::from_bits(word);
-                        self.pc += 4;
+                        self.pc = self.pc.wrapping_add(4);
                     }
                     Err(_) => {
                         self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
@@ -208,7 +214,7 @@ where
             Imm12RdRs1::Addi => {
                 // rd <- rs1 + imm_i, pc += 4
                 self.xreg[rd] = self.xreg[rs1].wrapping_add(iimm);
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             Imm12RdRs1::Slti => {
@@ -217,39 +223,39 @@ where
                 let xreg_rs1 = self.xreg[rs1] as i32;
                 let iimm = iimm as i32;
                 self.xreg[rd] = if xreg_rs1 < iimm { 1 } else { 0 };
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             Imm12RdRs1::Sltiu => {
                 // Unsigned.
                 // rd <- (rs1 < imm_i) ? 1 : 0, pc += 4
                 self.xreg[rd] = if self.xreg[rs1] < iimm { 1 } else { 0 };
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             Imm12RdRs1::Xori => {
                 // rd <- rs1 ^ imm_i, pc += 4
                 self.xreg[rd] = self.xreg[rs1] ^ iimm;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             Imm12RdRs1::Ori => {
                 // rd <- rs1 | imm_i, pc += 4
                 self.xreg[rd] = self.xreg[rs1] | iimm;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             Imm12RdRs1::Andi => {
                 // rd <- rs1 & imm_i, pc += 4
                 self.xreg[rd] = self.xreg[rs1] & iimm;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             Imm12RdRs1::Jalr => {
                 // rd <- pc + 4, pc <- (rs1 + imm_i) & ~1
                 let rs1_before = self.xreg[rs1]; // Because rd and rs1 might be the same register.
-                self.xreg[rd] = self.pc + 4;
-                self.pc = (rs1_before + iimm) & !1;
+                self.xreg[rd] = self.pc + 4; // TODO: wrapping
+                self.pc = (rs1_before + iimm) & !1; // TODO: wrapping
                 self.xreg[0] = 0;
             }
         }
@@ -264,10 +270,10 @@ where
                 // m8(rs1 + imm_s) <- rs2[7:0], pc += 4
                 match self
                     .mem
-                    .write8(self.xreg[rs1] + simm, (self.xreg[rs2] & 0xff) as u8)
+                    .write8(self.xreg[rs1] + simm, (self.xreg[rs2] & 0xff) as u8)// TODO: wrapping
                 {
                     Ok(_) => {
-                        self.pc += 4;
+                        self.pc = self.pc.wrapping_add(4);
                     }
                     Err(_) => {
                         self.trap_handler.handle_trap(TrapCause::StoreAccessFault);
@@ -278,10 +284,10 @@ where
                 // m16(rs1 + imm_s) <- rs2[15:0], pc += 4
                 match self
                     .mem
-                    .write16(self.xreg[rs1] + simm, (self.xreg[rs2] & 0xffff) as u16)
+                    .write16(self.xreg[rs1] + simm, (self.xreg[rs2] & 0xffff) as u16)// TODO: wrapping
                 {
                     Ok(_) => {
-                        self.pc += 4;
+                        self.pc = self.pc.wrapping_add(4);
                     }
                     Err(_) => {
                         self.trap_handler.handle_trap(TrapCause::StoreAccessFault);
@@ -292,7 +298,7 @@ where
                 // m32(rs1 + imm_s) <- rs2[31:0], pc += 4
                 match self.mem.write32(self.xreg[rs1] + simm, self.xreg[rs2]) {
                     Ok(_) => {
-                        self.pc += 4;
+                        self.pc = self.pc.wrapping_add(4);
                     }
                     Err(_) => {
                         self.trap_handler.handle_trap(TrapCause::StoreAccessFault);
@@ -303,8 +309,9 @@ where
                 // f32(rs1 + imm_s) = rs2
                 let data = f32::to_bits(self.freg[rs2]);
                 match self.mem.write32(self.xreg[rs1] + simm, data) {
+                    // TODO: wrapping
                     Ok(_) => {
-                        self.pc += 4;
+                        self.pc = self.pc.wrapping_add(4);
                     }
                     Err(_) => {
                         self.trap_handler.handle_trap(TrapCause::StoreAccessFault);
@@ -320,14 +327,14 @@ where
         match instruction {
             Imm20Rd::Auipc => {
                 // rd <- pc + imm_u, pc += 4
-                self.xreg[rd] = self.pc + uimm;
-                self.pc += 4;
+                self.xreg[rd] = self.pc + uimm; // TODO: wrapping
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             Imm20Rd::Lui => {
                 // rd <- imm_u, pc += 4
                 self.xreg[rd] = uimm;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
         }
@@ -339,8 +346,8 @@ where
         match instruction {
             Jimm20Rd::Jal => {
                 // rd <- pc + 4, pc <- pc + imm_j
-                self.xreg[rd] = self.pc + 4;
-                self.pc += jimm;
+                self.xreg[rd] = self.pc + 4; // TODO: wrapping
+                self.pc += jimm; // TODO: wrapping
                 self.xreg[0] = 0;
             }
         }
@@ -362,34 +369,34 @@ where
                 // rd <- sqrt(rs1)
                 let f = self.freg[rs1];
                 self.freg[rd] = f32::sqrt(f);
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 // TODO: handle rounding modes.
             }
             RdRs1Rm::FcvtWS => {
                 // rd <- int32_t(rs1)
                 let i = self.freg[rs1] as i32;
                 self.xreg[rd] = i as u32;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 // TODO: handle rounding modes.
             }
             RdRs1Rm::FcvtWuS => {
                 // rd <- uint32_t(rs1)
                 let i = self.freg[rs1] as u32;
                 self.xreg[rd] = i;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 // TODO: handle rounding modes.
             }
             RdRs1Rm::FcvtSW => {
                 // rd <- float(int32_t((rs1))
                 let i = self.xreg[rs1] as i32;
                 self.freg[rd] = i as f32;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 // TODO: handle rounding modes.
             }
             RdRs1Rm::FcvtSWu => {
                 // rd <- float(rs1)
                 self.freg[rd] = self.xreg[rs1] as f32;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 // TODO: handle rounding modes.
             }
         }
@@ -411,25 +418,25 @@ where
             RdRs1Rs2Rm::FaddS => {
                 // rd <- rs1 + rs2
                 self.freg[rd] = self.freg[rs1] + self.freg[rs2];
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 // TODO: handle rounding modes.
             }
             RdRs1Rs2Rm::FsubS => {
                 // rd <- rs1 - rs2
                 self.freg[rd] = self.freg[rs1] - self.freg[rs2];
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 // TODO: handle rounding modes.
             }
             RdRs1Rs2Rm::FmulS => {
                 // rd <- rs1 * rs2
                 self.freg[rd] = self.freg[rs1] * self.freg[rs2];
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 // TODO: handle rounding modes.
             }
             RdRs1Rs2Rm::FdivS => {
                 // rd <- rs1 / rs2
                 self.freg[rd] = self.freg[rs1] / self.freg[rs2];
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 // TODO: handle rounding modes.
             }
         }
@@ -453,25 +460,25 @@ where
             RdRs1Rs2Rs3Rm::FmaddS => {
                 // rd <- (rs1 * rs2) + rs3
                 self.freg[rd] = (self.freg[rs1] * self.freg[rs2]) + self.freg[rs3];
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 // TODO: handle rounding modes.
             }
             RdRs1Rs2Rs3Rm::FmsubS => {
                 // rd <- (rs1 * rs2) - rs3
                 self.freg[rd] = (self.freg[rs1] * self.freg[rs2]) - self.freg[rs3];
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 // TODO: handle rounding modes.
             }
             RdRs1Rs2Rs3Rm::FnmsubS => {
                 // rd <- -(rs1 * rs2) + rs3
                 self.freg[rd] = -(self.freg[rs1] * self.freg[rs2]) + self.freg[rs3];
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 // TODO: handle rounding modes.
             }
             RdRs1Rs2Rs3Rm::FnmaddS => {
                 // rd <- -(rs1 * rs2) - rs3
                 self.freg[rd] = -(self.freg[rs1] * self.freg[rs2]) - self.freg[rs3];
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 // TODO: handle rounding modes.
             }
         }
@@ -484,7 +491,7 @@ where
             RdRs1::FmvXW => {
                 // bits(rd) <- bits(rs1)
                 self.xreg[rd] = f32::to_bits(self.freg[rs1]);
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
             }
             RdRs1::FmvWX => {
                 // bits(rd) <- bits(rs1)
@@ -525,7 +532,7 @@ where
                     0
                 };
                 self.xreg[rd] = result;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
         }
@@ -538,26 +545,26 @@ where
         match instruction {
             RdRs1Rs2::Add => {
                 // rd <- rs1 + rs2, pc += 4
-                self.xreg[rd] = self.xreg[rs1] + self.xreg[rs2];
-                self.pc += 4;
+                self.xreg[rd] = self.xreg[rs1] + self.xreg[rs2]; // TODO: wrapping
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::Mul => {
                 // rd <- rs1 * rs2, pc += 4
-                self.xreg[rd] = self.xreg[rs1] * self.xreg[rs2];
-                self.pc += 4;
+                self.xreg[rd] = self.xreg[rs1] * self.xreg[rs2]; // TODO: wrapping
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::Sub => {
                 // rd <- rs1 - rs2, pc += 4
-                self.xreg[rd] = self.xreg[rs1] - self.xreg[rs2];
-                self.pc += 4;
+                self.xreg[rd] = self.xreg[rs1] - self.xreg[rs2]; // TODO: wrapping
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::Sll => {
                 // rd <- rs1 << (rs2 % XLEN), pc += 4
                 self.xreg[rd] = self.xreg[rs1] << (self.xreg[rs2] % 32);
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::Mulh => {
@@ -565,7 +572,7 @@ where
                 let xreg_rs2 = (self.xreg[rs2] as i32) as i64;
                 let t = (xreg_rs1 * xreg_rs2) >> 32;
                 self.xreg[rd] = t as u32;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::Slt => {
@@ -574,7 +581,7 @@ where
                 let xreg_rs1 = self.xreg[rs1] as i32;
                 let xreg_rs2 = self.xreg[rs2] as i32;
                 self.xreg[rd] = if xreg_rs1 < xreg_rs2 { 1 } else { 0 };
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::Mulhsu => {
@@ -582,7 +589,7 @@ where
                 let xreg_rs2 = (self.xreg[rs2] as u64) as i64;
                 let t = (xreg_rs1 * xreg_rs2) >> 32;
                 self.xreg[rd] = t as u32;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::Sltu => {
@@ -590,7 +597,7 @@ where
                 let xreg_rs1 = self.xreg[rs1];
                 let xreg_rs2 = self.xreg[rs2];
                 self.xreg[rd] = if xreg_rs1 < xreg_rs2 { 1 } else { 0 };
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::Mulhu => {
@@ -598,13 +605,13 @@ where
                 let xreg_rs2 = self.xreg[rs2] as u64;
                 let t = (xreg_rs1 * xreg_rs2) >> 32;
                 self.xreg[rd] = t as u32;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::Xor => {
                 // rd <- rs1 ^ rs2, pc += 4
                 self.xreg[rd] = self.xreg[rs1] ^ self.xreg[rs2];
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::Div => {
@@ -613,7 +620,7 @@ where
                 // Check for signed division overflow.
                 if ((dividend as u32) != 0x80000000) || divisor != -1 {
                     self.xreg[rd] = if divisor != 0 {
-                        (dividend / divisor) as u32
+                        (dividend / divisor) as u32 // TODO: wrapping?
                     } else {
                         u32::MAX // -1.
                     }
@@ -621,24 +628,24 @@ where
                     // Signed division overflow occurred.
                     self.xreg[rd] = dividend as u32;
                 }
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::Srl => {
                 // rd <- rs1 >> (rs2 % XLEN), pc += 4
                 self.xreg[rd] = self.xreg[rs1] >> (self.xreg[rs2] % 32);
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::Divu => {
                 let dividend = self.xreg[rs1];
                 let divisor = self.xreg[rs2];
                 self.xreg[rd] = if divisor != 0 {
-                    dividend / divisor
+                    dividend / divisor // TODO: wrapping?
                 } else {
                     u32::MAX // -1.
                 };
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::Sra => {
@@ -646,13 +653,13 @@ where
                 let xreg_rs1 = self.xreg[rs1] as i32;
                 let shift = (self.xreg[rs2] % 32) as i32;
                 self.xreg[rd] = (xreg_rs1 >> shift) as u32;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::Or => {
                 // rd <- rs1 | rs2, pc += 4
                 self.xreg[rd] = self.xreg[rs1] | self.xreg[rs2];
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::Rem => {
@@ -669,13 +676,13 @@ where
                     // Signed division overflow occurred.
                     self.xreg[rd] = 0;
                 }
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::And => {
                 // rd <- rs1 & rs2, pc += 4
                 self.xreg[rd] = self.xreg[rs1] & self.xreg[rs2];
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::Remu => {
@@ -686,7 +693,7 @@ where
                 } else {
                     dividend
                 };
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::FsgnjS => {
@@ -694,21 +701,21 @@ where
                 let freg_rs1 = self.freg[rs1];
                 let freg_rs2 = self.freg[rs2];
                 self.freg[rd] = freg_rs1.abs() * if freg_rs2 < 0.0 { -1.0 } else { 1.0 };
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
             }
             RdRs1Rs2::FminS => {
                 // rd <- min(rs1, rs2)
                 let freg_rs1 = self.freg[rs1];
                 let freg_rs2 = self.freg[rs2];
                 self.freg[rd] = freg_rs1.min(freg_rs2);
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
             }
             RdRs1Rs2::FleS => {
                 // rd <- (rs1 <= rs2) ? 1 : 0;
                 let freg_rs1 = self.freg[rs1];
                 let freg_rs2 = self.freg[rs2];
                 self.xreg[rd] = if freg_rs1 < freg_rs2 { 1 } else { 0 };
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::FsgnjnS => {
@@ -716,21 +723,21 @@ where
                 let freg_rs1 = self.freg[rs1];
                 let freg_rs2 = self.freg[rs2];
                 self.freg[rd] = freg_rs1.abs() * if freg_rs2 < 0.0 { 1.0 } else { -1.0 };
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
             }
             RdRs1Rs2::FmaxS => {
                 // rd <- max(rs1, rs2)
                 let freg_rs1 = self.freg[rs1];
                 let freg_rs2 = self.freg[rs2];
                 self.freg[rd] = freg_rs1.max(freg_rs2);
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
             }
             RdRs1Rs2::FltS => {
                 // rd <- (rs1 < rs2) ? 1 : 0;
                 let freg_rs1 = self.freg[rs1];
                 let freg_rs2 = self.freg[rs2];
                 self.xreg[rd] = if freg_rs1 <= freg_rs2 { 1 } else { 0 };
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Rs2::FsgnjxS => {
@@ -745,14 +752,14 @@ where
                         1.0
                     };
                 self.freg[rd] = freg_rs1.abs() * m;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
             }
             RdRs1Rs2::FeqS => {
                 // rd <- (rs1 == rs2) ? 1 : 0;
                 let freg_rs1 = self.freg[rs1];
                 let freg_rs2 = self.freg[rs2];
                 self.xreg[rd] = if freg_rs1 == freg_rs2 { 1 } else { 0 };
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
         }
@@ -771,19 +778,19 @@ where
         match instruction {
             RdRs1Shamtw::Slli => {
                 self.xreg[rd] = self.xreg[rs1] << shamt;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Shamtw::Srli => {
                 self.xreg[rd] = self.xreg[rs1] >> shamt;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
             RdRs1Shamtw::Srai => {
                 let xreg_rs = self.xreg[rs1] as i32;
                 let shamt = shamt as i32;
                 self.xreg[rd] = (xreg_rs >> shamt) as u32;
-                self.pc += 4;
+                self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
         }
