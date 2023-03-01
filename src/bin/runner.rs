@@ -1,3 +1,4 @@
+use std::env;
 use std::fs::File;
 use std::io;
 use std::io::prelude::*;
@@ -7,8 +8,18 @@ use arviss_experiment::{decode, BasicCpu, BasicMem, Disassembler, Loader, Mem};
 const EBREAK: u32 = 0x00_10_00_73;
 
 pub fn main() -> io::Result<()> {
+    let args = env::args().collect::<Vec<_>>();
+    let (disassemble, filename) = match args.len() {
+        2 => (false, &args[1]),
+        3 if args[1] == "-d" => (true, &args[2]),
+        _ => {
+            eprintln!("\nUsage:\n\t{} [-d] <filename>", args[0]);
+            std::process::exit(2);
+        }
+    };
+
     // Load the image into a buffer.
-    let mut f = File::open("../rt_app/app.bin")?;
+    let mut f = File::open(filename)?;
     let mut buffer = Vec::new();
     f.read_to_end(&mut buffer)?;
 
@@ -29,10 +40,11 @@ pub fn main() -> io::Result<()> {
         let pc = cpu.pc;
         let ins = cpu.mem.read32(pc).unwrap();
 
-        // Disassemble.
-        // TODO: toggle via command line
-        // let result = decode(&mut disassembler, ins);
-        // println!("{:08x} {:08x} {}", pc, ins, result);
+        // Disassemble if the user asked for it.
+        if disassemble {
+            let result = decode(&mut disassembler, ins);
+            println!("{:08x} {:08x} {}", pc, ins, result);
+        }
         if ins == EBREAK {
             break;
         }
