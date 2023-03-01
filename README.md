@@ -27,7 +27,7 @@ $ cargo build --release
 
 ## Running
 
-Run the simulator (the `runner` binary), passing it the path to the `app.bin` that you generated when you build [the sample application](https://github.com/badlydrawnrod/rt_app).
+Run the simulator (the `runner` binary), passing it the path to the `app.bin` that you generated when you built [the sample application](https://github.com/badlydrawnrod/rt_app).
 
 ```
 $ cargo run --release --bin runner ../rt_app/app.bin
