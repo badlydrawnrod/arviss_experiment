@@ -15,7 +15,7 @@ Arviss as a rewrite-it-in-Rust experiment.
 - `git clone` this code into a parallel directory
 
 ```
-$ git clone  clone https://github.com/badlydrawnrod/arviss_execute
+$ git clone https://github.com/badlydrawnrod/arviss_execute
 ```
 
 - Perform a releae build
@@ -27,7 +27,7 @@ $ cargo build --release
 
 ## Running
 
-Run the simulator, passing it the path to the `app.bin` that you generated when you build [the sample application](https://github.com/badlydrawnrod/rt_app).
+Run the simulator (the `runner` binary), passing it the path to the `app.bin` that you generated when you build [the sample application](https://github.com/badlydrawnrod/rt_app).
 
 ```
 $ cargo run --release --bin runner ../rt_app/app.bin
@@ -51,4 +51,11 @@ If you want to disassemble each instruction as it is executed then supply the `-
 
 ```
 $ cargo run --release --bin runner -- -d ../rt_app/app.bin
+pc       (pc)     Code
+00000000 00005197 auipc gp, 5
+00000004 80018193 addi  gp, gp, -2048
+00000008 00008117 auipc sp, 8
+0000000c ff810113 addi  sp, sp, -8
+00000010 00010433 add   s0, sp, zero
+...
 ```
