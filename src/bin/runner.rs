@@ -34,7 +34,9 @@ pub fn main() -> io::Result<()> {
 
     // Run until we can run no more.
     let mut disassembler = Disassembler {};
-    println!("pc       (pc)     Code");
+    if disassemble {
+        println!("pc       (pc)     Code");
+    }
     loop {
         // Fetch.
         let pc = cpu.pc;
