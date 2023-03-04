@@ -58,64 +58,12 @@ where
         let rs1 = rs1 as usize;
         let rs2 = rs2 as usize;
         match instruction {
-            Bimm12Rs1Rs2::Beq => {
-                // pc <- pc + ((rs1 == rs2) ? imm_b : 4)
-                let offset = if self.xreg[rs1] == self.xreg[rs2] {
-                    bimm
-                } else {
-                    4
-                };
-                self.pc = self.pc.wrapping_add(offset);
-            }
-            Bimm12Rs1Rs2::Bne => {
-                // pc <- pc + ((rs1 != rs2) ? imm_b : 4)
-                let offset = if self.xreg[rs1] != self.xreg[rs2] {
-                    bimm
-                } else {
-                    4
-                };
-                self.pc = self.pc.wrapping_add(offset);
-            }
-            Bimm12Rs1Rs2::Blt => {
-                // Signed.
-                // pc <- pc + ((rs1 < rs2) ? imm_b : 4)
-                let offset = if (self.xreg[rs1] as i32) < (self.xreg[rs2] as i32) {
-                    bimm
-                } else {
-                    4
-                };
-                self.pc = self.pc.wrapping_add(offset);
-            }
-            Bimm12Rs1Rs2::Bge => {
-                // Signed.
-                // pc <- pc + ((rs1 >= rs2) ? imm_b : 4)
-                let offset = if (self.xreg[rs1] as i32) >= (self.xreg[rs2] as i32) {
-                    bimm
-                } else {
-                    4
-                };
-                self.pc = self.pc.wrapping_add(offset);
-            }
-            Bimm12Rs1Rs2::Bltu => {
-                // Unsigned.
-                // pc <- pc + ((rs1 < rs2) ? imm_b : 4)
-                let offset = if self.xreg[rs1] < self.xreg[rs2] {
-                    bimm
-                } else {
-                    4
-                };
-                self.pc = self.pc.wrapping_add(offset);
-            }
-            Bimm12Rs1Rs2::Bgeu => {
-                // Unsigned.
-                // pc <- pc + ((rs1 >= rs2) ? imm_b : 4)
-                let offset = if self.xreg[rs1] >= self.xreg[rs2] {
-                    bimm
-                } else {
-                    4
-                };
-                self.pc = self.pc.wrapping_add(offset);
-            }
+            Bimm12Rs1Rs2::Beq => self.beq(rs1, rs2, bimm),
+            Bimm12Rs1Rs2::Bne => self.bne(rs1, rs2, bimm),
+            Bimm12Rs1Rs2::Blt => self.blt(rs1, rs2, bimm),
+            Bimm12Rs1Rs2::Bge => self.bge(rs1, rs2, bimm),
+            Bimm12Rs1Rs2::Bltu => self.bltu(rs1, rs2, bimm),
+            Bimm12Rs1Rs2::Bgeu => self.bgeu(rs1, rs2, bimm),
         }
     }
 
@@ -128,71 +76,11 @@ where
         let rd = rd as usize;
         let rs1 = rs1 as usize;
         match instruction {
-            Imm12RdRs1::Lb => {
-                // rd <- sx(m8(rs1 + imm_i)), pc += 4
-                match self.mem.read8(self.xreg[rs1].wrapping_add(iimm)) {
-                    Ok(byte) => {
-                        self.xreg[rd] = (((byte as i8) as i16) as i32) as u32; // TODO: this should be a function.
-                        self.pc = self.pc.wrapping_add(4);
-                        self.xreg[0] = 0;
-                    }
-                    Err(_) => {
-                        self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
-                    }
-                }
-            }
-            Imm12RdRs1::Lh => {
-                // rd <- sx(m16(rs1 + imm_i)), pc += 4
-                match self.mem.read16(self.xreg[rs1].wrapping_add(iimm)) {
-                    Ok(half_word) => {
-                        self.xreg[rd] = ((half_word as i16) as i32) as u32; // TODO: this should be a function.
-                        self.pc = self.pc.wrapping_add(4);
-                        self.xreg[0] = 0;
-                    }
-                    Err(_) => {
-                        self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
-                    }
-                }
-            }
-            Imm12RdRs1::Lw => {
-                // rd <- sx(m32(rs1 + imm_i)), pc += 4
-                match self.mem.read32(self.xreg[rs1].wrapping_add(iimm)) {
-                    Ok(word) => {
-                        self.xreg[rd] = word;
-                        self.pc = self.pc.wrapping_add(4);
-                        self.xreg[0] = 0;
-                    }
-                    Err(_) => {
-                        self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
-                    }
-                }
-            }
-            Imm12RdRs1::Lbu => {
-                // rd <- zx(m8(rs1 + imm_i)), pc += 4
-                match self.mem.read8(self.xreg[rs1].wrapping_add(iimm)) {
-                    Ok(byte) => {
-                        self.xreg[rd] = byte as u32;
-                        self.pc = self.pc.wrapping_add(4);
-                        self.xreg[0] = 0;
-                    }
-                    Err(_) => {
-                        self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
-                    }
-                }
-            }
-            Imm12RdRs1::Lhu => {
-                // rd <- zx(m16(rs1 + imm_i)), pc += 4
-                match self.mem.read16(self.xreg[rs1].wrapping_add(iimm)) {
-                    Ok(half_word) => {
-                        self.xreg[rd] = half_word as u32;
-                        self.pc = self.pc.wrapping_add(4);
-                        self.xreg[0] = 0;
-                    }
-                    Err(_) => {
-                        self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
-                    }
-                }
-            }
+            Imm12RdRs1::Lb => self.lb(rd, rs1, iimm),
+            Imm12RdRs1::Lh => self.lh(rd, rs1, iimm),
+            Imm12RdRs1::Lw => self.lw(rd, rs1, iimm),
+            Imm12RdRs1::Lbu => self.lbu(rd, rs1, iimm),
+            Imm12RdRs1::Lhu => self.lhu(rd, rs1, iimm),
             Imm12RdRs1::Flw => {
                 // rd <- f32(rs1 + imm_i)
                 match self.mem.read32(self.xreg[rs1].wrapping_add(iimm)) {
@@ -205,53 +93,13 @@ where
                     }
                 }
             }
-            Imm12RdRs1::Addi => {
-                // rd <- rs1 + imm_i, pc += 4
-                self.xreg[rd] = self.xreg[rs1].wrapping_add(iimm);
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            Imm12RdRs1::Slti => {
-                // Signed.
-                // rd <- (rs1 < imm_i) ? 1 : 0, pc += 4
-                let xreg_rs1 = self.xreg[rs1] as i32;
-                let iimm = iimm as i32;
-                self.xreg[rd] = if xreg_rs1 < iimm { 1 } else { 0 };
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            Imm12RdRs1::Sltiu => {
-                // Unsigned.
-                // rd <- (rs1 < imm_i) ? 1 : 0, pc += 4
-                self.xreg[rd] = if self.xreg[rs1] < iimm { 1 } else { 0 };
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            Imm12RdRs1::Xori => {
-                // rd <- rs1 ^ imm_i, pc += 4
-                self.xreg[rd] = self.xreg[rs1] ^ iimm;
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            Imm12RdRs1::Ori => {
-                // rd <- rs1 | imm_i, pc += 4
-                self.xreg[rd] = self.xreg[rs1] | iimm;
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            Imm12RdRs1::Andi => {
-                // rd <- rs1 & imm_i, pc += 4
-                self.xreg[rd] = self.xreg[rs1] & iimm;
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            Imm12RdRs1::Jalr => {
-                // rd <- pc + 4, pc <- (rs1 + imm_i) & ~1
-                let rs1_before = self.xreg[rs1]; // Because rd and rs1 might be the same register.
-                self.xreg[rd] = self.pc.wrapping_add(4);
-                self.pc = rs1_before.wrapping_add(iimm) & !1;
-                self.xreg[0] = 0;
-            }
+            Imm12RdRs1::Addi => self.addi(rd, rs1, iimm),
+            Imm12RdRs1::Slti => self.slti(rd, rs1, iimm),
+            Imm12RdRs1::Sltiu => self.sltiu(rd, rs1, iimm),
+            Imm12RdRs1::Xori => self.xori(rd, rs1, iimm),
+            Imm12RdRs1::Ori => self.ori(rd, rs1, iimm),
+            Imm12RdRs1::Andi => self.andi(rd, rs1, iimm),
+            Imm12RdRs1::Jalr => self.jalr(rd, rs1, iimm),
         }
     }
 
@@ -260,48 +108,9 @@ where
         let rs1 = rs1 as usize;
         let rs2 = rs2 as usize;
         match instruction {
-            Imm12Rs1Rs2::Sb => {
-                // m8(rs1 + imm_s) <- rs2[7:0], pc += 4
-                match self.mem.write8(
-                    self.xreg[rs1].wrapping_add(simm),
-                    (self.xreg[rs2] & 0xff) as u8,
-                ) {
-                    Ok(_) => {
-                        self.pc = self.pc.wrapping_add(4);
-                    }
-                    Err(_) => {
-                        self.trap_handler.handle_trap(TrapCause::StoreAccessFault);
-                    }
-                }
-            }
-            Imm12Rs1Rs2::Sh => {
-                // m16(rs1 + imm_s) <- rs2[15:0], pc += 4
-                match self.mem.write16(
-                    self.xreg[rs1].wrapping_add(simm),
-                    (self.xreg[rs2] & 0xffff) as u16,
-                ) {
-                    Ok(_) => {
-                        self.pc = self.pc.wrapping_add(4);
-                    }
-                    Err(_) => {
-                        self.trap_handler.handle_trap(TrapCause::StoreAccessFault);
-                    }
-                }
-            }
-            Imm12Rs1Rs2::Sw => {
-                // m32(rs1 + imm_s) <- rs2[31:0], pc += 4
-                match self
-                    .mem
-                    .write32(self.xreg[rs1].wrapping_add(simm), self.xreg[rs2])
-                {
-                    Ok(_) => {
-                        self.pc = self.pc.wrapping_add(4);
-                    }
-                    Err(_) => {
-                        self.trap_handler.handle_trap(TrapCause::StoreAccessFault);
-                    }
-                }
-            }
+            Imm12Rs1Rs2::Sb => self.sb(rs1, rs2, simm),
+            Imm12Rs1Rs2::Sh => self.sh(rs1, rs2, simm),
+            Imm12Rs1Rs2::Sw => self.sw(rs1, rs2, simm),
             Imm12Rs1Rs2::Fsw => {
                 // f32(rs1 + imm_s) = rs2
                 let data = f32::to_bits(self.freg[rs2]);
@@ -321,18 +130,8 @@ where
         let uimm = uimm as u32;
         let rd = rd as usize;
         match instruction {
-            Imm20Rd::Auipc => {
-                // rd <- pc + imm_u, pc += 4
-                self.xreg[rd] = self.pc.wrapping_add(uimm);
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            Imm20Rd::Lui => {
-                // rd <- imm_u, pc += 4
-                self.xreg[rd] = uimm;
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
+            Imm20Rd::Auipc => self.auipc(rd, uimm),
+            Imm20Rd::Lui => self.lui(rd, uimm),
         }
     }
 
@@ -340,12 +139,7 @@ where
         let jimm = jimm as u32;
         let rd = rd as usize;
         match instruction {
-            Jimm20Rd::Jal => {
-                // rd <- pc + 4, pc <- pc + imm_j
-                self.xreg[rd] = self.pc.wrapping_add(4);
-                self.pc = self.pc.wrapping_add(jimm);
-                self.xreg[0] = 0;
-            }
+            Jimm20Rd::Jal => self.jal(rd, jimm),
         }
     }
 
@@ -539,159 +333,24 @@ where
         let rs1 = rs1 as usize;
         let rs2 = rs2 as usize;
         match instruction {
-            RdRs1Rs2::Add => {
-                // rd <- rs1 + rs2, pc += 4
-                self.xreg[rd] = self.xreg[rs1].wrapping_add(self.xreg[rs2]);
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::Mul => {
-                // rd <- rs1 * rs2, pc += 4
-                self.xreg[rd] = self.xreg[rs1].wrapping_mul(self.xreg[rs2]);
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::Sub => {
-                // rd <- rs1 - rs2, pc += 4
-                self.xreg[rd] = self.xreg[rs1].wrapping_sub(self.xreg[rs2]);
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::Sll => {
-                // rd <- rs1 << (rs2 % XLEN), pc += 4
-                self.xreg[rd] = self.xreg[rs1] << (self.xreg[rs2] % 32);
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::Mulh => {
-                let xreg_rs1 = (self.xreg[rs1] as i32) as i64;
-                let xreg_rs2 = (self.xreg[rs2] as i32) as i64;
-                let t = (xreg_rs1 * xreg_rs2) >> 32;
-                self.xreg[rd] = t as u32;
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::Slt => {
-                // Signed.
-                // rd <- (rs1 < rs2) ? 1 : 0, pc += 4
-                let xreg_rs1 = self.xreg[rs1] as i32;
-                let xreg_rs2 = self.xreg[rs2] as i32;
-                self.xreg[rd] = if xreg_rs1 < xreg_rs2 { 1 } else { 0 };
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::Mulhsu => {
-                let xreg_rs1 = (self.xreg[rs1] as i32) as i64;
-                let xreg_rs2 = (self.xreg[rs2] as u64) as i64;
-                let t = (xreg_rs1 * xreg_rs2) >> 32;
-                self.xreg[rd] = t as u32;
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::Sltu => {
-                // rd <- (rs1 < rs2) ? 1 : 0, pc += 4
-                let xreg_rs1 = self.xreg[rs1];
-                let xreg_rs2 = self.xreg[rs2];
-                self.xreg[rd] = if xreg_rs1 < xreg_rs2 { 1 } else { 0 };
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::Mulhu => {
-                let xreg_rs1 = self.xreg[rs1] as u64;
-                let xreg_rs2 = self.xreg[rs2] as u64;
-                let t = (xreg_rs1 * xreg_rs2) >> 32;
-                self.xreg[rd] = t as u32;
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::Xor => {
-                // rd <- rs1 ^ rs2, pc += 4
-                self.xreg[rd] = self.xreg[rs1] ^ self.xreg[rs2];
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::Div => {
-                let dividend = self.xreg[rs1] as i32;
-                let divisor = self.xreg[rs2] as i32;
-                // Check for signed division overflow.
-                if ((dividend as u32) != 0x80000000) || divisor != -1 {
-                    self.xreg[rd] = if divisor != 0 {
-                        (dividend.wrapping_div(divisor)) as u32
-                    } else {
-                        u32::MAX // -1.
-                    }
-                } else {
-                    // Signed division overflow occurred.
-                    self.xreg[rd] = dividend as u32;
-                }
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::Srl => {
-                // rd <- rs1 >> (rs2 % XLEN), pc += 4
-                self.xreg[rd] = self.xreg[rs1] >> (self.xreg[rs2] % 32);
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::Divu => {
-                let dividend = self.xreg[rs1];
-                let divisor = self.xreg[rs2];
-                self.xreg[rd] = if divisor != 0 {
-                    dividend.wrapping_div(divisor)
-                } else {
-                    u32::MAX // -1.
-                };
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::Sra => {
-                // rd <- rs1 >> (rs2 % XLEN), pc += 4
-                let xreg_rs1 = self.xreg[rs1] as i32;
-                let shift = (self.xreg[rs2] % 32) as i32;
-                self.xreg[rd] = (xreg_rs1 >> shift) as u32;
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::Or => {
-                // rd <- rs1 | rs2, pc += 4
-                self.xreg[rd] = self.xreg[rs1] | self.xreg[rs2];
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::Rem => {
-                let dividend = self.xreg[rs1] as i32;
-                let divisor = self.xreg[rs2] as i32;
-                // Check for signed division overflow.
-                if ((dividend as u32) != 0x80000000) || divisor != -1 {
-                    self.xreg[rd] = if divisor != 0 {
-                        (dividend % divisor) as u32
-                    } else {
-                        dividend as u32
-                    }
-                } else {
-                    // Signed division overflow occurred.
-                    self.xreg[rd] = 0;
-                }
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::And => {
-                // rd <- rs1 & rs2, pc += 4
-                self.xreg[rd] = self.xreg[rs1] & self.xreg[rs2];
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::Remu => {
-                let dividend = self.xreg[rs1];
-                let divisor = self.xreg[rs2];
-                self.xreg[rd] = if divisor != 0 {
-                    dividend % divisor
-                } else {
-                    dividend
-                };
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
+            RdRs1Rs2::Add => self.add(rd, rs1, rs2),
+            RdRs1Rs2::Mul => self.mul(rd, rs1, rs2),
+            RdRs1Rs2::Sub => self.sub(rd, rs1, rs2),
+            RdRs1Rs2::Sll => self.sll(rd, rs1, rs2),
+            RdRs1Rs2::Mulh => self.mulh(rd, rs1, rs2),
+            RdRs1Rs2::Slt => self.slt(rd, rs1, rs2),
+            RdRs1Rs2::Mulhsu => self.mulhsu(rd, rs1, rs2),
+            RdRs1Rs2::Sltu => self.sltu(rd, rs1, rs2),
+            RdRs1Rs2::Mulhu => self.mulhu(rd, rs1, rs2),
+            RdRs1Rs2::Xor => self.xor(rd, rs1, rs2),
+            RdRs1Rs2::Div => self.div(rd, rs1, rs2),
+            RdRs1Rs2::Srl => self.srl(rd, rs1, rs2),
+            RdRs1Rs2::Divu => self.divu(rd, rs1, rs2),
+            RdRs1Rs2::Sra => self.sra(rd, rs1, rs2),
+            RdRs1Rs2::Or => self.or(rd, rs1, rs2),
+            RdRs1Rs2::Rem => self.rem(rd, rs1, rs2),
+            RdRs1Rs2::And => self.and(rd, rs1, rs2),
+            RdRs1Rs2::Remu => self.remu(rd, rs1, rs2),
             RdRs1Rs2::FsgnjS => {
                 // rd <- abs(rs1) * sgn(rs2)
                 let freg_rs1 = self.freg[rs1];
@@ -772,23 +431,535 @@ where
         let rs1 = rs1 as usize;
         let shamt = shamt as u32;
         match instruction {
-            RdRs1Shamtw::Slli => {
-                self.xreg[rd] = self.xreg[rs1] << shamt;
+            RdRs1Shamtw::Slli => self.slli(rd, rs1, shamt),
+            RdRs1Shamtw::Srli => self.srli(rd, rs1, shamt),
+            RdRs1Shamtw::Srai => self.srai(rd, rs1, shamt),
+        }
+    }
+}
+
+trait Rv32i {
+    // B-type instructions.
+    fn beq(&mut self, rs1: usize, rs2: usize, bimm: u32);
+    fn bne(&mut self, rs1: usize, rs2: usize, bimm: u32);
+    fn blt(&mut self, rs1: usize, rs2: usize, bimm: u32);
+    fn bge(&mut self, rs1: usize, rs2: usize, bimm: u32);
+    fn bltu(&mut self, rs1: usize, rs2: usize, bimm: u32);
+    fn bgeu(&mut self, rs1: usize, rs2: usize, bimm: u32);
+
+    // I-type instructions.
+    fn lb(&mut self, rd: usize, rs1: usize, iimm: u32);
+    fn lh(&mut self, rd: usize, rs1: usize, iimm: u32);
+    fn lw(&mut self, rd: usize, rs1: usize, iimm: u32);
+    fn lbu(&mut self, rd: usize, rs1: usize, iimm: u32);
+    fn lhu(&mut self, rd: usize, rs1: usize, iimm: u32);
+    fn addi(&mut self, rd: usize, rs1: usize, iimm: u32);
+    fn slti(&mut self, rd: usize, rs1: usize, iimm: u32);
+    fn sltiu(&mut self, rd: usize, rs1: usize, iimm: u32);
+    fn xori(&mut self, rd: usize, rs1: usize, iimm: u32);
+    fn ori(&mut self, rd: usize, rs1: usize, iimm: u32);
+    fn andi(&mut self, rd: usize, rs1: usize, iimm: u32);
+    fn jalr(&mut self, rd: usize, rs1: usize, iimm: u32);
+
+    // S-type instructions.
+    fn sb(&mut self, rs1: usize, rs2: usize, simm: u32);
+    fn sh(&mut self, rs1: usize, rs2: usize, simm: u32);
+    fn sw(&mut self, rs1: usize, rs2: usize, simm: u32);
+
+    // U-type instructions.
+    fn auipc(&mut self, rd: usize, uimm: u32);
+    fn lui(&mut self, rd: usize, uimm: u32);
+
+    // J-type instructions.
+    fn jal(&mut self, rd: usize, jimm: u32);
+
+    // Arithmetic instructions.
+    fn add(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn mul(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn sub(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn sll(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn mulh(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn slt(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn mulhsu(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn sltu(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn mulhu(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn xor(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn div(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn srl(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn divu(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn sra(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn or(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn rem(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn and(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn remu(&mut self, rd: usize, rs1: usize, rs2: usize);
+
+    // Immediate shift instructions.
+    fn slli(&mut self, rd: usize, rs1: usize, shamt: u32);
+    fn srli(&mut self, rd: usize, rs1: usize, shamt: u32);
+    fn srai(&mut self, rd: usize, rs1: usize, shamt: u32);
+}
+
+impl<T, U> Rv32i for Cpu<T, U>
+where
+    T: Mem,
+    U: TrapHandler<Item = ()>,
+{
+    // B-type instructions.
+
+    fn beq(&mut self, rs1: usize, rs2: usize, bimm: u32) {
+        // pc <- pc + ((rs1 == rs2) ? imm_b : 4)
+        let offset = if self.xreg[rs1] == self.xreg[rs2] {
+            bimm
+        } else {
+            4
+        };
+        self.pc = self.pc.wrapping_add(offset);
+    }
+
+    fn bne(&mut self, rs1: usize, rs2: usize, bimm: u32) {
+        // pc <- pc + ((rs1 != rs2) ? imm_b : 4)
+        let offset = if self.xreg[rs1] != self.xreg[rs2] {
+            bimm
+        } else {
+            4
+        };
+        self.pc = self.pc.wrapping_add(offset);
+    }
+
+    fn blt(&mut self, rs1: usize, rs2: usize, bimm: u32) {
+        // Signed.
+        // pc <- pc + ((rs1 < rs2) ? imm_b : 4)
+        let offset = if (self.xreg[rs1] as i32) < (self.xreg[rs2] as i32) {
+            bimm
+        } else {
+            4
+        };
+        self.pc = self.pc.wrapping_add(offset);
+    }
+
+    fn bge(&mut self, rs1: usize, rs2: usize, bimm: u32) {
+        // Signed.
+        // pc <- pc + ((rs1 >= rs2) ? imm_b : 4)
+        let offset = if (self.xreg[rs1] as i32) >= (self.xreg[rs2] as i32) {
+            bimm
+        } else {
+            4
+        };
+        self.pc = self.pc.wrapping_add(offset);
+    }
+
+    fn bltu(&mut self, rs1: usize, rs2: usize, bimm: u32) {
+        // Unsigned.
+        // pc <- pc + ((rs1 < rs2) ? imm_b : 4)
+        let offset = if self.xreg[rs1] < self.xreg[rs2] {
+            bimm
+        } else {
+            4
+        };
+        self.pc = self.pc.wrapping_add(offset);
+    }
+
+    fn bgeu(&mut self, rs1: usize, rs2: usize, bimm: u32) {
+        // Unsigned.
+        // pc <- pc + ((rs1 >= rs2) ? imm_b : 4)
+        let offset = if self.xreg[rs1] >= self.xreg[rs2] {
+            bimm
+        } else {
+            4
+        };
+        self.pc = self.pc.wrapping_add(offset);
+    }
+
+    // I-type instructions.
+
+    fn lb(&mut self, rd: usize, rs1: usize, iimm: u32) {
+        // rd <- sx(m8(rs1 + imm_i)), pc += 4
+        match self.mem.read8(self.xreg[rs1].wrapping_add(iimm)) {
+            Ok(byte) => {
+                self.xreg[rd] = (((byte as i8) as i16) as i32) as u32; // TODO: this should be a function.
                 self.pc = self.pc.wrapping_add(4);
                 self.xreg[0] = 0;
             }
-            RdRs1Shamtw::Srli => {
-                self.xreg[rd] = self.xreg[rs1] >> shamt;
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Shamtw::Srai => {
-                let xreg_rs = self.xreg[rs1] as i32;
-                let shamt = shamt as i32;
-                self.xreg[rd] = (xreg_rs >> shamt) as u32;
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
+            Err(_) => {
+                self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
             }
         }
+    }
+
+    fn lh(&mut self, rd: usize, rs1: usize, iimm: u32) {
+        // rd <- sx(m16(rs1 + imm_i)), pc += 4
+        match self.mem.read16(self.xreg[rs1].wrapping_add(iimm)) {
+            Ok(half_word) => {
+                self.xreg[rd] = ((half_word as i16) as i32) as u32; // TODO: this should be a function.
+                self.pc = self.pc.wrapping_add(4);
+                self.xreg[0] = 0;
+            }
+            Err(_) => {
+                self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
+            }
+        }
+    }
+
+    fn lw(&mut self, rd: usize, rs1: usize, iimm: u32) {
+        // rd <- sx(m32(rs1 + imm_i)), pc += 4
+        match self.mem.read32(self.xreg[rs1].wrapping_add(iimm)) {
+            Ok(word) => {
+                self.xreg[rd] = word;
+                self.pc = self.pc.wrapping_add(4);
+                self.xreg[0] = 0;
+            }
+            Err(_) => {
+                self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
+            }
+        }
+    }
+
+    fn lbu(&mut self, rd: usize, rs1: usize, iimm: u32) {
+        // rd <- zx(m8(rs1 + imm_i)), pc += 4
+        match self.mem.read8(self.xreg[rs1].wrapping_add(iimm)) {
+            Ok(byte) => {
+                self.xreg[rd] = byte as u32;
+                self.pc = self.pc.wrapping_add(4);
+                self.xreg[0] = 0;
+            }
+            Err(_) => {
+                self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
+            }
+        }
+    }
+
+    fn lhu(&mut self, rd: usize, rs1: usize, iimm: u32) {
+        // rd <- zx(m16(rs1 + imm_i)), pc += 4
+        match self.mem.read16(self.xreg[rs1].wrapping_add(iimm)) {
+            Ok(half_word) => {
+                self.xreg[rd] = half_word as u32;
+                self.pc = self.pc.wrapping_add(4);
+                self.xreg[0] = 0;
+            }
+            Err(_) => {
+                self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
+            }
+        }
+    }
+
+    fn addi(&mut self, rd: usize, rs1: usize, iimm: u32) {
+        // rd <- rs1 + imm_i, pc += 4
+        self.xreg[rd] = self.xreg[rs1].wrapping_add(iimm);
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn slti(&mut self, rd: usize, rs1: usize, iimm: u32) {
+        // Signed.
+        // rd <- (rs1 < imm_i) ? 1 : 0, pc += 4
+        let xreg_rs1 = self.xreg[rs1] as i32;
+        let iimm = iimm as i32;
+        self.xreg[rd] = if xreg_rs1 < iimm { 1 } else { 0 };
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn sltiu(&mut self, rd: usize, rs1: usize, iimm: u32) {
+        // Unsigned.
+        // rd <- (rs1 < imm_i) ? 1 : 0, pc += 4
+        self.xreg[rd] = if self.xreg[rs1] < iimm { 1 } else { 0 };
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn xori(&mut self, rd: usize, rs1: usize, iimm: u32) {
+        // rd <- rs1 ^ imm_i, pc += 4
+        self.xreg[rd] = self.xreg[rs1] ^ iimm;
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn ori(&mut self, rd: usize, rs1: usize, iimm: u32) {
+        // rd <- rs1 | imm_i, pc += 4
+        self.xreg[rd] = self.xreg[rs1] | iimm;
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn andi(&mut self, rd: usize, rs1: usize, iimm: u32) {
+        // rd <- rs1 & imm_i, pc += 4
+        self.xreg[rd] = self.xreg[rs1] & iimm;
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn jalr(&mut self, rd: usize, rs1: usize, iimm: u32) {
+        // rd <- pc + 4, pc <- (rs1 + imm_i) & ~1
+        let rs1_before = self.xreg[rs1]; // Because rd and rs1 might be the same register.
+        self.xreg[rd] = self.pc.wrapping_add(4);
+        self.pc = rs1_before.wrapping_add(iimm) & !1;
+        self.xreg[0] = 0;
+    }
+
+    // S-type instructions.
+
+    fn sb(&mut self, rs1: usize, rs2: usize, simm: u32) {
+        // m8(rs1 + imm_s) <- rs2[7:0], pc += 4
+        match self.mem.write8(
+            self.xreg[rs1].wrapping_add(simm),
+            (self.xreg[rs2] & 0xff) as u8,
+        ) {
+            Ok(_) => {
+                self.pc = self.pc.wrapping_add(4);
+            }
+            Err(_) => {
+                self.trap_handler.handle_trap(TrapCause::StoreAccessFault);
+            }
+        }
+    }
+
+    fn sh(&mut self, rs1: usize, rs2: usize, simm: u32) {
+        // m16(rs1 + imm_s) <- rs2[15:0], pc += 4
+        match self.mem.write16(
+            self.xreg[rs1].wrapping_add(simm),
+            (self.xreg[rs2] & 0xffff) as u16,
+        ) {
+            Ok(_) => {
+                self.pc = self.pc.wrapping_add(4);
+            }
+            Err(_) => {
+                self.trap_handler.handle_trap(TrapCause::StoreAccessFault);
+            }
+        }
+    }
+
+    fn sw(&mut self, rs1: usize, rs2: usize, simm: u32) {
+        // m32(rs1 + imm_s) <- rs2[31:0], pc += 4
+        match self
+            .mem
+            .write32(self.xreg[rs1].wrapping_add(simm), self.xreg[rs2])
+        {
+            Ok(_) => {
+                self.pc = self.pc.wrapping_add(4);
+            }
+            Err(_) => {
+                self.trap_handler.handle_trap(TrapCause::StoreAccessFault);
+            }
+        }
+    }
+
+    // U-type instructions.
+
+    fn auipc(&mut self, rd: usize, uimm: u32) {
+        // rd <- pc + imm_u, pc += 4
+        self.xreg[rd] = self.pc.wrapping_add(uimm);
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn lui(&mut self, rd: usize, uimm: u32) {
+        // rd <- imm_u, pc += 4
+        self.xreg[rd] = uimm;
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    // J-type instructions.
+
+    fn jal(&mut self, rd: usize, jimm: u32) {
+        // rd <- pc + 4, pc <- pc + imm_j
+        self.xreg[rd] = self.pc.wrapping_add(4);
+        self.pc = self.pc.wrapping_add(jimm);
+        self.xreg[0] = 0;
+    }
+
+    // Arithmetic instructions.
+
+    fn add(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- rs1 + rs2, pc += 4
+        self.xreg[rd] = self.xreg[rs1].wrapping_add(self.xreg[rs2]);
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn mul(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- rs1 * rs2, pc += 4
+        self.xreg[rd] = self.xreg[rs1].wrapping_mul(self.xreg[rs2]);
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn sub(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- rs1 - rs2, pc += 4
+        self.xreg[rd] = self.xreg[rs1].wrapping_sub(self.xreg[rs2]);
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn sll(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- rs1 << (rs2 % XLEN), pc += 4
+        self.xreg[rd] = self.xreg[rs1] << (self.xreg[rs2] % 32);
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn mulh(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        let xreg_rs1 = (self.xreg[rs1] as i32) as i64;
+        let xreg_rs2 = (self.xreg[rs2] as i32) as i64;
+        let t = (xreg_rs1 * xreg_rs2) >> 32;
+        self.xreg[rd] = t as u32;
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn slt(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // Signed.
+        // rd <- (rs1 < rs2) ? 1 : 0, pc += 4
+        let xreg_rs1 = self.xreg[rs1] as i32;
+        let xreg_rs2 = self.xreg[rs2] as i32;
+        self.xreg[rd] = if xreg_rs1 < xreg_rs2 { 1 } else { 0 };
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn mulhsu(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        let xreg_rs1 = (self.xreg[rs1] as i32) as i64;
+        let xreg_rs2 = (self.xreg[rs2] as u64) as i64;
+        let t = (xreg_rs1 * xreg_rs2) >> 32;
+        self.xreg[rd] = t as u32;
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn sltu(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- (rs1 < rs2) ? 1 : 0, pc += 4
+        let xreg_rs1 = self.xreg[rs1];
+        let xreg_rs2 = self.xreg[rs2];
+        self.xreg[rd] = if xreg_rs1 < xreg_rs2 { 1 } else { 0 };
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn mulhu(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        let xreg_rs1 = self.xreg[rs1] as u64;
+        let xreg_rs2 = self.xreg[rs2] as u64;
+        let t = (xreg_rs1 * xreg_rs2) >> 32;
+        self.xreg[rd] = t as u32;
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn xor(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- rs1 ^ rs2, pc += 4
+        self.xreg[rd] = self.xreg[rs1] ^ self.xreg[rs2];
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn div(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        let dividend = self.xreg[rs1] as i32;
+        let divisor = self.xreg[rs2] as i32;
+        // Check for signed division overflow.
+        if ((dividend as u32) != 0x80000000) || divisor != -1 {
+            self.xreg[rd] = if divisor != 0 {
+                (dividend.wrapping_div(divisor)) as u32
+            } else {
+                u32::MAX // -1.
+            }
+        } else {
+            // Signed division overflow occurred.
+            self.xreg[rd] = dividend as u32;
+        }
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn srl(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- rs1 >> (rs2 % XLEN), pc += 4
+        self.xreg[rd] = self.xreg[rs1] >> (self.xreg[rs2] % 32);
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn divu(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        let dividend = self.xreg[rs1];
+        let divisor = self.xreg[rs2];
+        self.xreg[rd] = if divisor != 0 {
+            dividend.wrapping_div(divisor)
+        } else {
+            u32::MAX // -1.
+        };
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn sra(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- rs1 >> (rs2 % XLEN), pc += 4
+        let xreg_rs1 = self.xreg[rs1] as i32;
+        let shift = (self.xreg[rs2] % 32) as i32;
+        self.xreg[rd] = (xreg_rs1 >> shift) as u32;
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn or(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- rs1 | rs2, pc += 4
+        self.xreg[rd] = self.xreg[rs1] | self.xreg[rs2];
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn rem(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        let dividend = self.xreg[rs1] as i32;
+        let divisor = self.xreg[rs2] as i32;
+        // Check for signed division overflow.
+        if ((dividend as u32) != 0x80000000) || divisor != -1 {
+            self.xreg[rd] = if divisor != 0 {
+                (dividend % divisor) as u32
+            } else {
+                dividend as u32
+            }
+        } else {
+            // Signed division overflow occurred.
+            self.xreg[rd] = 0;
+        }
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn and(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- rs1 & rs2, pc += 4
+        self.xreg[rd] = self.xreg[rs1] & self.xreg[rs2];
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn remu(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        let dividend = self.xreg[rs1];
+        let divisor = self.xreg[rs2];
+        self.xreg[rd] = if divisor != 0 {
+            dividend % divisor
+        } else {
+            dividend
+        };
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    // Immediate shift instructions.
+
+    fn slli(&mut self, rd: usize, rs1: usize, shamt: u32) {
+        self.xreg[rd] = self.xreg[rs1] << shamt;
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn srli(&mut self, rd: usize, rs1: usize, shamt: u32) {
+        self.xreg[rd] = self.xreg[rs1] >> shamt;
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn srai(&mut self, rd: usize, rs1: usize, shamt: u32) {
+        let xreg_rs = self.xreg[rs1] as i32;
+        let shamt = shamt as i32;
+        self.xreg[rd] = (xreg_rs >> shamt) as u32;
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
     }
 }
