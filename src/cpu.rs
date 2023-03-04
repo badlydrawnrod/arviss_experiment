@@ -81,18 +81,7 @@ where
             Imm12RdRs1::Lw => self.lw(rd, rs1, iimm),
             Imm12RdRs1::Lbu => self.lbu(rd, rs1, iimm),
             Imm12RdRs1::Lhu => self.lhu(rd, rs1, iimm),
-            Imm12RdRs1::Flw => {
-                // rd <- f32(rs1 + imm_i)
-                match self.mem.read32(self.xreg[rs1].wrapping_add(iimm)) {
-                    Ok(word) => {
-                        self.freg[rd] = f32::from_bits(word);
-                        self.pc = self.pc.wrapping_add(4);
-                    }
-                    Err(_) => {
-                        self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
-                    }
-                }
-            }
+            Imm12RdRs1::Flw => self.flw(rd, rs1, iimm),
             Imm12RdRs1::Addi => self.addi(rd, rs1, iimm),
             Imm12RdRs1::Slti => self.slti(rd, rs1, iimm),
             Imm12RdRs1::Sltiu => self.sltiu(rd, rs1, iimm),
@@ -111,18 +100,7 @@ where
             Imm12Rs1Rs2::Sb => self.sb(rs1, rs2, simm),
             Imm12Rs1Rs2::Sh => self.sh(rs1, rs2, simm),
             Imm12Rs1Rs2::Sw => self.sw(rs1, rs2, simm),
-            Imm12Rs1Rs2::Fsw => {
-                // f32(rs1 + imm_s) = rs2
-                let data = f32::to_bits(self.freg[rs2]);
-                match self.mem.write32(self.xreg[rs1].wrapping_add(simm), data) {
-                    Ok(_) => {
-                        self.pc = self.pc.wrapping_add(4);
-                    }
-                    Err(_) => {
-                        self.trap_handler.handle_trap(TrapCause::StoreAccessFault);
-                    }
-                }
-            }
+            Imm12Rs1Rs2::Fsw => self.fsw(rs1, rs2, simm),
         }
     }
 
@@ -155,40 +133,11 @@ where
         let rm = rm as usize;
         let rs1 = rs1 as usize;
         match instruction {
-            RdRs1Rm::FsqrtS => {
-                // rd <- sqrt(rs1)
-                let f = self.freg[rs1];
-                self.freg[rd] = f32::sqrt(f);
-                self.pc = self.pc.wrapping_add(4);
-                // TODO: handle rounding modes.
-            }
-            RdRs1Rm::FcvtWS => {
-                // rd <- int32_t(rs1)
-                let i = self.freg[rs1] as i32;
-                self.xreg[rd] = i as u32;
-                self.pc = self.pc.wrapping_add(4);
-                // TODO: handle rounding modes.
-            }
-            RdRs1Rm::FcvtWuS => {
-                // rd <- uint32_t(rs1)
-                let i = self.freg[rs1] as u32;
-                self.xreg[rd] = i;
-                self.pc = self.pc.wrapping_add(4);
-                // TODO: handle rounding modes.
-            }
-            RdRs1Rm::FcvtSW => {
-                // rd <- float(int32_t((rs1))
-                let i = self.xreg[rs1] as i32;
-                self.freg[rd] = i as f32;
-                self.pc = self.pc.wrapping_add(4);
-                // TODO: handle rounding modes.
-            }
-            RdRs1Rm::FcvtSWu => {
-                // rd <- float(rs1)
-                self.freg[rd] = self.xreg[rs1] as f32;
-                self.pc = self.pc.wrapping_add(4);
-                // TODO: handle rounding modes.
-            }
+            RdRs1Rm::FsqrtS => self.fsqrt_s(rd, rs1, rm),
+            RdRs1Rm::FcvtWS => self.fcvt_w_s(rd, rs1, rm),
+            RdRs1Rm::FcvtWuS => self.fcvt_wu_s(rd, rs1, rm),
+            RdRs1Rm::FcvtSW => self.fcvt_s_w(rd, rs1, rm),
+            RdRs1Rm::FcvtSWu => self.fcvt_s_wu(rd, rs1, rm),
         }
     }
 
@@ -205,30 +154,10 @@ where
         let rs1 = rs1 as usize;
         let rs2 = rs2 as usize;
         match instruction {
-            RdRs1Rs2Rm::FaddS => {
-                // rd <- rs1 + rs2
-                self.freg[rd] = self.freg[rs1] + self.freg[rs2];
-                self.pc = self.pc.wrapping_add(4);
-                // TODO: handle rounding modes.
-            }
-            RdRs1Rs2Rm::FsubS => {
-                // rd <- rs1 - rs2
-                self.freg[rd] = self.freg[rs1] - self.freg[rs2];
-                self.pc = self.pc.wrapping_add(4);
-                // TODO: handle rounding modes.
-            }
-            RdRs1Rs2Rm::FmulS => {
-                // rd <- rs1 * rs2
-                self.freg[rd] = self.freg[rs1] * self.freg[rs2];
-                self.pc = self.pc.wrapping_add(4);
-                // TODO: handle rounding modes.
-            }
-            RdRs1Rs2Rm::FdivS => {
-                // rd <- rs1 / rs2
-                self.freg[rd] = self.freg[rs1] / self.freg[rs2];
-                self.pc = self.pc.wrapping_add(4);
-                // TODO: handle rounding modes.
-            }
+            RdRs1Rs2Rm::FaddS => self.fadd_s(rd, rs1, rs2, rm),
+            RdRs1Rs2Rm::FsubS => self.fsub_s(rd, rs1, rs2, rm),
+            RdRs1Rs2Rm::FmulS => self.fmul_s(rd, rs1, rs2, rm),
+            RdRs1Rs2Rm::FdivS => self.fdiv_s(rd, rs1, rs2, rm),
         }
     }
 
@@ -247,30 +176,10 @@ where
         let rs2 = rs2 as usize;
         let rs3 = rs3 as usize;
         match instruction {
-            RdRs1Rs2Rs3Rm::FmaddS => {
-                // rd <- (rs1 * rs2) + rs3
-                self.freg[rd] = (self.freg[rs1] * self.freg[rs2]) + self.freg[rs3];
-                self.pc = self.pc.wrapping_add(4);
-                // TODO: handle rounding modes.
-            }
-            RdRs1Rs2Rs3Rm::FmsubS => {
-                // rd <- (rs1 * rs2) - rs3
-                self.freg[rd] = (self.freg[rs1] * self.freg[rs2]) - self.freg[rs3];
-                self.pc = self.pc.wrapping_add(4);
-                // TODO: handle rounding modes.
-            }
-            RdRs1Rs2Rs3Rm::FnmsubS => {
-                // rd <- -(rs1 * rs2) + rs3
-                self.freg[rd] = -(self.freg[rs1] * self.freg[rs2]) + self.freg[rs3];
-                self.pc = self.pc.wrapping_add(4);
-                // TODO: handle rounding modes.
-            }
-            RdRs1Rs2Rs3Rm::FnmaddS => {
-                // rd <- -(rs1 * rs2) - rs3
-                self.freg[rd] = -(self.freg[rs1] * self.freg[rs2]) - self.freg[rs3];
-                self.pc = self.pc.wrapping_add(4);
-                // TODO: handle rounding modes.
-            }
+            RdRs1Rs2Rs3Rm::FmaddS => self.fmadd_s(rd, rs1, rs2, rs3, rm),
+            RdRs1Rs2Rs3Rm::FmsubS => self.fmsub_s(rd, rs1, rs2, rs3, rm),
+            RdRs1Rs2Rs3Rm::FnmsubS => self.fnmsub_s(rd, rs1, rs2, rs3, rm),
+            RdRs1Rs2Rs3Rm::FnmaddS => self.fnmadd_s(rd, rs1, rs2, rs3, rm),
         }
     }
 
@@ -278,53 +187,9 @@ where
         let rd = rd as usize;
         let rs1 = rs1 as usize;
         match instruction {
-            RdRs1::FmvXW => {
-                // bits(rd) <- bits(rs1)
-                self.xreg[rd] = f32::to_bits(self.freg[rs1]);
-                self.pc = self.pc.wrapping_add(4);
-            }
-            RdRs1::FmvWX => {
-                // bits(rd) <- bits(rs1)
-                self.freg[rd] = f32::from_bits(self.xreg[rs1]);
-            }
-            RdRs1::FclassS => {
-                let v = self.freg[rs1];
-                let bits = f32::to_bits(v);
-                let result: u32 = if v == f32::NEG_INFINITY {
-                    1 << 0
-                } else if v == f32::INFINITY {
-                    1 << 7
-                } else if bits == 0x80000000 {
-                    // Negative zero.
-                    1 << 3
-                } else if v == 0.0 {
-                    1 << 4
-                } else if (bits & 0x7f800000) == 0 {
-                    // The exponent is zero.
-                    if (bits & 0x80000000) != 0 {
-                        // Negative subnormal number.
-                        1 << 2
-                    } else {
-                        // Postive subnormal number.
-                        1 << 5
-                    }
-                } else if (bits & 0x7f800000) == 0x7f800000 && (bits & 0x00400000) != 0 {
-                    // Quiet NaN.
-                    1 << 9
-                } else if (bits & 0x7f800000) == 0x7f800000 && (bits & 0x003fffff) != 0 {
-                    // Signalling NaN.
-                    1 << 8
-                } else if v < 0.0 {
-                    1 << 1
-                } else if v > 0.0 {
-                    1 << 6
-                } else {
-                    0
-                };
-                self.xreg[rd] = result;
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
+            RdRs1::FmvXW => self.fmv_x_w(rd, rs1),
+            RdRs1::FmvWX => self.fmv_w_x(rd, rs1),
+            RdRs1::FclassS => self.fclass_s(rd, rs1),
         }
     }
 
@@ -351,72 +216,14 @@ where
             RdRs1Rs2::Rem => self.rem(rd, rs1, rs2),
             RdRs1Rs2::And => self.and(rd, rs1, rs2),
             RdRs1Rs2::Remu => self.remu(rd, rs1, rs2),
-            RdRs1Rs2::FsgnjS => {
-                // rd <- abs(rs1) * sgn(rs2)
-                let freg_rs1 = self.freg[rs1];
-                let freg_rs2 = self.freg[rs2];
-                self.freg[rd] = freg_rs1.abs() * if freg_rs2 < 0.0 { -1.0 } else { 1.0 };
-                self.pc = self.pc.wrapping_add(4);
-            }
-            RdRs1Rs2::FminS => {
-                // rd <- min(rs1, rs2)
-                let freg_rs1 = self.freg[rs1];
-                let freg_rs2 = self.freg[rs2];
-                self.freg[rd] = freg_rs1.min(freg_rs2);
-                self.pc = self.pc.wrapping_add(4);
-            }
-            RdRs1Rs2::FleS => {
-                // rd <- (rs1 <= rs2) ? 1 : 0;
-                let freg_rs1 = self.freg[rs1];
-                let freg_rs2 = self.freg[rs2];
-                self.xreg[rd] = if freg_rs1 < freg_rs2 { 1 } else { 0 };
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::FsgnjnS => {
-                // rd <- abs(rs1) * -sgn(rs2)
-                let freg_rs1 = self.freg[rs1];
-                let freg_rs2 = self.freg[rs2];
-                self.freg[rd] = freg_rs1.abs() * if freg_rs2 < 0.0 { 1.0 } else { -1.0 };
-                self.pc = self.pc.wrapping_add(4);
-            }
-            RdRs1Rs2::FmaxS => {
-                // rd <- max(rs1, rs2)
-                let freg_rs1 = self.freg[rs1];
-                let freg_rs2 = self.freg[rs2];
-                self.freg[rd] = freg_rs1.max(freg_rs2);
-                self.pc = self.pc.wrapping_add(4);
-            }
-            RdRs1Rs2::FltS => {
-                // rd <- (rs1 < rs2) ? 1 : 0;
-                let freg_rs1 = self.freg[rs1];
-                let freg_rs2 = self.freg[rs2];
-                self.xreg[rd] = if freg_rs1 <= freg_rs2 { 1 } else { 0 };
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
-            RdRs1Rs2::FsgnjxS => {
-                // rd <- abs(rs1) * (sgn(rs1) == sgn(rs2)) ? 1 : -1
-                let freg_rs1 = self.freg[rs1];
-                let freg_rs2 = self.freg[rs2];
-                // The sign bit is the XOR of the sign bits of rs1 and rs2.
-                let m =
-                    if (freg_rs1 < 0.0 && freg_rs2 >= 0.0) || (freg_rs1 >= 0.0 && freg_rs2 < 0.0) {
-                        -1.0
-                    } else {
-                        1.0
-                    };
-                self.freg[rd] = freg_rs1.abs() * m;
-                self.pc = self.pc.wrapping_add(4);
-            }
-            RdRs1Rs2::FeqS => {
-                // rd <- (rs1 == rs2) ? 1 : 0;
-                let freg_rs1 = self.freg[rs1];
-                let freg_rs2 = self.freg[rs2];
-                self.xreg[rd] = if freg_rs1 == freg_rs2 { 1 } else { 0 };
-                self.pc = self.pc.wrapping_add(4);
-                self.xreg[0] = 0;
-            }
+            RdRs1Rs2::FsgnjS => self.fsgnj_s(rd, rs1, rs2),
+            RdRs1Rs2::FminS => self.fmin_s(rd, rs1, rs2),
+            RdRs1Rs2::FleS => self.fle_s(rd, rs1, rs2),
+            RdRs1Rs2::FsgnjnS => self.fsgnjn_s(rd, rs1, rs2),
+            RdRs1Rs2::FmaxS => self.fmax_s(rd, rs1, rs2),
+            RdRs1Rs2::FltS => self.flt_s(rd, rs1, rs2),
+            RdRs1Rs2::FsgnjxS => self.fsgnjx_s(rd, rs1, rs2),
+            RdRs1Rs2::FeqS => self.feq_s(rd, rs1, rs2),
         }
     }
 
@@ -959,6 +766,315 @@ where
         let xreg_rs = self.xreg[rs1] as i32;
         let shamt = shamt as i32;
         self.xreg[rd] = (xreg_rs >> shamt) as u32;
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+}
+
+trait Rv32f {
+    // I-type instructions.
+    fn flw(&mut self, rd: usize, rs1: usize, iimm: u32);
+
+    // S-type instructions.
+    fn fsw(&mut self, rs1: usize, rs2: usize, simm: u32);
+
+    // Instructions with rd rs1 rm operands.
+    fn fsqrt_s(&mut self, rd: usize, rs1: usize, rm: usize);
+    fn fcvt_w_s(&mut self, rd: usize, rs1: usize, rm: usize);
+    fn fcvt_wu_s(&mut self, rd: usize, rs1: usize, rm: usize);
+    fn fcvt_s_w(&mut self, rd: usize, rs1: usize, rm: usize);
+    fn fcvt_s_wu(&mut self, rd: usize, rs1: usize, rm: usize);
+
+    // Arithmetic instructions.
+    fn fadd_s(&mut self, rd: usize, rs1: usize, rs2: usize, rm: usize);
+    fn fsub_s(&mut self, rd: usize, rs1: usize, rs2: usize, rm: usize);
+    fn fmul_s(&mut self, rd: usize, rs1: usize, rs2: usize, rm: usize);
+    fn fdiv_s(&mut self, rd: usize, rs1: usize, rs2: usize, rm: usize);
+
+    // Fused multiply / add instructions.
+    fn fmadd_s(&mut self, rd: usize, rs1: usize, rs2: usize, rs3: usize, rm: usize);
+    fn fmsub_s(&mut self, rd: usize, rs1: usize, rs2: usize, rs3: usize, rm: usize);
+    fn fnmsub_s(&mut self, rd: usize, rs1: usize, rs2: usize, rs3: usize, rm: usize);
+    fn fnmadd_s(&mut self, rd: usize, rs1: usize, rs2: usize, rs3: usize, rm: usize);
+
+    // Instructions with rd rs1 operands.
+    fn fmv_x_w(&mut self, rd: usize, rs1: usize);
+    fn fmv_w_x(&mut self, rd: usize, rs1: usize);
+    fn fclass_s(&mut self, rd: usize, rs1: usize);
+
+    // Instructions with rd rs1 rs2 operands.
+    fn fsgnj_s(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn fmin_s(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn fle_s(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn fsgnjn_s(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn fmax_s(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn flt_s(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn fsgnjx_s(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn feq_s(&mut self, rd: usize, rs1: usize, rs2: usize);
+}
+
+impl<T, U> Rv32f for Cpu<T, U>
+where
+    T: Mem,
+    U: TrapHandler<Item = ()>,
+{
+    // I-type instructions.
+
+    fn flw(&mut self, rd: usize, rs1: usize, iimm: u32) {
+        // rd <- f32(rs1 + imm_i)
+        match self.mem.read32(self.xreg[rs1].wrapping_add(iimm)) {
+            Ok(word) => {
+                self.freg[rd] = f32::from_bits(word);
+                self.pc = self.pc.wrapping_add(4);
+            }
+            Err(_) => {
+                self.trap_handler.handle_trap(TrapCause::LoadAccessFault);
+            }
+        }
+    }
+
+    // S-type instructions.
+
+    fn fsw(&mut self, rs1: usize, rs2: usize, simm: u32) {
+        // f32(rs1 + imm_s) = rs2
+        let data = f32::to_bits(self.freg[rs2]);
+        match self.mem.write32(self.xreg[rs1].wrapping_add(simm), data) {
+            Ok(_) => {
+                self.pc = self.pc.wrapping_add(4);
+            }
+            Err(_) => {
+                self.trap_handler.handle_trap(TrapCause::StoreAccessFault);
+            }
+        }
+    }
+
+    // Instructions with rd rs1 rm operands.
+
+    fn fsqrt_s(&mut self, rd: usize, rs1: usize, _rm: usize) {
+        // rd <- sqrt(rs1)
+        let f = self.freg[rs1];
+        self.freg[rd] = f32::sqrt(f);
+        self.pc = self.pc.wrapping_add(4);
+        // TODO: handle rounding modes.
+    }
+
+    fn fcvt_w_s(&mut self, rd: usize, rs1: usize, _rm: usize) {
+        // rd <- int32_t(rs1)
+        let i = self.freg[rs1] as i32;
+        self.xreg[rd] = i as u32;
+        self.pc = self.pc.wrapping_add(4);
+        // TODO: handle rounding modes.
+    }
+
+    fn fcvt_wu_s(&mut self, rd: usize, rs1: usize, _rm: usize) {
+        // rd <- uint32_t(rs1)
+        let i = self.freg[rs1] as u32;
+        self.xreg[rd] = i;
+        self.pc = self.pc.wrapping_add(4);
+        // TODO: handle rounding modes.
+    }
+
+    fn fcvt_s_w(&mut self, rd: usize, rs1: usize, _rm: usize) {
+        // rd <- float(int32_t((rs1))
+        let i = self.xreg[rs1] as i32;
+        self.freg[rd] = i as f32;
+        self.pc = self.pc.wrapping_add(4);
+        // TODO: handle rounding modes.
+    }
+
+    fn fcvt_s_wu(&mut self, rd: usize, rs1: usize, _rm: usize) {
+        // rd <- float(rs1)
+        self.freg[rd] = self.xreg[rs1] as f32;
+        self.pc = self.pc.wrapping_add(4);
+        // TODO: handle rounding modes.
+    }
+
+    // Arithmetic instructions.
+
+    fn fadd_s(&mut self, rd: usize, rs1: usize, rs2: usize, _rm: usize) {
+        // rd <- rs1 + rs2
+        self.freg[rd] = self.freg[rs1] + self.freg[rs2];
+        self.pc = self.pc.wrapping_add(4);
+        // TODO: handle rounding modes.
+    }
+
+    fn fsub_s(&mut self, rd: usize, rs1: usize, rs2: usize, _rm: usize) {
+        // rd <- rs1 - rs2
+        self.freg[rd] = self.freg[rs1] - self.freg[rs2];
+        self.pc = self.pc.wrapping_add(4);
+        // TODO: handle rounding modes.
+    }
+
+    fn fmul_s(&mut self, rd: usize, rs1: usize, rs2: usize, _rm: usize) {
+        // rd <- rs1 * rs2
+        self.freg[rd] = self.freg[rs1] * self.freg[rs2];
+        self.pc = self.pc.wrapping_add(4);
+        // TODO: handle rounding modes.
+    }
+
+    fn fdiv_s(&mut self, rd: usize, rs1: usize, rs2: usize, _rm: usize) {
+        // rd <- rs1 / rs2
+        self.freg[rd] = self.freg[rs1] / self.freg[rs2];
+        self.pc = self.pc.wrapping_add(4);
+        // TODO: handle rounding modes.
+    }
+
+    // Fused multiply / add instructions.
+
+    fn fmadd_s(&mut self, rd: usize, rs1: usize, rs2: usize, rs3: usize, _rm: usize) {
+        // rd <- (rs1 * rs2) + rs3
+        self.freg[rd] = (self.freg[rs1] * self.freg[rs2]) + self.freg[rs3];
+        self.pc = self.pc.wrapping_add(4);
+        // TODO: handle rounding modes.
+    }
+
+    fn fmsub_s(&mut self, rd: usize, rs1: usize, rs2: usize, rs3: usize, _rm: usize) {
+        // rd <- (rs1 * rs2) - rs3
+        self.freg[rd] = (self.freg[rs1] * self.freg[rs2]) - self.freg[rs3];
+        self.pc = self.pc.wrapping_add(4);
+        // TODO: handle rounding modes.
+    }
+
+    fn fnmsub_s(&mut self, rd: usize, rs1: usize, rs2: usize, rs3: usize, _rm: usize) {
+        // rd <- -(rs1 * rs2) + rs3
+        self.freg[rd] = -(self.freg[rs1] * self.freg[rs2]) + self.freg[rs3];
+        self.pc = self.pc.wrapping_add(4);
+        // TODO: handle rounding modes.
+    }
+
+    fn fnmadd_s(&mut self, rd: usize, rs1: usize, rs2: usize, rs3: usize, _rm: usize) {
+        // rd <- -(rs1 * rs2) - rs3
+        self.freg[rd] = -(self.freg[rs1] * self.freg[rs2]) - self.freg[rs3];
+        self.pc = self.pc.wrapping_add(4);
+        // TODO: handle rounding modes.
+    }
+
+    // Instructions with rd rs1 operands.
+
+    fn fmv_x_w(&mut self, rd: usize, rs1: usize) {
+        // bits(rd) <- bits(rs1)
+        self.xreg[rd] = f32::to_bits(self.freg[rs1]);
+        self.pc = self.pc.wrapping_add(4);
+
+        self.xreg[0] = 0;
+    }
+
+    fn fmv_w_x(&mut self, rd: usize, rs1: usize) {
+        // bits(rd) <- bits(rs1)
+        self.freg[rd] = f32::from_bits(self.xreg[rs1]);
+        self.pc = self.pc.wrapping_add(4);
+    }
+
+    fn fclass_s(&mut self, rd: usize, rs1: usize) {
+        let v = self.freg[rs1];
+        let bits = f32::to_bits(v);
+        let result: u32 = if v == f32::NEG_INFINITY {
+            1 << 0
+        } else if v == f32::INFINITY {
+            1 << 7
+        } else if bits == 0x80000000 {
+            // Negative zero.
+            1 << 3
+        } else if v == 0.0 {
+            1 << 4
+        } else if (bits & 0x7f800000) == 0 {
+            // The exponent is zero.
+            if (bits & 0x80000000) != 0 {
+                // Negative subnormal number.
+                1 << 2
+            } else {
+                // Postive subnormal number.
+                1 << 5
+            }
+        } else if (bits & 0x7f800000) == 0x7f800000 && (bits & 0x00400000) != 0 {
+            // Quiet NaN.
+            1 << 9
+        } else if (bits & 0x7f800000) == 0x7f800000 && (bits & 0x003fffff) != 0 {
+            // Signalling NaN.
+            1 << 8
+        } else if v < 0.0 {
+            1 << 1
+        } else if v > 0.0 {
+            1 << 6
+        } else {
+            0
+        };
+        self.xreg[rd] = result;
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    // Instructions with rd rs1 rs2 operands.
+
+    fn fsgnj_s(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- abs(rs1) * sgn(rs2)
+        let freg_rs1 = self.freg[rs1];
+        let freg_rs2 = self.freg[rs2];
+        self.freg[rd] = freg_rs1.abs() * if freg_rs2 < 0.0 { -1.0 } else { 1.0 };
+        self.pc = self.pc.wrapping_add(4);
+    }
+
+    fn fmin_s(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- min(rs1, rs2)
+        let freg_rs1 = self.freg[rs1];
+        let freg_rs2 = self.freg[rs2];
+        self.freg[rd] = freg_rs1.min(freg_rs2);
+        self.pc = self.pc.wrapping_add(4);
+    }
+
+    fn fle_s(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- (rs1 <= rs2) ? 1 : 0;
+        let freg_rs1 = self.freg[rs1];
+        let freg_rs2 = self.freg[rs2];
+        self.xreg[rd] = if freg_rs1 < freg_rs2 { 1 } else { 0 };
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn fsgnjn_s(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- abs(rs1) * -sgn(rs2)
+        let freg_rs1 = self.freg[rs1];
+        let freg_rs2 = self.freg[rs2];
+        self.freg[rd] = freg_rs1.abs() * if freg_rs2 < 0.0 { 1.0 } else { -1.0 };
+        self.pc = self.pc.wrapping_add(4);
+    }
+
+    fn fmax_s(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- max(rs1, rs2)
+        let freg_rs1 = self.freg[rs1];
+        let freg_rs2 = self.freg[rs2];
+        self.freg[rd] = freg_rs1.max(freg_rs2);
+        self.pc = self.pc.wrapping_add(4);
+    }
+
+    fn flt_s(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- (rs1 < rs2) ? 1 : 0;
+        let freg_rs1 = self.freg[rs1];
+        let freg_rs2 = self.freg[rs2];
+        self.xreg[rd] = if freg_rs1 <= freg_rs2 { 1 } else { 0 };
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn fsgnjx_s(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- abs(rs1) * (sgn(rs1) == sgn(rs2)) ? 1 : -1
+        let freg_rs1 = self.freg[rs1];
+        let freg_rs2 = self.freg[rs2];
+        // The sign bit is the XOR of the sign bits of rs1 and rs2.
+        let m = if (freg_rs1 < 0.0 && freg_rs2 >= 0.0) || (freg_rs1 >= 0.0 && freg_rs2 < 0.0) {
+            -1.0
+        } else {
+            1.0
+        };
+        self.freg[rd] = freg_rs1.abs() * m;
+        self.pc = self.pc.wrapping_add(4);
+    }
+
+    fn feq_s(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- (rs1 == rs2) ? 1 : 0;
+        let freg_rs1 = self.freg[rs1];
+        let freg_rs2 = self.freg[rs2];
+        self.xreg[rd] = if freg_rs1 == freg_rs2 { 1 } else { 0 };
         self.pc = self.pc.wrapping_add(4);
         self.xreg[0] = 0;
     }
