@@ -5,6 +5,8 @@ mod dispatcher;
 mod extract;
 mod generator;
 mod memory;
+mod new_decoder;
+mod tobits;
 mod trap_handler;
 
 pub use self::cpu::*;

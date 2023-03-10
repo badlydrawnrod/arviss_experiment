@@ -245,65 +245,80 @@ where
     }
 }
 
-trait Rv32i {
+pub trait Rv32i {
+    type Item;
+
+    // Illegal instruction.
+    fn illegal(&mut self, ins: u32) -> Self::Item;
+
     // B-type instructions.
-    fn beq(&mut self, rs1: usize, rs2: usize, bimm: u32);
-    fn bne(&mut self, rs1: usize, rs2: usize, bimm: u32);
-    fn blt(&mut self, rs1: usize, rs2: usize, bimm: u32);
-    fn bge(&mut self, rs1: usize, rs2: usize, bimm: u32);
-    fn bltu(&mut self, rs1: usize, rs2: usize, bimm: u32);
-    fn bgeu(&mut self, rs1: usize, rs2: usize, bimm: u32);
+    fn beq(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item;
+    fn bne(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item;
+    fn blt(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item;
+    fn bge(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item;
+    fn bltu(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item;
+    fn bgeu(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item;
 
     // I-type instructions.
-    fn lb(&mut self, rd: usize, rs1: usize, iimm: u32);
-    fn lh(&mut self, rd: usize, rs1: usize, iimm: u32);
-    fn lw(&mut self, rd: usize, rs1: usize, iimm: u32);
-    fn lbu(&mut self, rd: usize, rs1: usize, iimm: u32);
-    fn lhu(&mut self, rd: usize, rs1: usize, iimm: u32);
-    fn addi(&mut self, rd: usize, rs1: usize, iimm: u32);
-    fn slti(&mut self, rd: usize, rs1: usize, iimm: u32);
-    fn sltiu(&mut self, rd: usize, rs1: usize, iimm: u32);
-    fn xori(&mut self, rd: usize, rs1: usize, iimm: u32);
-    fn ori(&mut self, rd: usize, rs1: usize, iimm: u32);
-    fn andi(&mut self, rd: usize, rs1: usize, iimm: u32);
-    fn jalr(&mut self, rd: usize, rs1: usize, iimm: u32);
+    fn lb(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn lh(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn lw(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn lbu(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn lhu(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn addi(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn slti(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn sltiu(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn xori(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn ori(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn andi(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn jalr(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
 
     // S-type instructions.
-    fn sb(&mut self, rs1: usize, rs2: usize, simm: u32);
-    fn sh(&mut self, rs1: usize, rs2: usize, simm: u32);
-    fn sw(&mut self, rs1: usize, rs2: usize, simm: u32);
+    fn sb(&mut self, rs1: u32, rs2: u32, simm: u32) -> Self::Item;
+    fn sh(&mut self, rs1: u32, rs2: u32, simm: u32) -> Self::Item;
+    fn sw(&mut self, rs1: u32, rs2: u32, simm: u32) -> Self::Item;
 
     // U-type instructions.
-    fn auipc(&mut self, rd: usize, uimm: u32);
-    fn lui(&mut self, rd: usize, uimm: u32);
+    fn auipc(&mut self, rd: u32, uimm: u32) -> Self::Item;
+    fn lui(&mut self, rd: u32, uimm: u32) -> Self::Item;
 
     // J-type instructions.
-    fn jal(&mut self, rd: usize, jimm: u32);
+    fn jal(&mut self, rd: u32, jimm: u32) -> Self::Item;
 
-    // Arithmetic instructions.
-    fn add(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn mul(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn sub(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn sll(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn mulh(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn slt(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn mulhsu(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn sltu(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn mulhu(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn xor(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn div(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn srl(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn divu(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn sra(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn or(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn rem(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn and(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn remu(&mut self, rd: usize, rs1: usize, rs2: usize);
+    // Register arithmetic instructions.
+    fn add(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn sub(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn sll(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn slt(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn sltu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn xor(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn srl(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn sra(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn or(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn and(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
 
     // Immediate shift instructions.
-    fn slli(&mut self, rd: usize, rs1: usize, shamt: u32);
-    fn srli(&mut self, rd: usize, rs1: usize, shamt: u32);
-    fn srai(&mut self, rd: usize, rs1: usize, shamt: u32);
+    fn slli(&mut self, rd: u32, rs1: u32, shamt: u32) -> Self::Item;
+    fn srli(&mut self, rd: u32, rs1: u32, shamt: u32) -> Self::Item;
+    fn srai(&mut self, rd: u32, rs1: u32, shamt: u32) -> Self::Item;
+
+    // Fence instructions.
+    fn fence(&mut self, fm: u32, rd: u32, rs1: u32) -> Self::Item;
+
+    // System instructions.
+    fn ecall(&mut self) -> Self::Item;
+    fn ebreak(&mut self) -> Self::Item;
+}
+
+pub trait Rv32m: Rv32i {
+    fn mul(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn mulh(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn mulhsu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn mulhu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn div(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn divu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn rem(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn remu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
 }
 
 impl<T, U> Rv32i for Cpu<T, U>
@@ -311,6 +326,12 @@ where
     T: Mem,
     U: TrapHandler<Item = ()>,
 {
+    type Item = ();
+
+    // Illegal instruction.
+
+    fn illegal(&mut self, ins: u32) {}
+
     // B-type instructions.
 
     fn beq(&mut self, rs1: usize, rs2: usize, bimm: u32) {
@@ -584,13 +605,6 @@ where
         self.xreg[0] = 0;
     }
 
-    fn mul(&mut self, rd: usize, rs1: usize, rs2: usize) {
-        // rd <- rs1 * rs2, pc += 4
-        self.xreg[rd] = self.xreg[rs1].wrapping_mul(self.xreg[rs2]);
-        self.pc = self.pc.wrapping_add(4);
-        self.xreg[0] = 0;
-    }
-
     fn sub(&mut self, rd: usize, rs1: usize, rs2: usize) {
         // rd <- rs1 - rs2, pc += 4
         self.xreg[rd] = self.xreg[rs1].wrapping_sub(self.xreg[rs2]);
@@ -605,30 +619,12 @@ where
         self.xreg[0] = 0;
     }
 
-    fn mulh(&mut self, rd: usize, rs1: usize, rs2: usize) {
-        let xreg_rs1 = (self.xreg[rs1] as i32) as i64;
-        let xreg_rs2 = (self.xreg[rs2] as i32) as i64;
-        let t = (xreg_rs1 * xreg_rs2) >> 32;
-        self.xreg[rd] = t as u32;
-        self.pc = self.pc.wrapping_add(4);
-        self.xreg[0] = 0;
-    }
-
     fn slt(&mut self, rd: usize, rs1: usize, rs2: usize) {
         // Signed.
         // rd <- (rs1 < rs2) ? 1 : 0, pc += 4
         let xreg_rs1 = self.xreg[rs1] as i32;
         let xreg_rs2 = self.xreg[rs2] as i32;
         self.xreg[rd] = if xreg_rs1 < xreg_rs2 { 1 } else { 0 };
-        self.pc = self.pc.wrapping_add(4);
-        self.xreg[0] = 0;
-    }
-
-    fn mulhsu(&mut self, rd: usize, rs1: usize, rs2: usize) {
-        let xreg_rs1 = (self.xreg[rs1] as i32) as i64;
-        let xreg_rs2 = (self.xreg[rs2] as u64) as i64;
-        let t = (xreg_rs1 * xreg_rs2) >> 32;
-        self.xreg[rd] = t as u32;
         self.pc = self.pc.wrapping_add(4);
         self.xreg[0] = 0;
     }
@@ -642,15 +638,6 @@ where
         self.xreg[0] = 0;
     }
 
-    fn mulhu(&mut self, rd: usize, rs1: usize, rs2: usize) {
-        let xreg_rs1 = self.xreg[rs1] as u64;
-        let xreg_rs2 = self.xreg[rs2] as u64;
-        let t = (xreg_rs1 * xreg_rs2) >> 32;
-        self.xreg[rd] = t as u32;
-        self.pc = self.pc.wrapping_add(4);
-        self.xreg[0] = 0;
-    }
-
     fn xor(&mut self, rd: usize, rs1: usize, rs2: usize) {
         // rd <- rs1 ^ rs2, pc += 4
         self.xreg[rd] = self.xreg[rs1] ^ self.xreg[rs2];
@@ -658,39 +645,9 @@ where
         self.xreg[0] = 0;
     }
 
-    fn div(&mut self, rd: usize, rs1: usize, rs2: usize) {
-        let dividend = self.xreg[rs1] as i32;
-        let divisor = self.xreg[rs2] as i32;
-        // Check for signed division overflow.
-        if ((dividend as u32) != 0x80000000) || divisor != -1 {
-            self.xreg[rd] = if divisor != 0 {
-                (dividend.wrapping_div(divisor)) as u32
-            } else {
-                u32::MAX // -1.
-            }
-        } else {
-            // Signed division overflow occurred.
-            self.xreg[rd] = dividend as u32;
-        }
-        self.pc = self.pc.wrapping_add(4);
-        self.xreg[0] = 0;
-    }
-
     fn srl(&mut self, rd: usize, rs1: usize, rs2: usize) {
         // rd <- rs1 >> (rs2 % XLEN), pc += 4
         self.xreg[rd] = self.xreg[rs1] >> (self.xreg[rs2] % 32);
-        self.pc = self.pc.wrapping_add(4);
-        self.xreg[0] = 0;
-    }
-
-    fn divu(&mut self, rd: usize, rs1: usize, rs2: usize) {
-        let dividend = self.xreg[rs1];
-        let divisor = self.xreg[rs2];
-        self.xreg[rd] = if divisor != 0 {
-            dividend.wrapping_div(divisor)
-        } else {
-            u32::MAX // -1.
-        };
         self.pc = self.pc.wrapping_add(4);
         self.xreg[0] = 0;
     }
@@ -711,39 +668,9 @@ where
         self.xreg[0] = 0;
     }
 
-    fn rem(&mut self, rd: usize, rs1: usize, rs2: usize) {
-        let dividend = self.xreg[rs1] as i32;
-        let divisor = self.xreg[rs2] as i32;
-        // Check for signed division overflow.
-        if ((dividend as u32) != 0x80000000) || divisor != -1 {
-            self.xreg[rd] = if divisor != 0 {
-                (dividend % divisor) as u32
-            } else {
-                dividend as u32
-            }
-        } else {
-            // Signed division overflow occurred.
-            self.xreg[rd] = 0;
-        }
-        self.pc = self.pc.wrapping_add(4);
-        self.xreg[0] = 0;
-    }
-
     fn and(&mut self, rd: usize, rs1: usize, rs2: usize) {
         // rd <- rs1 & rs2, pc += 4
         self.xreg[rd] = self.xreg[rs1] & self.xreg[rs2];
-        self.pc = self.pc.wrapping_add(4);
-        self.xreg[0] = 0;
-    }
-
-    fn remu(&mut self, rd: usize, rs1: usize, rs2: usize) {
-        let dividend = self.xreg[rs1];
-        let divisor = self.xreg[rs2];
-        self.xreg[rd] = if divisor != 0 {
-            dividend % divisor
-        } else {
-            dividend
-        };
         self.pc = self.pc.wrapping_add(4);
         self.xreg[0] = 0;
     }
@@ -769,48 +696,155 @@ where
         self.pc = self.pc.wrapping_add(4);
         self.xreg[0] = 0;
     }
+
+    // Fence instructions.
+    fn fence(&mut self, fm: usize, rd: usize, rs1: usize) {}
+
+    // System instructions.
+    fn ecall(&mut self) {}
+    fn ebreak(&mut self) {}
 }
 
-trait Rv32f {
+impl<T, U> Rv32m for Cpu<T, U>
+where
+    T: Mem,
+    U: TrapHandler<Item = ()>,
+{
+    fn mul(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        // rd <- rs1 * rs2, pc += 4
+        self.xreg[rd] = self.xreg[rs1].wrapping_mul(self.xreg[rs2]);
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn mulh(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        let xreg_rs1 = (self.xreg[rs1] as i32) as i64;
+        let xreg_rs2 = (self.xreg[rs2] as i32) as i64;
+        let t = (xreg_rs1 * xreg_rs2) >> 32;
+        self.xreg[rd] = t as u32;
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn mulhsu(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        let xreg_rs1 = (self.xreg[rs1] as i32) as i64;
+        let xreg_rs2 = (self.xreg[rs2] as u64) as i64;
+        let t = (xreg_rs1 * xreg_rs2) >> 32;
+        self.xreg[rd] = t as u32;
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn mulhu(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        let xreg_rs1 = self.xreg[rs1] as u64;
+        let xreg_rs2 = self.xreg[rs2] as u64;
+        let t = (xreg_rs1 * xreg_rs2) >> 32;
+        self.xreg[rd] = t as u32;
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn div(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        let dividend = self.xreg[rs1] as i32;
+        let divisor = self.xreg[rs2] as i32;
+        // Check for signed division overflow.
+        if ((dividend as u32) != 0x80000000) || divisor != -1 {
+            self.xreg[rd] = if divisor != 0 {
+                (dividend.wrapping_div(divisor)) as u32
+            } else {
+                u32::MAX // -1.
+            }
+        } else {
+            // Signed division overflow occurred.
+            self.xreg[rd] = dividend as u32;
+        }
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn divu(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        let dividend = self.xreg[rs1];
+        let divisor = self.xreg[rs2];
+        self.xreg[rd] = if divisor != 0 {
+            dividend.wrapping_div(divisor)
+        } else {
+            u32::MAX // -1.
+        };
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn rem(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        let dividend = self.xreg[rs1] as i32;
+        let divisor = self.xreg[rs2] as i32;
+        // Check for signed division overflow.
+        if ((dividend as u32) != 0x80000000) || divisor != -1 {
+            self.xreg[rd] = if divisor != 0 {
+                (dividend % divisor) as u32
+            } else {
+                dividend as u32
+            }
+        } else {
+            // Signed division overflow occurred.
+            self.xreg[rd] = 0;
+        }
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+
+    fn remu(&mut self, rd: usize, rs1: usize, rs2: usize) {
+        let dividend = self.xreg[rs1];
+        let divisor = self.xreg[rs2];
+        self.xreg[rd] = if divisor != 0 {
+            dividend % divisor
+        } else {
+            dividend
+        };
+        self.pc = self.pc.wrapping_add(4);
+        self.xreg[0] = 0;
+    }
+}
+
+pub trait Rv32f: Rv32i {
     // I-type instructions.
-    fn flw(&mut self, rd: usize, rs1: usize, iimm: u32);
+    fn flw(&mut self, rd: usize, rs1: usize, iimm: u32) -> Self::Item;
 
     // S-type instructions.
-    fn fsw(&mut self, rs1: usize, rs2: usize, simm: u32);
+    fn fsw(&mut self, rs1: usize, rs2: usize, simm: u32) -> Self::Item;
 
     // Instructions with rd rs1 rm operands.
-    fn fsqrt_s(&mut self, rd: usize, rs1: usize, rm: usize);
-    fn fcvt_w_s(&mut self, rd: usize, rs1: usize, rm: usize);
-    fn fcvt_wu_s(&mut self, rd: usize, rs1: usize, rm: usize);
-    fn fcvt_s_w(&mut self, rd: usize, rs1: usize, rm: usize);
-    fn fcvt_s_wu(&mut self, rd: usize, rs1: usize, rm: usize);
+    fn fsqrt_s(&mut self, rd: usize, rs1: usize, rm: usize) -> Self::Item;
+    fn fcvt_w_s(&mut self, rd: usize, rs1: usize, rm: usize) -> Self::Item;
+    fn fcvt_wu_s(&mut self, rd: usize, rs1: usize, rm: usize) -> Self::Item;
+    fn fcvt_s_w(&mut self, rd: usize, rs1: usize, rm: usize) -> Self::Item;
+    fn fcvt_s_wu(&mut self, rd: usize, rs1: usize, rm: usize) -> Self::Item;
 
     // Arithmetic instructions.
-    fn fadd_s(&mut self, rd: usize, rs1: usize, rs2: usize, rm: usize);
-    fn fsub_s(&mut self, rd: usize, rs1: usize, rs2: usize, rm: usize);
-    fn fmul_s(&mut self, rd: usize, rs1: usize, rs2: usize, rm: usize);
-    fn fdiv_s(&mut self, rd: usize, rs1: usize, rs2: usize, rm: usize);
+    fn fadd_s(&mut self, rd: usize, rs1: usize, rs2: usize, rm: usize) -> Self::Item;
+    fn fsub_s(&mut self, rd: usize, rs1: usize, rs2: usize, rm: usize) -> Self::Item;
+    fn fmul_s(&mut self, rd: usize, rs1: usize, rs2: usize, rm: usize) -> Self::Item;
+    fn fdiv_s(&mut self, rd: usize, rs1: usize, rs2: usize, rm: usize) -> Self::Item;
 
     // Fused multiply / add instructions.
-    fn fmadd_s(&mut self, rd: usize, rs1: usize, rs2: usize, rs3: usize, rm: usize);
-    fn fmsub_s(&mut self, rd: usize, rs1: usize, rs2: usize, rs3: usize, rm: usize);
-    fn fnmsub_s(&mut self, rd: usize, rs1: usize, rs2: usize, rs3: usize, rm: usize);
-    fn fnmadd_s(&mut self, rd: usize, rs1: usize, rs2: usize, rs3: usize, rm: usize);
+    fn fmadd_s(&mut self, rd: usize, rs1: usize, rs2: usize, rs3: usize, rm: usize) -> Self::Item;
+    fn fmsub_s(&mut self, rd: usize, rs1: usize, rs2: usize, rs3: usize, rm: usize) -> Self::Item;
+    fn fnmsub_s(&mut self, rd: usize, rs1: usize, rs2: usize, rs3: usize, rm: usize) -> Self::Item;
+    fn fnmadd_s(&mut self, rd: usize, rs1: usize, rs2: usize, rs3: usize, rm: usize) -> Self::Item;
 
     // Instructions with rd rs1 operands.
-    fn fmv_x_w(&mut self, rd: usize, rs1: usize);
-    fn fmv_w_x(&mut self, rd: usize, rs1: usize);
-    fn fclass_s(&mut self, rd: usize, rs1: usize);
+    fn fmv_x_w(&mut self, rd: usize, rs1: usize) -> Self::Item;
+    fn fmv_w_x(&mut self, rd: usize, rs1: usize) -> Self::Item;
+    fn fclass_s(&mut self, rd: usize, rs1: usize) -> Self::Item;
 
     // Instructions with rd rs1 rs2 operands.
-    fn fsgnj_s(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn fmin_s(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn fle_s(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn fsgnjn_s(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn fmax_s(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn flt_s(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn fsgnjx_s(&mut self, rd: usize, rs1: usize, rs2: usize);
-    fn feq_s(&mut self, rd: usize, rs1: usize, rs2: usize);
+    fn fsgnj_s(&mut self, rd: usize, rs1: usize, rs2: usize) -> Self::Item;
+    fn fmin_s(&mut self, rd: usize, rs1: usize, rs2: usize) -> Self::Item;
+    fn fle_s(&mut self, rd: usize, rs1: usize, rs2: usize) -> Self::Item;
+    fn fsgnjn_s(&mut self, rd: usize, rs1: usize, rs2: usize) -> Self::Item;
+    fn fmax_s(&mut self, rd: usize, rs1: usize, rs2: usize) -> Self::Item;
+    fn flt_s(&mut self, rd: usize, rs1: usize, rs2: usize) -> Self::Item;
+    fn fsgnjx_s(&mut self, rd: usize, rs1: usize, rs2: usize) -> Self::Item;
+    fn feq_s(&mut self, rd: usize, rs1: usize, rs2: usize) -> Self::Item;
 }
 
 impl<T, U> Rv32f for Cpu<T, U>

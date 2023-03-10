@@ -6,7 +6,7 @@ pub enum BusCode {
     StoreAccessFault,
 }
 
-type MemoryResult<T> = Result<T, BusCode>;
+pub type MemoryResult<T> = Result<T, BusCode>;
 
 // Memory access is a trait.
 pub trait Mem {
