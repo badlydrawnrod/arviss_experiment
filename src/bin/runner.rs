@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 
-use arviss_experiment::{decode, BasicMem, Loader, Rv32iCpu, CoreCpu};
+use arviss_experiment::{decode, BasicMem, CoreCpu, Disassembler, Loader, Rv32iCpu};
 
 const EBREAK: u32 = 0x00_10_00_73;
 
@@ -33,10 +33,10 @@ pub fn main() -> io::Result<()> {
     let mut cpu = Rv32iCpu::<BasicMem>::with_mem(mem);
 
     // Run until we can run no more.
-    // let mut disassembler = Disassembler {};
-    // if disassemble {
-    //     println!("pc       (pc)     Code");
-    // }
+    let mut disassembler = Disassembler {};
+    if disassemble {
+        println!("pc       (pc)     Code");
+    }
     loop {
         // Fetch.
         let pc = cpu.rpc();
@@ -44,6 +44,8 @@ pub fn main() -> io::Result<()> {
 
         // Disassemble if the user asked for it.
         if disassemble {
+            // TODO: have the disassembler return the result as a string.
+            decode(&mut disassembler, ins);
             // let result = decode(&mut disassembler, ins);
             // println!("{:08x} {:08x} {}", pc, ins, result);
         }
