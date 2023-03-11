@@ -44,10 +44,8 @@ pub fn main() -> io::Result<()> {
 
         // Disassemble if the user asked for it.
         if disassemble {
-            // TODO: have the disassembler return the result as a string.
-            decode(&mut disassembler, ins);
-            // let result = decode(&mut disassembler, ins);
-            // println!("{:08x} {:08x} {}", pc, ins, result);
+            let result = decode(&mut disassembler, ins);
+            println!("{:08x} {:08x} {}", pc, ins, result);
         }
         if ins == EBREAK {
             break;

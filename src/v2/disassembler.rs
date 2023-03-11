@@ -47,167 +47,169 @@ fn rounding_mode(mode: u32) -> &'static str {
 }
 
 impl DecodeRv32i for Disassembler {
-    fn illegal(&mut self, ins: u32) {
-        println!("illegal instruction: {:04x}", ins)
+    type Item = String;
+
+    fn illegal(&mut self, ins: u32) -> Self::Item {
+        format!("illegal instruction: {:04x}", ins)
     }
 
-    fn beq(&mut self, rs1: u32, rs2: u32, bimm: u32) {
-        println!("beq\t{}, {}, {}", abi(rs1), abi(rs2), bimm as i32)
+    fn beq(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item {
+        format!("beq\t{}, {}, {}", abi(rs1), abi(rs2), bimm as i32)
     }
 
-    fn bne(&mut self, rs1: u32, rs2: u32, bimm: u32) {
-        println!("bne\t{}, {}, {}", abi(rs1), abi(rs2), bimm as i32)
+    fn bne(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item {
+        format!("bne\t{}, {}, {}", abi(rs1), abi(rs2), bimm as i32)
     }
 
-    fn blt(&mut self, rs1: u32, rs2: u32, bimm: u32) {
-        println!("blt\t{}, {}, {}", abi(rs1), abi(rs2), bimm as i32)
+    fn blt(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item {
+        format!("blt\t{}, {}, {}", abi(rs1), abi(rs2), bimm as i32)
     }
 
-    fn bge(&mut self, rs1: u32, rs2: u32, bimm: u32) {
-        println!("bge\t{}, {}, {}", abi(rs1), abi(rs2), bimm as i32)
+    fn bge(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item {
+        format!("bge\t{}, {}, {}", abi(rs1), abi(rs2), bimm as i32)
     }
 
-    fn bltu(&mut self, rs1: u32, rs2: u32, bimm: u32) {
-        println!("bltu\t{}, {}, {}", abi(rs1), abi(rs2), bimm as i32)
+    fn bltu(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item {
+        format!("bltu\t{}, {}, {}", abi(rs1), abi(rs2), bimm as i32)
     }
 
-    fn bgeu(&mut self, rs1: u32, rs2: u32, bimm: u32) {
-        println!("bgeu\t{}, {}, {}", abi(rs1), abi(rs2), bimm as i32)
+    fn bgeu(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item {
+        format!("bgeu\t{}, {}, {}", abi(rs1), abi(rs2), bimm as i32)
     }
 
-    fn lb(&mut self, rd: u32, rs1: u32, iimm: u32) {
-        println!("lb\t{}, {}({})", abi(rd), iimm as i32, abi(rs1))
+    fn lb(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item {
+        format!("lb\t{}, {}({})", abi(rd), iimm as i32, abi(rs1))
     }
 
-    fn lh(&mut self, rd: u32, rs1: u32, iimm: u32) {
-        println!("lh\t{}, {}({})", abi(rd), iimm as i32, abi(rs1))
+    fn lh(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item {
+        format!("lh\t{}, {}({})", abi(rd), iimm as i32, abi(rs1))
     }
 
-    fn lw(&mut self, rd: u32, rs1: u32, iimm: u32) {
-        println!("lw\t{}, {}({})", abi(rd), iimm as i32, abi(rs1))
+    fn lw(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item {
+        format!("lw\t{}, {}({})", abi(rd), iimm as i32, abi(rs1))
     }
 
-    fn lbu(&mut self, rd: u32, rs1: u32, iimm: u32) {
-        println!("lbu\t{}, {}({})", abi(rd), iimm as i32, abi(rs1))
+    fn lbu(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item {
+        format!("lbu\t{}, {}({})", abi(rd), iimm as i32, abi(rs1))
     }
 
-    fn lhu(&mut self, rd: u32, rs1: u32, iimm: u32) {
-        println!("lhu\t{}, {}({})", abi(rd), iimm as i32, abi(rs1))
+    fn lhu(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item {
+        format!("lhu\t{}, {}({})", abi(rd), iimm as i32, abi(rs1))
     }
 
-    fn addi(&mut self, rd: u32, rs1: u32, iimm: u32) {
-        println!("addi\t{}, {}, {}", abi(rd), abi(rs1), iimm as i32)
+    fn addi(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item {
+        format!("addi\t{}, {}, {}", abi(rd), abi(rs1), iimm as i32)
     }
 
-    fn slti(&mut self, rd: u32, rs1: u32, iimm: u32) {
-        println!("slti\t{}, {}, {}", abi(rd), abi(rs1), iimm as i32)
+    fn slti(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item {
+        format!("slti\t{}, {}, {}", abi(rd), abi(rs1), iimm as i32)
     }
 
-    fn sltiu(&mut self, rd: u32, rs1: u32, iimm: u32) {
-        println!("sltiu\t{}, {}, {}", abi(rd), abi(rs1), iimm as i32)
+    fn sltiu(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item {
+        format!("sltiu\t{}, {}, {}", abi(rd), abi(rs1), iimm as i32)
     }
 
-    fn xori(&mut self, rd: u32, rs1: u32, iimm: u32) {
-        println!("xori\t{}, {}, {}", abi(rd), abi(rs1), iimm as i32)
+    fn xori(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item {
+        format!("xori\t{}, {}, {}", abi(rd), abi(rs1), iimm as i32)
     }
 
-    fn ori(&mut self, rd: u32, rs1: u32, iimm: u32) {
-        println!("ori\t{}, {}, {}", abi(rd), abi(rs1), iimm as i32)
+    fn ori(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item {
+        format!("ori\t{}, {}, {}", abi(rd), abi(rs1), iimm as i32)
     }
 
-    fn andi(&mut self, rd: u32, rs1: u32, iimm: u32) {
-        println!("andi\t{}, {}, {}", abi(rd), abi(rs1), iimm as i32)
+    fn andi(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item {
+        format!("andi\t{}, {}, {}", abi(rd), abi(rs1), iimm as i32)
     }
 
-    fn jalr(&mut self, rd: u32, rs1: u32, iimm: u32) {
-        println!("jalr\t{}, {}, {}", abi(rd), abi(rs1), iimm as i32)
+    fn jalr(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item {
+        format!("jalr\t{}, {}, {}", abi(rd), abi(rs1), iimm as i32)
     }
 
-    fn sb(&mut self, rs1: u32, rs2: u32, simm: u32) {
-        println!("sb\t{}, {}({})", abi(rs2), simm as i32, abi(rs1))
+    fn sb(&mut self, rs1: u32, rs2: u32, simm: u32) -> Self::Item {
+        format!("sb\t{}, {}({})", abi(rs2), simm as i32, abi(rs1))
     }
 
-    fn sh(&mut self, rs1: u32, rs2: u32, simm: u32) {
-        println!("sh\t{}, {}({})", abi(rs2), simm as i32, abi(rs1))
+    fn sh(&mut self, rs1: u32, rs2: u32, simm: u32) -> Self::Item {
+        format!("sh\t{}, {}({})", abi(rs2), simm as i32, abi(rs1))
     }
 
-    fn sw(&mut self, rs1: u32, rs2: u32, simm: u32) {
-        println!("sw\t{}, {}({})", abi(rs2), simm as i32, abi(rs1))
+    fn sw(&mut self, rs1: u32, rs2: u32, simm: u32) -> Self::Item {
+        format!("sw\t{}, {}({})", abi(rs2), simm as i32, abi(rs1))
     }
 
-    fn auipc(&mut self, rd: u32, uimm: u32) {
-        println!("auipc\t{}, {}", abi(rd), (uimm as i32) >> 12)
+    fn auipc(&mut self, rd: u32, uimm: u32) -> Self::Item {
+        format!("auipc\t{}, {}", abi(rd), (uimm as i32) >> 12)
     }
 
-    fn lui(&mut self, rd: u32, uimm: u32) {
-        println!("lui\t{}, {}", abi(rd), (uimm as i32) >> 12)
+    fn lui(&mut self, rd: u32, uimm: u32) -> Self::Item {
+        format!("lui\t{}, {}", abi(rd), (uimm as i32) >> 12)
     }
 
-    fn jal(&mut self, rd: u32, jimm: u32) {
-        println!("jal\t{}, {}", abi(rd), jimm as i32)
+    fn jal(&mut self, rd: u32, jimm: u32) -> Self::Item {
+        format!("jal\t{}, {}", abi(rd), jimm as i32)
     }
 
-    fn add(&mut self, rd: u32, rs1: u32, rs2: u32) {
-        println!("add\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    fn add(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("add\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
     }
 
-    fn sub(&mut self, rd: u32, rs1: u32, rs2: u32) {
-        println!("sub\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    fn sub(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("sub\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
     }
 
-    fn sll(&mut self, rd: u32, rs1: u32, rs2: u32) {
-        println!("sll\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    fn sll(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("sll\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
     }
 
-    fn slt(&mut self, rd: u32, rs1: u32, rs2: u32) {
-        println!("slt\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    fn slt(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("slt\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
     }
 
-    fn sltu(&mut self, rd: u32, rs1: u32, rs2: u32) {
-        println!("sltu\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    fn sltu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("sltu\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
     }
 
-    fn xor(&mut self, rd: u32, rs1: u32, rs2: u32) {
-        println!("xor\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    fn xor(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("xor\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
     }
 
-    fn srl(&mut self, rd: u32, rs1: u32, rs2: u32) {
-        println!("srl\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    fn srl(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("srl\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
     }
 
-    fn sra(&mut self, rd: u32, rs1: u32, rs2: u32) {
-        println!("sra\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    fn sra(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("sra\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
     }
 
-    fn or(&mut self, rd: u32, rs1: u32, rs2: u32) {
-        println!("or\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    fn or(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("or\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
     }
 
-    fn and(&mut self, rd: u32, rs1: u32, rs2: u32) {
-        println!("and\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    fn and(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("and\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
     }
 
-    fn slli(&mut self, rd: u32, rs1: u32, shamt: u32) {
-        println!("slli\t{}, {}, {}", abi(rd), abi(rs1), shamt)
+    fn slli(&mut self, rd: u32, rs1: u32, shamt: u32) -> Self::Item {
+        format!("slli\t{}, {}, {}", abi(rd), abi(rs1), shamt)
     }
 
-    fn srli(&mut self, rd: u32, rs1: u32, shamt: u32) {
-        println!("srli\t{}, {}, {}", abi(rd), abi(rs1), shamt)
+    fn srli(&mut self, rd: u32, rs1: u32, shamt: u32) -> Self::Item {
+        format!("srli\t{}, {}, {}", abi(rd), abi(rs1), shamt)
     }
 
-    fn srai(&mut self, rd: u32, rs1: u32, shamt: u32) {
-        println!("srai\t{}, {}, {}", abi(rd), abi(rs1), shamt)
+    fn srai(&mut self, rd: u32, rs1: u32, shamt: u32) -> Self::Item {
+        format!("srai\t{}, {}, {}", abi(rd), abi(rs1), shamt)
     }
 
-    fn fence(&mut self, _fm: u32, _rd: u32, _rs1: u32) {
-        println!("fence")
+    fn fence(&mut self, _fm: u32, _rd: u32, _rs1: u32) -> Self::Item {
+        format!("fence")
     }
 
-    fn ecall(&mut self) {
-        println!("ecall")
+    fn ecall(&mut self) -> Self::Item {
+        format!("ecall")
     }
 
-    fn ebreak(&mut self) {
-        println!("ebreak")
+    fn ebreak(&mut self) -> Self::Item {
+        format!("ebreak")
     }
 }

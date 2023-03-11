@@ -3,8 +3,6 @@ use super::{memory::MemoryResult, trap_handler::TrapCause};
 pub type Address = u32;
 
 pub trait CoreCpu {
-    // type Item;
-
     fn rpc(&self) -> Address;
     fn wpc(&mut self, address: Address);
 
@@ -30,72 +28,76 @@ pub trait Freg {
 }
 
 pub trait DecodeRv32i {
+    type Item;
+
     // Illegal instruction.
-    fn illegal(&mut self, ins: u32);
+    fn illegal(&mut self, ins: u32) -> Self::Item;
 
     // B-type instructions.
-    fn beq(&mut self, rs1: u32, rs2: u32, bimm: u32);
-    fn bne(&mut self, rs1: u32, rs2: u32, bimm: u32);
-    fn blt(&mut self, rs1: u32, rs2: u32, bimm: u32);
-    fn bge(&mut self, rs1: u32, rs2: u32, bimm: u32);
-    fn bltu(&mut self, rs1: u32, rs2: u32, bimm: u32);
-    fn bgeu(&mut self, rs1: u32, rs2: u32, bimm: u32);
+    fn beq(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item;
+    fn bne(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item;
+    fn blt(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item;
+    fn bge(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item;
+    fn bltu(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item;
+    fn bgeu(&mut self, rs1: u32, rs2: u32, bimm: u32) -> Self::Item;
 
     // I-type instructions.
-    fn lb(&mut self, rd: u32, rs1: u32, iimm: u32);
-    fn lh(&mut self, rd: u32, rs1: u32, iimm: u32);
-    fn lw(&mut self, rd: u32, rs1: u32, iimm: u32);
-    fn lbu(&mut self, rd: u32, rs1: u32, iimm: u32);
-    fn lhu(&mut self, rd: u32, rs1: u32, iimm: u32);
-    fn addi(&mut self, rd: u32, rs1: u32, iimm: u32);
-    fn slti(&mut self, rd: u32, rs1: u32, iimm: u32);
-    fn sltiu(&mut self, rd: u32, rs1: u32, iimm: u32);
-    fn xori(&mut self, rd: u32, rs1: u32, iimm: u32);
-    fn ori(&mut self, rd: u32, rs1: u32, iimm: u32);
-    fn andi(&mut self, rd: u32, rs1: u32, iimm: u32);
-    fn jalr(&mut self, rd: u32, rs1: u32, iimm: u32);
+    fn lb(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn lh(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn lw(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn lbu(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn lhu(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn addi(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn slti(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn sltiu(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn xori(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn ori(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn andi(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
+    fn jalr(&mut self, rd: u32, rs1: u32, iimm: u32) -> Self::Item;
 
     // S-type instructions.
-    fn sb(&mut self, rs1: u32, rs2: u32, simm: u32);
-    fn sh(&mut self, rs1: u32, rs2: u32, simm: u32);
-    fn sw(&mut self, rs1: u32, rs2: u32, simm: u32);
+    fn sb(&mut self, rs1: u32, rs2: u32, simm: u32) -> Self::Item;
+    fn sh(&mut self, rs1: u32, rs2: u32, simm: u32) -> Self::Item;
+    fn sw(&mut self, rs1: u32, rs2: u32, simm: u32) -> Self::Item;
 
     // U-type instructions.
-    fn auipc(&mut self, rd: u32, uimm: u32);
-    fn lui(&mut self, rd: u32, uimm: u32);
+    fn auipc(&mut self, rd: u32, uimm: u32) -> Self::Item;
+    fn lui(&mut self, rd: u32, uimm: u32) -> Self::Item;
 
     // J-type instructions.
-    fn jal(&mut self, rd: u32, jimm: u32);
+    fn jal(&mut self, rd: u32, jimm: u32) -> Self::Item;
 
     // Arithmetic instructions.
-    fn add(&mut self, rd: u32, rs1: u32, rs2: u32);
-    fn sub(&mut self, rd: u32, rs1: u32, rs2: u32);
-    fn sll(&mut self, rd: u32, rs1: u32, rs2: u32);
-    fn slt(&mut self, rd: u32, rs1: u32, rs2: u32);
-    fn sltu(&mut self, rd: u32, rs1: u32, rs2: u32);
-    fn xor(&mut self, rd: u32, rs1: u32, rs2: u32);
-    fn srl(&mut self, rd: u32, rs1: u32, rs2: u32);
-    fn sra(&mut self, rd: u32, rs1: u32, rs2: u32);
-    fn or(&mut self, rd: u32, rs1: u32, rs2: u32);
-    fn and(&mut self, rd: u32, rs1: u32, rs2: u32);
+    fn add(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn sub(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn sll(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn slt(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn sltu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn xor(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn srl(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn sra(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn or(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn and(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
 
     // Immediate shift instructions.
-    fn slli(&mut self, rd: u32, rs1: u32, shamt: u32);
-    fn srli(&mut self, rd: u32, rs1: u32, shamt: u32);
-    fn srai(&mut self, rd: u32, rs1: u32, shamt: u32);
+    fn slli(&mut self, rd: u32, rs1: u32, shamt: u32) -> Self::Item;
+    fn srli(&mut self, rd: u32, rs1: u32, shamt: u32) -> Self::Item;
+    fn srai(&mut self, rd: u32, rs1: u32, shamt: u32) -> Self::Item;
 
     // Fence instructions.
-    fn fence(&mut self, fm: u32, rd: u32, rs1: u32);
+    fn fence(&mut self, fm: u32, rd: u32, rs1: u32) -> Self::Item;
 
     // System instructions.
-    fn ecall(&mut self);
-    fn ebreak(&mut self);
+    fn ecall(&mut self) -> Self::Item;
+    fn ebreak(&mut self) -> Self::Item;
 }
 
 impl<T> DecodeRv32i for T
 where
     T: CoreCpu + Xreg,
 {
+    type Item = ();
+    
     // Illegal instruction.
 
     fn illegal(&mut self, _ins: u32) {
