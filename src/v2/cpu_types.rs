@@ -1,7 +1,4 @@
-use super::{
-    memory::{Mem, MemoryResult},
-    trap_handler::{TrapCause, TrapHandler},
-};
+use super::{memory::MemoryResult, trap_handler::TrapCause};
 
 pub type Address = u32;
 
@@ -95,7 +92,10 @@ pub trait DecodeRv32i {
     fn ebreak(&mut self);
 }
 
-pub trait Rv32i: CoreCpu + Xreg + DecodeRv32i {
+impl<T> DecodeRv32i for T
+where
+    T: CoreCpu + Xreg,
+{
     // Illegal instruction.
 
     fn illegal(&mut self, _ins: u32) {
@@ -458,7 +458,7 @@ pub trait Rv32i: CoreCpu + Xreg + DecodeRv32i {
     }
 
     // Fence instructions.
-    fn fence(&mut self, fm: u32, rd: u32, rs1: u32) {}
+    fn fence(&mut self, _fm: u32, _rd: u32, _rs1: u32) {}
 
     // System instructions.
     fn ecall(&mut self) {}
