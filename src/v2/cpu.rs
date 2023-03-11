@@ -1,12 +1,20 @@
 use super::{
-    cpu_types::{Rv32i, Xreg},
+    cpu_types::{Address, CoreCpu, Rv32i, Xreg},
     memory::{BasicMem, Mem},
     trap_handler::{BasicTrapHandler, TrapCause, TrapHandler},
 };
 
-struct DummyTrapHandler;
+pub struct DummyTrapHandler;
 
-struct Rv32iCpu<M, T = std::marker::PhantomData<DummyTrapHandler>> {
+impl TrapHandler for std::marker::PhantomData<DummyTrapHandler> {
+    fn handle_trap(&self, _cause: TrapCause) {}
+
+    fn handle_ecall(&self) {}
+
+    fn handle_ebreak(&self) {}
+}
+
+pub struct Rv32iCpu<M, T = std::marker::PhantomData<DummyTrapHandler>> {
     pc: u32,         // The program counter.
     xreg: [u32; 32], // Regular registers, x0-x31.
     mem: M,          // Memory.
@@ -41,24 +49,67 @@ impl Rv32iCpu<BasicMem, BasicTrapHandler> {
             trap_handler: BasicTrapHandler::new(),
         }
     }
+}
 
-    #[inline]
+impl<M, T> CoreCpu for Rv32iCpu<M, T>
+where
+    M: Mem,
+    T: TrapHandler,
+{
+    fn rpc(&self) -> Address {
+        self.pc
+    }
+
+    fn wpc(&mut self, address: Address) {
+        self.pc = address;
+    }
+
+    fn read8(&self, address: Address) -> super::memory::MemoryResult<u8> {
+        self.mem.read8(address)
+    }
+
+    fn read16(&self, address: Address) -> super::memory::MemoryResult<u16> {
+        self.mem.read16(address)
+    }
+
+    fn read32(&self, address: Address) -> super::memory::MemoryResult<u32> {
+        self.mem.read32(address)
+    }
+
+    fn write8(&mut self, address: Address, value: u8) -> super::memory::MemoryResult<()> {
+        self.mem.write8(address, value)
+    }
+
+    fn write16(&mut self, address: Address, value: u16) -> super::memory::MemoryResult<()> {
+        self.mem.write16(address, value)
+    }
+
+    fn write32(&mut self, address: Address, value: u32) -> super::memory::MemoryResult<()> {
+        self.mem.write32(address, value)
+    }
+
     fn handle_trap(&mut self, cause: TrapCause) {
         self.trap_handler.handle_trap(cause)
     }
 }
 
-// impl<T, U> Xreg for Rv32iCpu<T, U>
-// where
-//     T: Mem,
-//     U: TrapHandler<Item = ()>,
-// {
-//     fn rx(&self, reg: usize) -> u32 {
-//         self.xreg[reg]
-//     }
+impl<M, T> Xreg for Rv32iCpu<M, T>
+where
+    M: Mem,
+    T: TrapHandler,
+{
+    fn rx(&self, reg: u32) -> u32 {
+        self.xreg[reg as usize]
+    }
 
-//     fn wx(&mut self, reg: usize, val: u32) {
-//         self.xreg[reg] = val
-//     }
-// }
+    fn wx(&mut self, reg: u32, val: u32) {
+        self.xreg[reg as usize] = val;
+    }
+}
 
+impl<M, T> Rv32i for Rv32iCpu<M, T>
+where
+    M: Mem,
+    T: TrapHandler,
+{
+}

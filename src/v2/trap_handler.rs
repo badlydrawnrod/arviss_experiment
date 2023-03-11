@@ -26,11 +26,9 @@ pub enum TrapCause {
 
 // Trap handling is a trait.
 pub trait TrapHandler {
-    type Item;
-
-    fn handle_trap(&self, cause: TrapCause) -> Self::Item;
-    fn handle_ecall(&self) -> Self::Item;
-    fn handle_ebreak(&self) -> Self::Item;
+    fn handle_trap(&self, cause: TrapCause);
+    fn handle_ecall(&self);
+    fn handle_ebreak(&self);
 }
 
 pub struct BasicTrapHandler {
@@ -44,8 +42,6 @@ impl BasicTrapHandler {
 }
 
 impl TrapHandler for BasicTrapHandler {
-    type Item = ();
-
     fn handle_trap(&self, cause: TrapCause) {
         println!("TRAP: {:#?}", cause);
     }
