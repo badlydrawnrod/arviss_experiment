@@ -32,10 +32,73 @@ pub trait Freg {
     fn wf(&mut self, reg: u32, val: f32);
 }
 
-pub trait Rv32i: CoreCpu + Xreg {
+pub trait DecodeRv32i {
+    // Illegal instruction.
+    fn illegal(&mut self, ins: u32);
+
+    // B-type instructions.
+    fn beq(&mut self, rs1: u32, rs2: u32, bimm: u32);
+    fn bne(&mut self, rs1: u32, rs2: u32, bimm: u32);
+    fn blt(&mut self, rs1: u32, rs2: u32, bimm: u32);
+    fn bge(&mut self, rs1: u32, rs2: u32, bimm: u32);
+    fn bltu(&mut self, rs1: u32, rs2: u32, bimm: u32);
+    fn bgeu(&mut self, rs1: u32, rs2: u32, bimm: u32);
+
+    // I-type instructions.
+    fn lb(&mut self, rd: u32, rs1: u32, iimm: u32);
+    fn lh(&mut self, rd: u32, rs1: u32, iimm: u32);
+    fn lw(&mut self, rd: u32, rs1: u32, iimm: u32);
+    fn lbu(&mut self, rd: u32, rs1: u32, iimm: u32);
+    fn lhu(&mut self, rd: u32, rs1: u32, iimm: u32);
+    fn addi(&mut self, rd: u32, rs1: u32, iimm: u32);
+    fn slti(&mut self, rd: u32, rs1: u32, iimm: u32);
+    fn sltiu(&mut self, rd: u32, rs1: u32, iimm: u32);
+    fn xori(&mut self, rd: u32, rs1: u32, iimm: u32);
+    fn ori(&mut self, rd: u32, rs1: u32, iimm: u32);
+    fn andi(&mut self, rd: u32, rs1: u32, iimm: u32);
+    fn jalr(&mut self, rd: u32, rs1: u32, iimm: u32);
+
+    // S-type instructions.
+    fn sb(&mut self, rs1: u32, rs2: u32, simm: u32);
+    fn sh(&mut self, rs1: u32, rs2: u32, simm: u32);
+    fn sw(&mut self, rs1: u32, rs2: u32, simm: u32);
+
+    // U-type instructions.
+    fn auipc(&mut self, rd: u32, uimm: u32);
+    fn lui(&mut self, rd: u32, uimm: u32);
+
+    // J-type instructions.
+    fn jal(&mut self, rd: u32, jimm: u32);
+
+    // Arithmetic instructions.
+    fn add(&mut self, rd: u32, rs1: u32, rs2: u32);
+    fn sub(&mut self, rd: u32, rs1: u32, rs2: u32);
+    fn sll(&mut self, rd: u32, rs1: u32, rs2: u32);
+    fn slt(&mut self, rd: u32, rs1: u32, rs2: u32);
+    fn sltu(&mut self, rd: u32, rs1: u32, rs2: u32);
+    fn xor(&mut self, rd: u32, rs1: u32, rs2: u32);
+    fn srl(&mut self, rd: u32, rs1: u32, rs2: u32);
+    fn sra(&mut self, rd: u32, rs1: u32, rs2: u32);
+    fn or(&mut self, rd: u32, rs1: u32, rs2: u32);
+    fn and(&mut self, rd: u32, rs1: u32, rs2: u32);
+
+    // Immediate shift instructions.
+    fn slli(&mut self, rd: u32, rs1: u32, shamt: u32);
+    fn srli(&mut self, rd: u32, rs1: u32, shamt: u32);
+    fn srai(&mut self, rd: u32, rs1: u32, shamt: u32);
+
+    // Fence instructions.
+    fn fence(&mut self, fm: u32, rd: u32, rs1: u32);
+
+    // System instructions.
+    fn ecall(&mut self);
+    fn ebreak(&mut self);
+}
+
+pub trait Rv32i: CoreCpu + Xreg + DecodeRv32i {
     // Illegal instruction.
 
-    fn illegal(&mut self, ins: u32) {
+    fn illegal(&mut self, _ins: u32) {
         self.handle_trap(TrapCause::IllegalInstruction);
     }
 
