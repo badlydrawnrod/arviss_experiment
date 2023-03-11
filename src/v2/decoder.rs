@@ -1,6 +1,4 @@
-use crate::{tobits::ToBits, Rv32f, Rv32i};
-
-
+use super::{cpu_types::Rv32i, tobits::ToBits};
 
 pub fn decode<T>(decoder: &mut T, code: u32) -> T
 where
