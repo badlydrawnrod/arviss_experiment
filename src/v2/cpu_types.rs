@@ -97,7 +97,7 @@ where
     T: CoreCpu + Xreg,
 {
     type Item = ();
-    
+
     // Illegal instruction.
 
     fn illegal(&mut self, _ins: u32) {
@@ -467,113 +467,128 @@ where
     fn ebreak(&mut self) {}
 }
 
-// pub trait Rv32m: Rv32i {
-//     fn mul(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
-//     fn mulh(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
-//     fn mulhsu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
-//     fn mulhu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
-//     fn div(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
-//     fn divu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
-//     fn rem(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
-//     fn remu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
-// }
+pub trait DecodeRv32m {
+    type Item;
 
-// impl<T, U> Rv32m for Cpu<T, U>
-// where
-//     T: Mem,
-//     U: TrapHandler<Item = ()>,
-// {
-//     fn mul(&mut self, rd: u32, rs1: u32, rs2: u32) {
-//         // rd <- rs1 * rs2, pc += 4
-//         self.wx(rd, self.rx(rs1).wrapping_mul(self.rx(rs2)));
-//         self.wpc(self.rpc().wrapping_add(4));
-//         self.wx(0, 0);
-//     }
+    fn mul(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn mulh(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn mulhsu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn mulhu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn div(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn divu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn rem(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+    fn remu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item;
+}
 
-//     fn mulh(&mut self, rd: u32, rs1: u32, rs2: u32) {
-//         let xreg_rs1 = (self.rx(rs1) as i32) as i64;
-//         let xreg_rs2 = (self.rx(rs2) as i32) as i64;
-//         let t = (xreg_rs1 * xreg_rs2) >> 32;
-//         self.wx(rd, t as u32);
-//         self.wpc(self.rpc().wrapping_add(4));
-//         self.wx(0, 0);
-//     }
+impl<T> DecodeRv32m for T
+where
+    T: CoreCpu + Xreg,
+{
+    type Item = ();
 
-//     fn mulhsu(&mut self, rd: u32, rs1: u32, rs2: u32) {
-//         let xreg_rs1 = (self.rx(rs1) as i32) as i64;
-//         let xreg_rs2 = (self.rx(rs2) as u64) as i64;
-//         let t = (xreg_rs1 * xreg_rs2) >> 32;
-//         self.wx(rd, t as u32);
-//         self.wpc(self.rpc().wrapping_add(4));
-//         self.wx(0, 0);
-//     }
+    fn mul(&mut self, rd: u32, rs1: u32, rs2: u32) {
+        // rd <- rs1 * rs2, pc += 4
+        self.wx(rd, self.rx(rs1).wrapping_mul(self.rx(rs2)));
+        self.wpc(self.rpc().wrapping_add(4));
+        self.wx(0, 0);
+    }
 
-//     fn mulhu(&mut self, rd: u32, rs1: u32, rs2: u32) {
-//         let xreg_rs1 = self.rx(rs1) as u64;
-//         let xreg_rs2 = self.rx(rs2) as u64;
-//         let t = (xreg_rs1 * xreg_rs2) >> 32;
-//         self.wx(rd, t as u32);
-//         self.wpc(self.rpc().wrapping_add(4));
-//         self.wx(0, 0);
-//     }
+    fn mulh(&mut self, rd: u32, rs1: u32, rs2: u32) {
+        let xreg_rs1 = (self.rx(rs1) as i32) as i64;
+        let xreg_rs2 = (self.rx(rs2) as i32) as i64;
+        let t = (xreg_rs1 * xreg_rs2) >> 32;
+        self.wx(rd, t as u32);
+        self.wpc(self.rpc().wrapping_add(4));
+        self.wx(0, 0);
+    }
 
-//     fn div(&mut self, rd: u32, rs1: u32, rs2: u32) {
-//         let dividend = self.rx(rs1) as i32;
-//         let divisor = self.rx(rs2) as i32;
-//         // Check for signed division overflow.
-//         if ((dividend as u32) != 0x80000000) || divisor != -1 {
-//             self.wx(rd) = if divisor != 0 {
-//                 (dividend.wrapping_div(divisor)) as u32
-//             } else {
-//                 u32::MAX // -1.
-//             }
-//         } else {
-//             // Signed division overflow occurred.
-//             self.wx(rd, dividend as u32);
-//         }
-//         self.wpc(self.rpc().wrapping_add(4));
-//         self.wx(0, 0);
-//     }
+    fn mulhsu(&mut self, rd: u32, rs1: u32, rs2: u32) {
+        let xreg_rs1 = (self.rx(rs1) as i32) as i64;
+        let xreg_rs2 = (self.rx(rs2) as u64) as i64;
+        let t = (xreg_rs1 * xreg_rs2) >> 32;
+        self.wx(rd, t as u32);
+        self.wpc(self.rpc().wrapping_add(4));
+        self.wx(0, 0);
+    }
 
-//     fn divu(&mut self, rd: u32, rs1: u32, rs2: u32) {
-//         let dividend = self.rx(rs1);
-//         let divisor = self.rx(rs2);
-//         self.wx(rd) = if divisor != 0 {
-//             dividend.wrapping_div(divisor)
-//         } else {
-//             u32::MAX // -1.
-//         };
-//         self.wpc(self.rpc().wrapping_add(4));
-//         self.wx(0, 0);
-//     }
+    fn mulhu(&mut self, rd: u32, rs1: u32, rs2: u32) {
+        let xreg_rs1 = self.rx(rs1) as u64;
+        let xreg_rs2 = self.rx(rs2) as u64;
+        let t = (xreg_rs1 * xreg_rs2) >> 32;
+        self.wx(rd, t as u32);
+        self.wpc(self.rpc().wrapping_add(4));
+        self.wx(0, 0);
+    }
 
-//     fn rem(&mut self, rd: u32, rs1: u32, rs2: u32) {
-//         let dividend = self.rx(rs1) as i32;
-//         let divisor = self.rx(rs2) as i32;
-//         // Check for signed division overflow.
-//         if ((dividend as u32) != 0x80000000) || divisor != -1 {
-//             self.wx(rd) = if divisor != 0 {
-//                 (dividend % divisor) as u32
-//             } else {
-//                 dividend as u32
-//             }
-//         } else {
-//             // Signed division overflow occurred.
-//             self.wx(rd, 0);
-//         }
-//         self.wpc(self.rpc().wrapping_add(4));
-//         self.wx(0, 0);
-//     }
+    fn div(&mut self, rd: u32, rs1: u32, rs2: u32) {
+        let dividend = self.rx(rs1) as i32;
+        let divisor = self.rx(rs2) as i32;
+        // Check for signed division overflow.
+        if ((dividend as u32) != 0x80000000) || divisor != -1 {
+            self.wx(
+                rd,
+                if divisor != 0 {
+                    (dividend.wrapping_div(divisor)) as u32
+                } else {
+                    u32::MAX // -1.
+                },
+            )
+        } else {
+            // Signed division overflow occurred.
+            self.wx(rd, dividend as u32);
+        }
+        self.wpc(self.rpc().wrapping_add(4));
+        self.wx(0, 0);
+    }
 
-//     fn remu(&mut self, rd: u32, rs1: u32, rs2: u32) {
-//         let dividend = self.rx(rs1);
-//         let divisor = self.rx(rs2);
-//         self.wx(rd) = if divisor != 0 {
-//             dividend % divisor
-//         } else {
-//             dividend
-//         };
-//         self.wpc(self.rpc().wrapping_add(4));
-//         self.wx(0, 0);
-//     }
-// }
+    fn divu(&mut self, rd: u32, rs1: u32, rs2: u32) {
+        let dividend = self.rx(rs1);
+        let divisor = self.rx(rs2);
+        self.wx(
+            rd,
+            if divisor != 0 {
+                dividend.wrapping_div(divisor)
+            } else {
+                u32::MAX // -1.
+            },
+        );
+        self.wpc(self.rpc().wrapping_add(4));
+        self.wx(0, 0);
+    }
+
+    fn rem(&mut self, rd: u32, rs1: u32, rs2: u32) {
+        let dividend = self.rx(rs1) as i32;
+        let divisor = self.rx(rs2) as i32;
+        // Check for signed division overflow.
+        if ((dividend as u32) != 0x80000000) || divisor != -1 {
+            self.wx(
+                rd,
+                if divisor != 0 {
+                    (dividend % divisor) as u32
+                } else {
+                    dividend as u32
+                },
+            )
+        } else {
+            // Signed division overflow occurred.
+            self.wx(rd, 0);
+        }
+        self.wpc(self.rpc().wrapping_add(4));
+        self.wx(0, 0);
+    }
+
+    fn remu(&mut self, rd: u32, rs1: u32, rs2: u32) {
+        let dividend = self.rx(rs1);
+        let divisor = self.rx(rs2);
+        self.wx(
+            rd,
+            if divisor != 0 {
+                dividend % divisor
+            } else {
+                dividend
+            },
+        );
+        self.wpc(self.rpc().wrapping_add(4));
+        self.wx(0, 0);
+    }
+}
