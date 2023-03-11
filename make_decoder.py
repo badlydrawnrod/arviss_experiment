@@ -59,9 +59,9 @@ def generate_rust_code_v3(d, level=0):
         (31, 20): "funct12()",
         (26, 25): "fmt()",
         (24, 20): "rs2()",
-        (19, 15): "rs1()",
+        (19, 15): "rs1_bits()",
         (14, 12): "funct3()",
-        (11, 7): "rd()",
+        (11, 7): "rd_bits()",
         (6, 0): "opcode()",
     }
     spaces = "    "

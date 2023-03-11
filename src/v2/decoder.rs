@@ -98,15 +98,15 @@ where
         0b1101111 => return decoder.jal(c.rd(), c.jimmediate()),
         0b1110011 => match c.funct3() {
             0b000 => match c.funct12() {
-                0b000000000000 => match c.rs1() {
-                    0b00000 => match c.rd() {
+                0b000000000000 => match c.rs1_bits() {
+                    0b00000 => match c.rd_bits() {
                         0b00000 => return decoder.ecall(),
                         _ => {}
                     },
                     _ => {}
                 },
-                0b000000000001 => match c.rs1() {
-                    0b00000 => match c.rd() {
+                0b000000000001 => match c.rs1_bits() {
+                    0b00000 => match c.rd_bits() {
                         0b00000 => return decoder.ebreak(),
                         _ => {}
                     },

@@ -1,6 +1,7 @@
 use super::{
     cpu_types::{Address, CoreCpu, Xreg},
     memory::{BasicMem, Mem},
+    tobits::{Reg},
     trap_handler::{BasicTrapHandler, TrapCause, TrapHandler},
 };
 
@@ -98,12 +99,11 @@ where
     M: Mem,
     T: TrapHandler,
 {
-    fn rx(&self, reg: u32) -> u32 {
+    fn rx(&self, reg: Reg) -> u32 {
         self.xreg[reg as usize]
     }
 
-    fn wx(&mut self, reg: u32, val: u32) {
+    fn wx(&mut self, reg: Reg, val: u32) {
         self.xreg[reg as usize] = val;
     }
 }
-
