@@ -1,4 +1,4 @@
-use super::DecodeRv32i;
+use super::{DecodeRv32i, DecodeRv32m};
 
 pub struct Disassembler;
 
@@ -211,5 +211,41 @@ impl DecodeRv32i for Disassembler {
 
     fn ebreak(&mut self) -> Self::Item {
         format!("ebreak")
+    }
+}
+
+impl DecodeRv32m for Disassembler {
+    type Item = String;
+
+    fn mul(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("mul\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    }
+
+    fn mulh(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("mulh\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    }
+
+    fn mulhsu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("mulhsu\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    }
+
+    fn mulhu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("mulhu\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    }
+
+    fn div(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("div\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    }
+
+    fn divu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("divu\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    }
+
+    fn rem(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("rem\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
+    }
+
+    fn remu(&mut self, rd: u32, rs1: u32, rs2: u32) -> Self::Item {
+        format!("remu\t{}, {}, {}", abi(rd), abi(rs1), abi(rs2))
     }
 }
