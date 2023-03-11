@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 
-use arviss_experiment::{decode, BasicCpu, BasicMem, Disassembler, Loader, Mem};
+use arviss_experiment::{decode, BasicMem, Loader, Rv32iCpu, CoreCpu};
 
 const EBREAK: u32 = 0x00_10_00_73;
 
@@ -30,22 +30,22 @@ pub fn main() -> io::Result<()> {
         .expect("Failed to initialize memory.");
 
     // Create a CPU that will use that memory.
-    let mut cpu = BasicCpu::with_mem(mem);
+    let mut cpu = Rv32iCpu::<BasicMem>::with_mem(mem);
 
     // Run until we can run no more.
-    let mut disassembler = Disassembler {};
-    if disassemble {
-        println!("pc       (pc)     Code");
-    }
+    // let mut disassembler = Disassembler {};
+    // if disassemble {
+    //     println!("pc       (pc)     Code");
+    // }
     loop {
         // Fetch.
-        let pc = cpu.pc;
-        let ins = cpu.mem.read32(pc).unwrap();
+        let pc = cpu.rpc();
+        let ins = cpu.read32(pc).unwrap();
 
         // Disassemble if the user asked for it.
         if disassemble {
-            let result = decode(&mut disassembler, ins);
-            println!("{:08x} {:08x} {}", pc, ins, result);
+            // let result = decode(&mut disassembler, ins);
+            // println!("{:08x} {:08x} {}", pc, ins, result);
         }
         if ins == EBREAK {
             break;
