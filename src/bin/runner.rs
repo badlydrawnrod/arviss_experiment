@@ -39,7 +39,9 @@ pub fn main() -> io::Result<()> {
     }
     loop {
         // Fetch.
-        let pc = cpu.rpc();
+        let pc = cpu.get_next_pc();
+        cpu.wpc(pc);
+        cpu.set_next_pc(pc.wrapping_add(4));
         let ins = cpu.read32(pc).unwrap();
 
         // Disassemble if the user asked for it.

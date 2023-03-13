@@ -1,7 +1,7 @@
 use super::{
     cpu_types::{Address, CoreCpu, Xreg},
     memory::{BasicMem, Mem},
-    tobits::{Reg},
+    tobits::Reg,
     trap_handler::{BasicTrapHandler, TrapCause, TrapHandler},
 };
 
@@ -17,6 +17,7 @@ impl TrapHandler for std::marker::PhantomData<DummyTrapHandler> {
 
 pub struct Rv32iCpu<M, T = std::marker::PhantomData<DummyTrapHandler>> {
     pc: u32,         // The program counter.
+    next_pc: u32,    // The program counter for the next instruction.
     xreg: [u32; 32], // Regular registers, x0-x31.
     mem: M,          // Memory.
     trap_handler: T, // Trap handler.
@@ -30,6 +31,7 @@ impl Rv32iCpu<BasicMem> {
     pub fn with_mem(mem: BasicMem) -> Self {
         Self {
             pc: 0,
+            next_pc: 0,
             xreg: Default::default(),
             mem: mem,
             trap_handler: std::marker::PhantomData::<DummyTrapHandler>,
@@ -45,6 +47,7 @@ impl Rv32iCpu<BasicMem, BasicTrapHandler> {
     pub fn with_mem(mem: BasicMem) -> Self {
         Self {
             pc: 0,
+            next_pc: 0,
             xreg: Default::default(),
             mem: mem,
             trap_handler: BasicTrapHandler::new(),
@@ -63,6 +66,14 @@ where
 
     fn wpc(&mut self, address: Address) {
         self.pc = address;
+    }
+
+    fn get_next_pc(&self) -> Address {
+        self.next_pc
+    }
+
+    fn set_next_pc(&mut self, address: Address) {
+        self.next_pc = address;
     }
 
     fn read8(&self, address: Address) -> super::memory::MemoryResult<u8> {

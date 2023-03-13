@@ -5,6 +5,8 @@ pub type Address = u32;
 pub trait CoreCpu {
     fn rpc(&self) -> Address;
     fn wpc(&mut self, address: Address);
+    fn get_next_pc(&self) -> Address;
+    fn set_next_pc(&mut self, address: Address);
 
     fn read8(&self, address: Address) -> MemoryResult<u8>;
     fn read16(&self, address: Address) -> MemoryResult<u16>;
@@ -108,62 +110,48 @@ where
 
     fn beq(&mut self, rs1: Reg, rs2: Reg, bimm: u32) {
         // pc <- pc + ((rs1 == rs2) ? imm_b : 4)
-        let offset = if self.rx(rs1) == self.rx(rs2) {
-            bimm
-        } else {
-            4
-        };
-        self.wpc(self.rpc().wrapping_add(offset));
+        if self.rx(rs1) == self.rx(rs2) {
+            self.set_next_pc(self.rpc().wrapping_add(bimm));
+        }
     }
 
     fn bne(&mut self, rs1: Reg, rs2: Reg, bimm: u32) {
         // pc <- pc + ((rs1 != rs2) ? imm_b : 4)
-        let offset = if self.rx(rs1) != self.rx(rs2) {
-            bimm
-        } else {
-            4
-        };
-        self.wpc(self.rpc().wrapping_add(offset));
+        if self.rx(rs1) != self.rx(rs2) {
+            self.set_next_pc(self.rpc().wrapping_add(bimm));
+        }
     }
 
     fn blt(&mut self, rs1: Reg, rs2: Reg, bimm: u32) {
         // Signed.
         // pc <- pc + ((rs1 < rs2) ? imm_b : 4)
-        let offset = if (self.rx(rs1) as i32) < (self.rx(rs2) as i32) {
-            bimm
-        } else {
-            4
-        };
-        self.wpc(self.rpc().wrapping_add(offset));
+        if (self.rx(rs1) as i32) < (self.rx(rs2) as i32) {
+            self.set_next_pc(self.rpc().wrapping_add(bimm));
+        }
     }
 
     fn bge(&mut self, rs1: Reg, rs2: Reg, bimm: u32) {
         // Signed.
         // pc <- pc + ((rs1 >= rs2) ? imm_b : 4)
-        let offset = if (self.rx(rs1) as i32) >= (self.rx(rs2) as i32) {
-            bimm
-        } else {
-            4
-        };
-        self.wpc(self.rpc().wrapping_add(offset));
+        if (self.rx(rs1) as i32) >= (self.rx(rs2) as i32) {
+            self.set_next_pc(self.rpc().wrapping_add(bimm));
+        }
     }
 
     fn bltu(&mut self, rs1: Reg, rs2: Reg, bimm: u32) {
         // Unsigned.
         // pc <- pc + ((rs1 < rs2) ? imm_b : 4)
-        let offset = if self.rx(rs1) < self.rx(rs2) { bimm } else { 4 };
-        self.wpc(self.rpc().wrapping_add(offset));
+        if self.rx(rs1) < self.rx(rs2) {
+            self.set_next_pc(self.rpc().wrapping_add(bimm));
+        }
     }
 
     fn bgeu(&mut self, rs1: Reg, rs2: Reg, bimm: u32) {
         // Unsigned.
         // pc <- pc + ((rs1 >= rs2) ? imm_b : 4)
-        let offset = if self.rx(rs1) >= self.rx(rs2) {
-            bimm
-        } else {
-            4
-        };
-        self.wpc(self.rpc().wrapping_add(offset));
+        if self.rx(rs1) >= self.rx(rs2) {
+            self.set_next_pc(self.rpc().wrapping_add(bimm));
+        }
     }
 
     // I-type instructions.
@@ -173,7 +161,6 @@ where
         match self.read8(self.rx(rs1).wrapping_add(iimm)) {
             Ok(byte) => {
                 self.wx(rd, (((byte as i8) as i16) as i32) as u32); // TODO: this should be a function.
-                self.wpc(self.rpc().wrapping_add(4));
                 self.wx(Reg::Zero, 0);
             }
             Err(_) => {
@@ -187,7 +174,6 @@ where
         match self.read16(self.rx(rs1).wrapping_add(iimm)) {
             Ok(half_word) => {
                 self.wx(rd, ((half_word as i16) as i32) as u32); // TODO: this should be a function.
-                self.wpc(self.rpc().wrapping_add(4));
                 self.wx(Reg::Zero, 0);
             }
             Err(_) => {
@@ -201,7 +187,6 @@ where
         match self.read32(self.rx(rs1).wrapping_add(iimm)) {
             Ok(word) => {
                 self.wx(rd, word);
-                self.wpc(self.rpc().wrapping_add(4));
                 self.wx(Reg::Zero, 0);
             }
             Err(_) => {
@@ -215,7 +200,6 @@ where
         match self.read8(self.rx(rs1).wrapping_add(iimm)) {
             Ok(byte) => {
                 self.wx(rd, byte as u32);
-                self.wpc(self.rpc().wrapping_add(4));
                 self.wx(Reg::Zero, 0);
             }
             Err(_) => {
@@ -229,7 +213,6 @@ where
         match self.read16(self.rx(rs1).wrapping_add(iimm)) {
             Ok(half_word) => {
                 self.wx(rd, half_word as u32);
-                self.wpc(self.rpc().wrapping_add(4));
                 self.wx(Reg::Zero, 0);
             }
             Err(_) => {
@@ -241,7 +224,6 @@ where
     fn addi(&mut self, rd: Reg, rs1: Reg, iimm: u32) {
         // rd <- rs1 + imm_i, pc += 4
         self.wx(rd, self.rx(rs1).wrapping_add(iimm));
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -251,7 +233,6 @@ where
         let xreg_rs1 = self.rx(rs1) as i32;
         let iimm = iimm as i32;
         self.wx(rd, if xreg_rs1 < iimm { 1 } else { 0 });
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -259,28 +240,24 @@ where
         // Unsigned.
         // rd <- (rs1 < imm_i) ? 1 : 0, pc += 4
         self.wx(rd, if self.rx(rs1) < iimm { 1 } else { 0 });
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
     fn xori(&mut self, rd: Reg, rs1: Reg, iimm: u32) {
         // rd <- rs1 ^ imm_i, pc += 4
         self.wx(rd, self.rx(rs1) ^ iimm);
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
     fn ori(&mut self, rd: Reg, rs1: Reg, iimm: u32) {
         // rd <- rs1 | imm_i, pc += 4
         self.wx(rd, self.rx(rs1) | iimm);
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
     fn andi(&mut self, rd: Reg, rs1: Reg, iimm: u32) {
         // rd <- rs1 & imm_i, pc += 4
         self.wx(rd, self.rx(rs1) & iimm);
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -288,7 +265,7 @@ where
         // rd <- pc + 4, pc <- (rs1 + imm_i) & ~1
         let rs1_before = self.rx(rs1); // Because rd and rs1 might be the same register.
         self.wx(rd, self.rpc().wrapping_add(4));
-        self.wpc(rs1_before.wrapping_add(iimm) & !1);
+        self.set_next_pc(rs1_before.wrapping_add(iimm) & !1);
         self.wx(Reg::Zero, 0);
     }
 
@@ -296,40 +273,25 @@ where
 
     fn sb(&mut self, rs1: Reg, rs2: Reg, simm: u32) {
         // m8(rs1 + imm_s) <- rs2[7:0], pc += 4
-        match self.write8(self.rx(rs1).wrapping_add(simm), (self.rx(rs2) & 0xff) as u8) {
-            Ok(_) => {
-                self.wpc(self.rpc().wrapping_add(4));
-            }
-            Err(_) => {
-                self.handle_trap(TrapCause::StoreAccessFault);
-            }
+        if let Err(_) = self.write8(self.rx(rs1).wrapping_add(simm), (self.rx(rs2) & 0xff) as u8) {
+            self.handle_trap(TrapCause::StoreAccessFault);
         }
     }
 
     fn sh(&mut self, rs1: Reg, rs2: Reg, simm: u32) {
         // m16(rs1 + imm_s) <- rs2[15:0], pc += 4
-        match self.write16(
+        if let Err(_) = self.write16(
             self.rx(rs1).wrapping_add(simm),
             (self.rx(rs2) & 0xffff) as u16,
         ) {
-            Ok(_) => {
-                self.wpc(self.rpc().wrapping_add(4));
-            }
-            Err(_) => {
-                self.handle_trap(TrapCause::StoreAccessFault);
-            }
+            self.handle_trap(TrapCause::StoreAccessFault);
         }
     }
 
     fn sw(&mut self, rs1: Reg, rs2: Reg, simm: u32) {
         // m32(rs1 + imm_s) <- rs2[31:0], pc += 4
-        match self.write32(self.rx(rs1).wrapping_add(simm), self.rx(rs2)) {
-            Ok(_) => {
-                self.wpc(self.rpc().wrapping_add(4));
-            }
-            Err(_) => {
-                self.handle_trap(TrapCause::StoreAccessFault);
-            }
+        if let Err(_) = self.write32(self.rx(rs1).wrapping_add(simm), self.rx(rs2)) {
+            self.handle_trap(TrapCause::StoreAccessFault);
         }
     }
 
@@ -338,14 +300,12 @@ where
     fn auipc(&mut self, rd: Reg, uimm: u32) {
         // rd <- pc + imm_u, pc += 4
         self.wx(rd, self.rpc().wrapping_add(uimm));
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
     fn lui(&mut self, rd: Reg, uimm: u32) {
         // rd <- imm_u, pc += 4
         self.wx(rd, uimm);
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -354,7 +314,7 @@ where
     fn jal(&mut self, rd: Reg, jimm: u32) {
         // rd <- pc + 4, pc <- pc + imm_j
         self.wx(rd, self.rpc().wrapping_add(4));
-        self.wpc(self.rpc().wrapping_add(jimm));
+        self.set_next_pc(self.rpc().wrapping_add(jimm));
         self.wx(Reg::Zero, 0);
     }
 
@@ -363,21 +323,18 @@ where
     fn add(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
         // rd <- rs1 + rs2, pc += 4
         self.wx(rd, self.rx(rs1).wrapping_add(self.rx(rs2)));
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
     fn sub(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
         // rd <- rs1 - rs2, pc += 4
         self.wx(rd, self.rx(rs1).wrapping_sub(self.rx(rs2)));
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
     fn sll(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
         // rd <- rs1 << (rs2 % XLEN), pc += 4
         self.wx(rd, self.rx(rs1) << (self.rx(rs2) % 32));
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -387,7 +344,6 @@ where
         let xreg_rs1 = self.rx(rs1) as i32;
         let xreg_rs2 = self.rx(rs2) as i32;
         self.wx(rd, if xreg_rs1 < xreg_rs2 { 1 } else { 0 });
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -396,21 +352,18 @@ where
         let xreg_rs1 = self.rx(rs1);
         let xreg_rs2 = self.rx(rs2);
         self.wx(rd, if xreg_rs1 < xreg_rs2 { 1 } else { 0 });
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
     fn xor(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
         // rd <- rs1 ^ rs2, pc += 4
         self.wx(rd, self.rx(rs1) ^ self.rx(rs2));
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
     fn srl(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
         // rd <- rs1 >> (rs2 % XLEN), pc += 4
         self.wx(rd, self.rx(rs1) >> (self.rx(rs2) % 32));
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -419,21 +372,18 @@ where
         let xreg_rs1 = self.rx(rs1) as i32;
         let shift = (self.rx(rs2) % 32) as i32;
         self.wx(rd, (xreg_rs1 >> shift) as u32);
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
     fn or(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
         // rd <- rs1 | rs2, pc += 4
         self.wx(rd, self.rx(rs1) | self.rx(rs2));
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
     fn and(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
         // rd <- rs1 & rs2, pc += 4
         self.wx(rd, self.rx(rs1) & self.rx(rs2));
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -441,13 +391,11 @@ where
 
     fn slli(&mut self, rd: Reg, rs1: Reg, shamt: u32) {
         self.wx(rd, self.rx(rs1) << shamt);
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
     fn srli(&mut self, rd: Reg, rs1: Reg, shamt: u32) {
         self.wx(rd, self.rx(rs1) >> shamt);
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -455,7 +403,6 @@ where
         let xreg_rs = self.rx(rs1) as i32;
         let shamt = shamt as i32;
         self.wx(rd, (xreg_rs >> shamt) as u32);
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -489,7 +436,6 @@ where
     fn mul(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
         // rd <- rs1 * rs2, pc += 4
         self.wx(rd, self.rx(rs1).wrapping_mul(self.rx(rs2)));
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -498,7 +444,6 @@ where
         let xreg_rs2 = (self.rx(rs2) as i32) as i64;
         let t = (xreg_rs1 * xreg_rs2) >> 32;
         self.wx(rd, t as u32);
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -507,7 +452,6 @@ where
         let xreg_rs2 = (self.rx(rs2) as u64) as i64;
         let t = (xreg_rs1 * xreg_rs2) >> 32;
         self.wx(rd, t as u32);
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -516,7 +460,6 @@ where
         let xreg_rs2 = self.rx(rs2) as u64;
         let t = (xreg_rs1 * xreg_rs2) >> 32;
         self.wx(rd, t as u32);
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -537,7 +480,6 @@ where
             // Signed division overflow occurred.
             self.wx(rd, dividend as u32);
         }
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -552,7 +494,6 @@ where
                 u32::MAX // -1.
             },
         );
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -573,7 +514,6 @@ where
             // Signed division overflow occurred.
             self.wx(rd, 0);
         }
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 
@@ -588,7 +528,6 @@ where
                 dividend
             },
         );
-        self.wpc(self.rpc().wrapping_add(4));
         self.wx(Reg::Zero, 0);
     }
 }
