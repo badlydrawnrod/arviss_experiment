@@ -60,16 +60,15 @@ where
     M: Mem,
     T: TrapHandler,
 {
-    fn rpc(&self) -> Address {
+    fn get_pc(&self) -> Address {
         self.pc
     }
 
-    fn wpc(&mut self, address: Address) {
-        self.pc = address;
-    }
-
-    fn get_next_pc(&self) -> Address {
-        self.next_pc
+    fn cycle_next_pc(&mut self) -> Address {
+        self.pc = self.next_pc;
+        // TODO: this may not always be the case, e.g., for RV32C. Let's cross that bridge when we come to it.
+        self.next_pc = self.next_pc.wrapping_add(4);
+        self.pc
     }
 
     fn set_next_pc(&mut self, address: Address) {
