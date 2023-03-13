@@ -160,7 +160,6 @@ where
         match self.read8(self.rx(rs1).wrapping_add(iimm)) {
             Ok(byte) => {
                 self.wx(rd, (((byte as i8) as i16) as i32) as u32); // TODO: this should be a function.
-                self.wx(Reg::Zero, 0);
             }
             Err(_) => {
                 self.handle_trap(TrapCause::LoadAccessFault);
@@ -173,7 +172,6 @@ where
         match self.read16(self.rx(rs1).wrapping_add(iimm)) {
             Ok(half_word) => {
                 self.wx(rd, ((half_word as i16) as i32) as u32); // TODO: this should be a function.
-                self.wx(Reg::Zero, 0);
             }
             Err(_) => {
                 self.handle_trap(TrapCause::LoadAccessFault);
@@ -186,7 +184,6 @@ where
         match self.read32(self.rx(rs1).wrapping_add(iimm)) {
             Ok(word) => {
                 self.wx(rd, word);
-                self.wx(Reg::Zero, 0);
             }
             Err(_) => {
                 self.handle_trap(TrapCause::LoadAccessFault);
@@ -199,7 +196,6 @@ where
         match self.read8(self.rx(rs1).wrapping_add(iimm)) {
             Ok(byte) => {
                 self.wx(rd, byte as u32);
-                self.wx(Reg::Zero, 0);
             }
             Err(_) => {
                 self.handle_trap(TrapCause::LoadAccessFault);
@@ -212,7 +208,6 @@ where
         match self.read16(self.rx(rs1).wrapping_add(iimm)) {
             Ok(half_word) => {
                 self.wx(rd, half_word as u32);
-                self.wx(Reg::Zero, 0);
             }
             Err(_) => {
                 self.handle_trap(TrapCause::LoadAccessFault);
@@ -223,7 +218,6 @@ where
     fn addi(&mut self, rd: Reg, rs1: Reg, iimm: u32) {
         // rd <- rs1 + imm_i, pc += 4
         self.wx(rd, self.rx(rs1).wrapping_add(iimm));
-        self.wx(Reg::Zero, 0);
     }
 
     fn slti(&mut self, rd: Reg, rs1: Reg, iimm: u32) {
@@ -232,32 +226,27 @@ where
         let xreg_rs1 = self.rx(rs1) as i32;
         let iimm = iimm as i32;
         self.wx(rd, if xreg_rs1 < iimm { 1 } else { 0 });
-        self.wx(Reg::Zero, 0);
     }
 
     fn sltiu(&mut self, rd: Reg, rs1: Reg, iimm: u32) {
         // Unsigned.
         // rd <- (rs1 < imm_i) ? 1 : 0, pc += 4
         self.wx(rd, if self.rx(rs1) < iimm { 1 } else { 0 });
-        self.wx(Reg::Zero, 0);
     }
 
     fn xori(&mut self, rd: Reg, rs1: Reg, iimm: u32) {
         // rd <- rs1 ^ imm_i, pc += 4
         self.wx(rd, self.rx(rs1) ^ iimm);
-        self.wx(Reg::Zero, 0);
     }
 
     fn ori(&mut self, rd: Reg, rs1: Reg, iimm: u32) {
         // rd <- rs1 | imm_i, pc += 4
         self.wx(rd, self.rx(rs1) | iimm);
-        self.wx(Reg::Zero, 0);
     }
 
     fn andi(&mut self, rd: Reg, rs1: Reg, iimm: u32) {
         // rd <- rs1 & imm_i, pc += 4
         self.wx(rd, self.rx(rs1) & iimm);
-        self.wx(Reg::Zero, 0);
     }
 
     fn jalr(&mut self, rd: Reg, rs1: Reg, iimm: u32) {
@@ -265,7 +254,6 @@ where
         let rs1_before = self.rx(rs1); // Because rd and rs1 might be the same register.
         self.wx(rd, self.get_pc().wrapping_add(4));
         self.set_next_pc(rs1_before.wrapping_add(iimm) & !1);
-        self.wx(Reg::Zero, 0);
     }
 
     // S-type instructions.
@@ -299,13 +287,11 @@ where
     fn auipc(&mut self, rd: Reg, uimm: u32) {
         // rd <- pc + imm_u, pc += 4
         self.wx(rd, self.get_pc().wrapping_add(uimm));
-        self.wx(Reg::Zero, 0);
     }
 
     fn lui(&mut self, rd: Reg, uimm: u32) {
         // rd <- imm_u, pc += 4
         self.wx(rd, uimm);
-        self.wx(Reg::Zero, 0);
     }
 
     // J-type instructions.
@@ -314,7 +300,6 @@ where
         // rd <- pc + 4, pc <- pc + imm_j
         self.wx(rd, self.get_pc().wrapping_add(4));
         self.set_next_pc(self.get_pc().wrapping_add(jimm));
-        self.wx(Reg::Zero, 0);
     }
 
     // Arithmetic instructions.
@@ -322,19 +307,16 @@ where
     fn add(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
         // rd <- rs1 + rs2, pc += 4
         self.wx(rd, self.rx(rs1).wrapping_add(self.rx(rs2)));
-        self.wx(Reg::Zero, 0);
     }
 
     fn sub(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
         // rd <- rs1 - rs2, pc += 4
         self.wx(rd, self.rx(rs1).wrapping_sub(self.rx(rs2)));
-        self.wx(Reg::Zero, 0);
     }
 
     fn sll(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
         // rd <- rs1 << (rs2 % XLEN), pc += 4
         self.wx(rd, self.rx(rs1) << (self.rx(rs2) % 32));
-        self.wx(Reg::Zero, 0);
     }
 
     fn slt(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
@@ -343,7 +325,6 @@ where
         let xreg_rs1 = self.rx(rs1) as i32;
         let xreg_rs2 = self.rx(rs2) as i32;
         self.wx(rd, if xreg_rs1 < xreg_rs2 { 1 } else { 0 });
-        self.wx(Reg::Zero, 0);
     }
 
     fn sltu(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
@@ -351,19 +332,16 @@ where
         let xreg_rs1 = self.rx(rs1);
         let xreg_rs2 = self.rx(rs2);
         self.wx(rd, if xreg_rs1 < xreg_rs2 { 1 } else { 0 });
-        self.wx(Reg::Zero, 0);
     }
 
     fn xor(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
         // rd <- rs1 ^ rs2, pc += 4
         self.wx(rd, self.rx(rs1) ^ self.rx(rs2));
-        self.wx(Reg::Zero, 0);
     }
 
     fn srl(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
         // rd <- rs1 >> (rs2 % XLEN), pc += 4
         self.wx(rd, self.rx(rs1) >> (self.rx(rs2) % 32));
-        self.wx(Reg::Zero, 0);
     }
 
     fn sra(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
@@ -371,38 +349,32 @@ where
         let xreg_rs1 = self.rx(rs1) as i32;
         let shift = (self.rx(rs2) % 32) as i32;
         self.wx(rd, (xreg_rs1 >> shift) as u32);
-        self.wx(Reg::Zero, 0);
     }
 
     fn or(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
         // rd <- rs1 | rs2, pc += 4
         self.wx(rd, self.rx(rs1) | self.rx(rs2));
-        self.wx(Reg::Zero, 0);
     }
 
     fn and(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
         // rd <- rs1 & rs2, pc += 4
         self.wx(rd, self.rx(rs1) & self.rx(rs2));
-        self.wx(Reg::Zero, 0);
     }
 
     // Immediate shift instructions.
 
     fn slli(&mut self, rd: Reg, rs1: Reg, shamt: u32) {
         self.wx(rd, self.rx(rs1) << shamt);
-        self.wx(Reg::Zero, 0);
     }
 
     fn srli(&mut self, rd: Reg, rs1: Reg, shamt: u32) {
         self.wx(rd, self.rx(rs1) >> shamt);
-        self.wx(Reg::Zero, 0);
     }
 
     fn srai(&mut self, rd: Reg, rs1: Reg, shamt: u32) {
         let xreg_rs = self.rx(rs1) as i32;
         let shamt = shamt as i32;
         self.wx(rd, (xreg_rs >> shamt) as u32);
-        self.wx(Reg::Zero, 0);
     }
 
     // Fence instructions.
@@ -435,7 +407,6 @@ where
     fn mul(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
         // rd <- rs1 * rs2, pc += 4
         self.wx(rd, self.rx(rs1).wrapping_mul(self.rx(rs2)));
-        self.wx(Reg::Zero, 0);
     }
 
     fn mulh(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
@@ -443,7 +414,6 @@ where
         let xreg_rs2 = (self.rx(rs2) as i32) as i64;
         let t = (xreg_rs1 * xreg_rs2) >> 32;
         self.wx(rd, t as u32);
-        self.wx(Reg::Zero, 0);
     }
 
     fn mulhsu(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
@@ -451,7 +421,6 @@ where
         let xreg_rs2 = (self.rx(rs2) as u64) as i64;
         let t = (xreg_rs1 * xreg_rs2) >> 32;
         self.wx(rd, t as u32);
-        self.wx(Reg::Zero, 0);
     }
 
     fn mulhu(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
@@ -459,7 +428,6 @@ where
         let xreg_rs2 = self.rx(rs2) as u64;
         let t = (xreg_rs1 * xreg_rs2) >> 32;
         self.wx(rd, t as u32);
-        self.wx(Reg::Zero, 0);
     }
 
     fn div(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
@@ -479,7 +447,6 @@ where
             // Signed division overflow occurred.
             self.wx(rd, dividend as u32);
         }
-        self.wx(Reg::Zero, 0);
     }
 
     fn divu(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
@@ -493,7 +460,6 @@ where
                 u32::MAX // -1.
             },
         );
-        self.wx(Reg::Zero, 0);
     }
 
     fn rem(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
@@ -513,7 +479,6 @@ where
             // Signed division overflow occurred.
             self.wx(rd, 0);
         }
-        self.wx(Reg::Zero, 0);
     }
 
     fn remu(&mut self, rd: Reg, rs1: Reg, rs2: Reg) {
@@ -527,6 +492,5 @@ where
                 dividend
             },
         );
-        self.wx(Reg::Zero, 0);
     }
 }

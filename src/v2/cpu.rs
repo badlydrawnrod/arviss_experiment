@@ -115,5 +115,6 @@ where
 
     fn wx(&mut self, reg: Reg, val: u32) {
         self.xreg[reg as usize] = val;
+        self.xreg[0] = 0;
     }
 }
