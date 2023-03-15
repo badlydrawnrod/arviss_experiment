@@ -1,6 +1,6 @@
 use super::{
     cpu_types::{Address, CoreCpu, Xreg},
-    memory::{BasicMem, Mem},
+    memory::{BasicMem, Mem, MemoryResult},
     tobits::Reg,
     trap_handler::{BasicTrapHandler, TrapCause, TrapHandler},
 };
@@ -64,38 +64,44 @@ where
         self.pc
     }
 
-    fn cycle_next_pc(&mut self) -> Address {
+    fn fetch(&mut self) -> MemoryResult<u32> {
         self.pc = self.next_pc;
-        // TODO: this may not always be the case, e.g., for RV32C. Let's cross that bridge when we come to it.
-        self.next_pc = self.next_pc.wrapping_add(4);
-        self.pc
+        match self.mem.read32(self.pc) {
+            Ok(ins) => {
+                // Handle variable length instructions.
+                let inc = if (ins & 0b11) == 0b11 { 4 } else { 2 };
+                self.next_pc = self.pc.wrapping_add(inc);
+                Ok(ins)
+            }
+            Err(e) => Err(e),
+        }
     }
 
     fn set_next_pc(&mut self, address: Address) {
         self.next_pc = address;
     }
 
-    fn read8(&self, address: Address) -> super::memory::MemoryResult<u8> {
+    fn read8(&self, address: Address) -> MemoryResult<u8> {
         self.mem.read8(address)
     }
 
-    fn read16(&self, address: Address) -> super::memory::MemoryResult<u16> {
+    fn read16(&self, address: Address) -> MemoryResult<u16> {
         self.mem.read16(address)
     }
 
-    fn read32(&self, address: Address) -> super::memory::MemoryResult<u32> {
+    fn read32(&self, address: Address) -> MemoryResult<u32> {
         self.mem.read32(address)
     }
 
-    fn write8(&mut self, address: Address, value: u8) -> super::memory::MemoryResult<()> {
+    fn write8(&mut self, address: Address, value: u8) -> MemoryResult<()> {
         self.mem.write8(address, value)
     }
 
-    fn write16(&mut self, address: Address, value: u16) -> super::memory::MemoryResult<()> {
+    fn write16(&mut self, address: Address, value: u16) -> MemoryResult<()> {
         self.mem.write16(address, value)
     }
 
-    fn write32(&mut self, address: Address, value: u32) -> super::memory::MemoryResult<()> {
+    fn write32(&mut self, address: Address, value: u32) -> MemoryResult<()> {
         self.mem.write32(address, value)
     }
 

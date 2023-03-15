@@ -39,13 +39,12 @@ pub fn main() -> io::Result<()> {
     }
     loop {
         // Fetch.
-        let pc = cpu.cycle_next_pc();
-        let ins = cpu.read32(pc).unwrap();
+        let ins = cpu.fetch().unwrap();
 
         // Disassemble if the user asked for it.
         if disassemble {
             let result = decode(&mut disassembler, ins);
-            println!("{:08x} {:08x} {}", pc, ins, result);
+            println!("{:08x} {:08x} {}", cpu.get_pc(), ins, result);
         }
         if ins == EBREAK {
             break;

@@ -4,7 +4,7 @@ pub type Address = u32;
 
 pub trait CoreCpu {
     fn get_pc(&self) -> Address;
-    fn cycle_next_pc(&mut self) -> Address;
+    fn fetch(&mut self) -> MemoryResult<u32>;
     fn set_next_pc(&mut self, address: Address);
 
     fn read8(&self, address: Address) -> MemoryResult<u8>;
