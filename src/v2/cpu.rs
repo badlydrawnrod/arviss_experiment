@@ -67,11 +67,15 @@ where
     fn fetch(&mut self) -> MemoryResult<u32> {
         self.pc = self.next_pc;
         match self.mem.read32(self.pc) {
-            Ok(ins) => {
-                // Handle variable length instructions.
-                let inc = if (ins & 0b11) == 0b11 { 4 } else { 2 };
-                self.next_pc = self.pc.wrapping_add(inc);
+            Ok(ins) if (ins & 0b11) == 0b11 => {
+                // 32-bit instruction.
+                self.next_pc = self.pc.wrapping_add(4);
                 Ok(ins)
+            },
+            Ok(ins) => {
+                // 16-bit instruction.
+                self.next_pc = self.pc.wrapping_add(2);
+                Ok(ins & 0xffff)
             }
             Err(e) => Err(e),
         }
