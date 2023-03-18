@@ -76,6 +76,10 @@ fn to_reg(r: u32) -> Reg {
     }
 }
 
+fn creg(r: u32) -> Reg {
+    to_reg(8 + r)
+}
+
 impl ToBits {
     #[inline]
     pub fn bits(&self, hi: u32, lo: u32) -> u32 {
@@ -193,5 +197,178 @@ impl ToBits {
     #[inline]
     pub fn shamtw(&self) -> u32 {
         (self.0 >> 20) & 0x1f
+    }
+
+    // RV32C
+
+    #[inline]
+    pub fn c_op(&self) -> u32 {
+        self.0 & 3
+    }
+
+    #[inline]
+    pub fn c_funct3(&self) -> u32 {
+        (self.0 >> 13) & 7
+    }
+
+    #[inline]
+    pub fn c_funct2(&self) -> u32 {
+        (self.0 >> 5) & 3
+    }
+
+    #[inline]
+    pub fn rdp(&self) -> Reg {
+        creg((self.0 >> 2) & 7)
+    }
+
+    #[inline]
+    pub fn rdn0(&self) -> Reg {
+        self.rd()
+    }
+
+    #[inline]
+    pub fn rdn2(&self) -> Reg {
+        self.rd()
+    }
+
+    #[inline]
+    pub fn rdrs1(&self) -> Reg {
+        self.rd()
+    }
+
+    #[inline]
+    pub fn rs1p(&self) -> Reg {
+        creg((self.0 >> 7) & 7)
+    }
+
+    #[inline]
+    pub fn rs2p(&self) -> Reg {
+        creg((self.0 >> 2) & 7)
+    }
+
+    #[inline]
+    pub fn rdrs1p(&self) -> Reg {
+        creg((self.0 >> 7) & 7)
+    }
+
+    #[inline]
+    pub fn rs1n0(&self) -> Reg {
+        self.rd()
+    }
+
+    #[inline]
+    pub fn rs2n0(&self) -> Reg {
+        self.rd()
+    }
+
+    #[inline]
+    pub fn rdrs1n0(&self) -> Reg {
+        self.rd()
+    }
+
+    #[inline]
+    pub fn c_rs2(&self) -> Reg {
+        creg((self.0 >> 2) & 0x1f)
+    }
+
+    #[inline]
+    pub fn c_nzuimm10(&self) -> u32 {
+        // nzuimm[5:4|9:6|2|3]
+        let imm = (self.0 >> 5) & 0xff;
+        let a = ((imm & 0b11000000) >> 6) << 4; // 5:4
+        let b = ((imm & 0b00111100) >> 2) << 6; // 9:6
+        let c = ((imm & 0b00000010) >> 1) << 2; // 2
+        let d = ((imm & 0b00000001) >> 0) << 3; // 3
+        a | b | c | d
+    }
+
+    #[inline]
+    pub fn c_uimm7(&self) -> u32 {
+        let a = ((self.0 >> 12) & 1) << 5; // offset[5]
+        let b = ((self.0 & 0b11100) >> 2) << 3; // offset[4:3]
+        let c = ((self.0 & 0b00011) >> 0) << 6; // offset[7:6]
+        a | b | c
+    }
+
+    #[inline]
+    pub fn c_nzimm6(&self) -> u32 {
+        let a = ((self.0 >> 12) & 1) << 5; // imm[5]
+        let b = (self.0 >> 2) & 0x1f; // imm[4:0]
+        a | b
+    }
+
+    #[inline]
+    pub fn c_nzimm10(&self) -> u32 {
+        let a = ((self.0 >> 12) & 1) << 9; // nzimm[9]
+        let imm = ((self.0) >> 2) & 0x1f;
+        let b = ((imm & 0b10000) >> 4) << 4; // nzimm[4]
+        let c = ((imm & 0b01000) >> 3) << 6; // nzimm[6]
+        let d = ((imm & 0b00110) >> 1) << 7; // nzimm[8:7]
+        let e = ((imm & 0b00001) >> 0) << 5; // nzimm[5]
+        a | b | c | d | e
+    }
+
+    #[inline]
+    pub fn c_nzimm18(&self) -> u32 {
+        let a = ((self.0 >> 12) & 1) << 17; // nzimm[17]
+        let b = ((self.0 >> 2) & 0x1f) << 12; // nzimm[16:12]
+        a | b
+    }
+
+    #[inline]
+    pub fn c_imm6(&self) -> u32 {
+        let a = ((self.0 >> 12) & 1) << 5; // imm[5]
+        let b = (self.0 >> 2) & 0x1f; // imm[4:0]
+        a | b
+    }
+
+    #[inline]
+    pub fn c_imm12(&self) -> u32 {
+        let imm = (self.0 >> 2) & 0x7ff;
+        let a = ((imm & 0b10000000000) >> 10) << 11; // offset[11]
+        let b = ((imm & 0b01000000000) >> 9) << 4; // offset[4]
+        let c = ((imm & 0b00110000000) >> 7) << 8; // offset[9:8]
+        let d = ((imm & 0b00001000000) >> 6) << 10; // offset[10]
+        let e = ((imm & 0b00000100000) >> 5) << 6; // offset[6]
+        let f = ((imm & 0b00000010000) >> 4) << 7; // offset[7]
+        let g = ((imm & 0b00000001110) >> 1) << 1; // offset[3:1]
+        let h = ((imm & 0b00000000001) >> 0) << 5; // offset[5]
+        a | b | c | d | e | f | g | h
+    }
+
+    #[inline]
+    pub fn c_bimm9(&self) -> u32 {
+        let imm1 = (self.0 >> 10) & 7;
+        let a = ((imm1 & 0b100) >> 2) << 8; // offset[8]
+        let b = ((imm1 & 0b011) >> 0) << 3; // offset[4:3]
+        let imm2 = (self.0 >> 2) & 0x1f;
+        let c = ((imm2 & 0b11000) >> 3) << 6; // offset[7:6]
+        let d = ((imm2 & 0b00110) >> 1) << 1; // offset[2:1]
+        let e = ((imm2 & 0b00001) >> 0) << 5; // offset[5]
+        a | b | c | d | e
+    }
+
+    #[inline]
+    pub fn c_uimm8sp(&self) -> u32 {
+        let a = ((self.0 >> 12) & 1) << 5; // offset[5]
+        let imm = (self.0 >> 2) & 0x1f;
+        let b = ((imm & 0b11100) >> 2) << 2; // offset[4:2]
+        let c = ((imm & 0b00011) >> 0) << 6; // offset[7:6]
+        a | b | c
+    }
+
+    #[inline]
+    pub fn c_uimm8sp_s(&self) -> u32 {
+        let imm = (self.0 >> 7) & 0x3f;
+        let a = ((imm & 0b111100) >> 2) << 2; // offset[5:2]
+        let b = ((imm & 0b000011) >> 0) << 6; // offset[7:6]
+        a | b
+    }
+
+    #[inline]
+    pub fn c_nzuimm6(&self) -> u32 {
+        let a = ((self.0 >> 12) & 1) << 5; // shamt[5]
+        let b = ((self.0 >> 2) & 0x1f); // shamt[4:0]
+        a | b
     }
 }

@@ -494,3 +494,176 @@ where
         );
     }
 }
+
+pub trait DecodeRv32c {
+    type Item;
+
+    fn c_addi4spn(&mut self, rdp: Reg, imm: u32) -> Self::Item;
+    fn c_lw(&mut self, rdp: Reg, rs1p: Reg, imm: u32) -> Self::Item;
+    fn c_sw(&mut self, rs1p: Reg, rs2p: Reg, imm: u32) -> Self::Item;
+    fn c_sub(&mut self, rdrs1p: Reg, rs2p: Reg) -> Self::Item;
+    fn c_xor(&mut self, rdrs1p: Reg, rs2p: Reg) -> Self::Item;
+    fn c_or(&mut self, rdrs1p: Reg, rs2p: Reg) -> Self::Item;
+    fn c_and(&mut self, rdrs1p: Reg, rs2p: Reg) -> Self::Item;
+    fn c_nop(&mut self, imm: u32) -> Self::Item;
+    fn c_addi16sp(&mut self, imm: u32) -> Self::Item;
+    fn c_andi(&mut self, rsrs1p: Reg, imm: u32) -> Self::Item;
+    fn c_addi(&mut self, rdrs1n0: Reg, imm: u32) -> Self::Item;
+    fn c_li(&mut self, rd: Reg, imm: u32) -> Self::Item;
+    fn c_lui(&mut self, rdn2: Reg, imm: u32) -> Self::Item;
+    fn c_j(&mut self, imm: u32) -> Self::Item;
+    fn c_beqz(&mut self, rs1p: Reg, imm: u32) -> Self::Item;
+    fn c_bnez(&mut self, rs1p: Reg, imm: u32) -> Self::Item;
+    fn c_jr(&mut self, rs1n0: Reg) -> Self::Item;
+    fn c_jalr(&mut self, rs1n0: Reg) -> Self::Item;
+    fn c_ebreak(&mut self) -> Self::Item;
+    fn c_mv(&mut self, rd: Reg, rs2n0: Reg) -> Self::Item;
+    fn c_add(&mut self, rdrs1: Reg, rs2n0: Reg) -> Self::Item;
+    fn c_lwsp(&mut self, rdn0: Reg, imm: u32) -> Self::Item;
+    fn c_swsp(&mut self, rs2: Reg, imm: u32) -> Self::Item;
+    fn c_jal(&mut self, imm: u32) -> Self::Item;
+    fn c_srli(&mut self, rdrs1p: Reg, imm: u32) -> Self::Item;
+    fn c_srai(&mut self, rdrs1p: Reg, imm: u32) -> Self::Item;
+    fn c_slli(&mut self, rdrs1n0: Reg, imm: u32) -> Self::Item;
+
+}
+
+impl<T> DecodeRv32c for T
+where
+    T: CoreCpu + Xreg + DecodeRv32i
+{
+    type Item = ();
+
+    fn c_addi4spn(&mut self, rdp: Reg, imm: u32) -> Self::Item {
+        // addi rdp, x2, nzuimm[9:2]
+        self.addi(rdp, Reg::Sp, imm);
+    }
+
+    fn c_lw(&mut self, rdp: Reg, rs1p: Reg, imm: u32) -> Self::Item {
+        // lw rdp, offset[6:2](rs1p)
+        self.lw(rdp, rs1p, imm);
+    }
+
+    fn c_sw(&mut self, rs1p: Reg, rs2p: Reg, imm: u32) -> Self::Item {
+        //  sw rs2p, offset[6:2](rs1p)
+        self.sw(rs1p, rs2p, imm);
+    }
+
+    fn c_sub(&mut self, rdrs1p: Reg, rs2p: Reg) -> Self::Item {
+        // sub rdp, rdp, rs2p
+        self.sub(rdrs1p, rdrs1p, rs2p);
+    }
+
+    fn c_xor(&mut self, rdrs1p: Reg, rs2p: Reg) -> Self::Item {
+        // xor rdp, rdp, rs2p
+        self.xor(rdrs1p, rdrs1p, rs2p);
+    }
+
+    fn c_or(&mut self, rdrs1p: Reg, rs2p: Reg) -> Self::Item {
+        // or rdp, rdp, rs2p
+        self.or(rdrs1p, rdrs1p, rs2p);
+    }
+
+    fn c_and(&mut self, rdrs1p: Reg, rs2p: Reg) -> Self::Item {
+        // and rdp, rdp, rs2p
+        self.and(rdrs1p, rdrs1p, rs2p);
+    }
+
+    fn c_nop(&mut self, _imm: u32) -> Self::Item {
+        // nop
+    }
+
+    fn c_addi16sp(&mut self, imm: u32) -> Self::Item {
+        // addi x2, x2, nzimm[9:4]
+        self.addi(Reg::Sp, Reg::Sp, imm);
+    }
+
+    fn c_andi(&mut self, rsrs1p: Reg, imm: u32) -> Self::Item {
+        // andi rdp, rdp, imm[5:0]
+        self.andi(rsrs1p, rsrs1p, imm);
+    }
+
+    fn c_addi(&mut self, rdrs1n0: Reg, imm: u32) -> Self::Item {
+        // addi rd, rd, nzimm[5:0]
+        self.addi(rdrs1n0, rdrs1n0, imm);
+    }
+
+    fn c_li(&mut self, rd: Reg, imm: u32) -> Self::Item {
+        // addi rd, x0, imm[5:0]
+        self.addi(rd, Reg::Zero, imm);
+    }
+
+    fn c_lui(&mut self, rdn2: Reg, imm: u32) -> Self::Item {
+        // lui rd, nzimm[17:12]
+        self.lui(rdn2, imm);
+    }
+
+    fn c_j(&mut self, imm: u32) -> Self::Item {
+        // jal x0, offset[11:1]
+        self.jal(Reg::Zero, imm);
+    }
+
+    fn c_beqz(&mut self, rs1p: Reg, imm: u32) -> Self::Item {
+        // beq rs1p, x0, offset[8:1]
+        self.beq(rs1p, Reg::Zero, imm);
+    }
+
+    fn c_bnez(&mut self, rs1p: Reg, imm: u32) -> Self::Item {
+        // bne rs1p, x0, offset[8:1]
+        self.bne(rs1p, Reg::Zero, imm);
+    }
+
+    fn c_jr(&mut self, rs1n0: Reg) -> Self::Item {
+        // jalr x0, 0(rs1)
+        self.jalr(Reg::Zero, rs1n0, 0);
+    }
+
+    fn c_jalr(&mut self, rs1n0: Reg) -> Self::Item {
+        // jalr x1, 0(rs1)
+        self.jalr(Reg::Ra, rs1n0, 0);
+    }
+
+    fn c_ebreak(&mut self) -> Self::Item {
+        self.ebreak();
+    }
+
+    fn c_mv(&mut self, rd: Reg, rs2n0: Reg) -> Self::Item {
+        // add rd, x0, rs2
+        self.add(rd, Reg::Zero, rs2n0);
+    }
+
+    fn c_add(&mut self, rdrs1: Reg, rs2n0: Reg) -> Self::Item {
+        // add rd, rd, rs2
+        self.add(rdrs1, rdrs1, rs2n0);
+    }
+
+    fn c_lwsp(&mut self, rdn0: Reg, imm: u32) -> Self::Item {
+        // lw rd, offset[7:2](x2)
+        self.lw(rdn0, Reg::Sp, imm);
+    }
+
+    fn c_swsp(&mut self, rs2: Reg, imm: u32) -> Self::Item {
+        // sw rs2, offset[7:2](x2)
+        self.sw(Reg::Sp, rs2, imm);
+    }
+
+    fn c_jal(&mut self, imm: u32) -> Self::Item {
+        // jal x1, offset[11:1]
+        self.jal(Reg::Ra, imm);
+    }
+
+    fn c_srli(&mut self, rdrs1p: Reg, imm: u32) -> Self::Item {
+        // srli rdp, drp, shamt[5:0]
+        self.srli(rdrs1p, rdrs1p, imm);
+    }
+
+    fn c_srai(&mut self, rdrs1p: Reg, imm: u32) -> Self::Item {
+        // srai rdp, rdp, shamt[5:0]
+        self.srai(rdrs1p, rdrs1p, imm);
+    }
+
+    fn c_slli(&mut self, rdrs1n0: Reg, imm: u32) -> Self::Item {
+        // slli rd, rd, shamt[5:0]
+        self.slli(rdrs1n0, rdrs1n0, imm);
+    }
+}
