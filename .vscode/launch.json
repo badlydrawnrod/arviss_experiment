@@ -16,8 +16,8 @@
                 ]
             },
             "args": [
-                // "-d",
-                "../rt_app/app.bin"
+                "-d",
+                "../rt_app/app.rv32c"
             ]
         }
     ]

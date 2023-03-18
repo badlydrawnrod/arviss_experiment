@@ -34,19 +34,19 @@ pub fn main() -> io::Result<()> {
     let mut cpu = Rv32iCpu::<BasicMem>::with_mem(mem);
 
     // Run until we can run no more.
-    // let mut disassembler = Disassembler {};
-    // if disassemble {
-    //     println!("pc       (pc)     Code");
-    // }
+    let mut disassembler = Disassembler {};
+    if disassemble {
+        println!("pc       (pc)     Code");
+    }
     loop {
         // Fetch.
         let ins = cpu.fetch().unwrap();
 
         // Disassemble if the user asked for it.
         if disassemble {
-            //     let result = decode(&mut disassembler, ins);
-            //     println!("{:08x} {:08x} {}", cpu.get_pc(), ins, result);
-            println!("{:08x} {:08x}", cpu.get_pc(), ins);
+                let result = decode(&mut disassembler, ins);
+                println!("{:08x} {:08x} {}", cpu.get_pc(), ins, result);
+            // println!("{:08x} {:08x}", cpu.get_pc(), ins);
         }
         if ins == EBREAK || ins == C_EBREAK {
             break;

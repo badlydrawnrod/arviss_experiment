@@ -82,7 +82,7 @@ fn creg(r: u32) -> Reg {
 
 #[inline]
 fn sext(n: u32, top_bit: i32) -> u32 {
-    let shift = 32 - top_bit;
+    let shift = 31 - top_bit;
     (((n << shift) as i32) >> shift) as u32
 }
 
@@ -259,12 +259,12 @@ impl ToBits {
 
     #[inline]
     pub fn rs1n0(&self) -> Reg {
-        self.rd()
+        to_reg((self.0 >> 7) & 0x1f)
     }
 
     #[inline]
     pub fn rs2n0(&self) -> Reg {
-        self.rd()
+        to_reg((self.0 >> 2) & 0x1f)
     }
 
     #[inline]
@@ -274,7 +274,7 @@ impl ToBits {
 
     #[inline]
     pub fn c_rs2(&self) -> Reg {
-        creg((self.0 >> 2) & 0x1f)
+        to_reg((self.0 >> 2) & 0x1f)
     }
 
     #[inline]
