@@ -24,8 +24,8 @@ pub trait Xreg {
 }
 
 pub trait Freg {
-    fn rf(&self, reg: u32) -> f32;
-    fn wf(&mut self, reg: u32, val: f32);
+    fn rf(&self, reg: Reg) -> f32;
+    fn wf(&mut self, reg: Reg, val: f32);
 }
 
 pub trait DecodeRv32i {
@@ -525,12 +525,11 @@ pub trait DecodeRv32c {
     fn c_srli(&mut self, rdrs1p: Reg, imm: u32) -> Self::Item;
     fn c_srai(&mut self, rdrs1p: Reg, imm: u32) -> Self::Item;
     fn c_slli(&mut self, rdrs1n0: Reg, imm: u32) -> Self::Item;
-
 }
 
 impl<T> DecodeRv32c for T
 where
-    T: CoreCpu + Xreg + DecodeRv32i
+    T: CoreCpu + Xreg + DecodeRv32i,
 {
     type Item = ();
 
@@ -665,5 +664,281 @@ where
     fn c_slli(&mut self, rdrs1n0: Reg, imm: u32) -> Self::Item {
         // slli rd, rd, shamt[5:0]
         self.slli(rdrs1n0, rdrs1n0, imm);
+    }
+}
+
+pub trait DecodeRv32f {
+    type Item;
+
+    // I-type instructions.
+    fn flw(&mut self, rd: Reg, rs1: Reg, iimm: u32) -> Self::Item;
+
+    // S-type instructions.
+    fn fsw(&mut self, rs1: Reg, rs2: Reg, simm: u32) -> Self::Item;
+
+    // Instructions with rd rs1 rm operands.
+    fn fsqrt_s(&mut self, rd: Reg, rs1: Reg, rm: u32) -> Self::Item;
+    fn fcvt_w_s(&mut self, rd: Reg, rs1: Reg, rm: u32) -> Self::Item;
+    fn fcvt_wu_s(&mut self, rd: Reg, rs1: Reg, rm: u32) -> Self::Item;
+    fn fcvt_s_w(&mut self, rd: Reg, rs1: Reg, rm: u32) -> Self::Item;
+    fn fcvt_s_wu(&mut self, rd: Reg, rs1: Reg, rm: u32) -> Self::Item;
+
+    // Arithmetic instructions.
+    fn fadd_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rm: u32) -> Self::Item;
+    fn fsub_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rm: u32) -> Self::Item;
+    fn fmul_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rm: u32) -> Self::Item;
+    fn fdiv_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rm: u32) -> Self::Item;
+
+    // Fused multiply / add instructions.
+    fn fmadd_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rs3: Reg, rm: u32) -> Self::Item;
+    fn fmsub_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rs3: Reg, rm: u32) -> Self::Item;
+    fn fnmsub_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rs3: Reg, rm: u32) -> Self::Item;
+    fn fnmadd_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rs3: Reg, rm: u32) -> Self::Item;
+
+    // Instructions with rd rs1 operands.
+    fn fmv_x_w(&mut self, rd: Reg, rs1: Reg) -> Self::Item;
+    fn fmv_w_x(&mut self, rd: Reg, rs1: Reg) -> Self::Item;
+    fn fclass_s(&mut self, rd: Reg, rs1: Reg) -> Self::Item;
+
+    // Instructions with rd rs1 rs2 operands.
+    fn fsgnj_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item;
+    fn fmin_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item;
+    fn fle_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item;
+    fn fsgnjn_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item;
+    fn fmax_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item;
+    fn flt_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item;
+    fn fsgnjx_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item;
+    fn feq_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item;
+}
+
+impl<T> DecodeRv32f for T
+where
+    T: CoreCpu + Xreg + Freg,
+{
+    type Item = ();
+
+    // I-type instructions.
+
+    fn flw(&mut self, rd: Reg, rs1: Reg, iimm: u32) -> Self::Item {
+        // rd <- f32(rs1 + imm_i)
+        match self.read32(self.rx(rs1).wrapping_add(iimm)) {
+            Ok(word) => {
+                self.wf(rd, f32::from_bits(word));
+            }
+            Err(_) => {
+                self.handle_trap(TrapCause::LoadAccessFault);
+            }
+        }
+    }
+
+    // S-type instructions.
+
+    fn fsw(&mut self, rs1: Reg, rs2: Reg, simm: u32) -> Self::Item {
+        // f32(rs1 + imm_s) = rs2
+        let data = f32::to_bits(self.rf(rs2));
+        if let Err(_) = self.write32(self.rx(rs1).wrapping_add(simm), data) {
+            self.handle_trap(TrapCause::StoreAccessFault);
+        }
+    }
+
+    // Instructions with rd rs1 rm operands.
+
+    fn fsqrt_s(&mut self, rd: Reg, rs1: Reg, _rm: u32) -> Self::Item {
+        // rd <- sqrt(rs1)
+        let f = self.rf(rs1);
+        self.wf(rd, f32::sqrt(f));
+        // TODO: handle rounding modes.
+    }
+
+    fn fcvt_w_s(&mut self, rd: Reg, rs1: Reg, _rm: u32) -> Self::Item {
+        // rd <- int32_t(rs1)
+        let i = self.rf(rs1) as i32;
+        self.wx(rd, i as u32);
+        // TODO: handle rounding modes.
+    }
+
+    fn fcvt_wu_s(&mut self, rd: Reg, rs1: Reg, _rm: u32) -> Self::Item {
+        // rd <- uint32_t(rs1)
+        let i = self.rf(rs1) as u32;
+        self.wx(rd, i);
+        // TODO: handle rounding modes.
+    }
+
+    fn fcvt_s_w(&mut self, rd: Reg, rs1: Reg, _rm: u32) -> Self::Item {
+        // rd <- float(int32_t((rs1))
+        let i = self.rx(rs1) as i32;
+        self.wf(rd, i as f32);
+        // TODO: handle rounding modes.
+    }
+
+    fn fcvt_s_wu(&mut self, rd: Reg, rs1: Reg, _rm: u32) -> Self::Item {
+        // rd <- float(rs1)
+        self.wf(rd, self.rx(rs1) as f32);
+        // TODO: handle rounding modes.
+    }
+
+    // Arithmetic instructions.
+
+    fn fadd_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, _rm: u32) -> Self::Item {
+        // rd <- rs1 + rs2
+        self.wf(rd, self.rf(rs1) + self.rf(rs2));
+        // TODO: handle rounding modes.
+    }
+
+    fn fsub_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, _rm: u32) -> Self::Item {
+        // rd <- rs1 - rs2
+        self.wf(rd, self.rf(rs1) - self.rf(rs2));
+        // TODO: handle rounding modes.
+    }
+
+    fn fmul_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, _rm: u32) -> Self::Item {
+        // rd <- rs1 * rs2
+        self.wf(rd, self.rf(rs1) * self.rf(rs2));
+        // TODO: handle rounding modes.
+    }
+
+    fn fdiv_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, _rm: u32) -> Self::Item {
+        // rd <- rs1 / rs2
+        self.wf(rd, self.rf(rs1) / self.rf(rs2));
+        // TODO: handle rounding modes.
+    }
+
+    // Fused multiply / add instructions.
+
+    fn fmadd_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rs3: Reg, _rm: u32) -> Self::Item {
+        // rd <- (rs1 * rs2) + rs3
+        self.wf(rd, (self.rf(rs1) * self.rf(rs2)) + self.rf(rs3));
+        // TODO: handle rounding modes.
+    }
+
+    fn fmsub_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rs3: Reg, _rm: u32) -> Self::Item {
+        // rd <- (rs1 * rs2) - rs3
+        self.wf(rd, (self.rf(rs1) * self.rf(rs2)) - self.rf(rs3));
+        // TODO: handle rounding modes.
+    }
+
+    fn fnmsub_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rs3: Reg, _rm: u32) -> Self::Item {
+        // rd <- -(rs1 * rs2) + rs3
+        self.wf(rd, -(self.rf(rs1) * self.rf(rs2)) + self.rf(rs3));
+        // TODO: handle rounding modes.
+    }
+
+    fn fnmadd_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rs3: Reg, _rm: u32) -> Self::Item {
+        // rd <- -(rs1 * rs2) - rs3
+        self.wf(rd, -(self.rf(rs1) * self.rf(rs2)) - self.rf(rs3));
+        // TODO: handle rounding modes.
+    }
+
+    // Instructions with rd rs1 operands.
+
+    fn fmv_x_w(&mut self, rd: Reg, rs1: Reg) -> Self::Item {
+        // bits(rd) <- bits(rs1)
+        self.wx(rd, f32::to_bits(self.rf(rs1)));
+    }
+
+    fn fmv_w_x(&mut self, rd: Reg, rs1: Reg) -> Self::Item {
+        // bits(rd) <- bits(rs1)
+        self.wf(rd, f32::from_bits(self.rx(rs1)));
+    }
+
+    fn fclass_s(&mut self, rd: Reg, rs1: Reg) -> Self::Item {
+        let v = self.rf(rs1);
+        let bits = f32::to_bits(v);
+        let result: u32 = if v == f32::NEG_INFINITY {
+            1 << 0
+        } else if v == f32::INFINITY {
+            1 << 7
+        } else if bits == 0x80000000 {
+            // Negative zero.
+            1 << 3
+        } else if v == 0.0 {
+            1 << 4
+        } else if (bits & 0x7f800000) == 0 {
+            // The exponent is zero.
+            if (bits & 0x80000000) != 0 {
+                // Negative subnormal number.
+                1 << 2
+            } else {
+                // Postive subnormal number.
+                1 << 5
+            }
+        } else if (bits & 0x7f800000) == 0x7f800000 && (bits & 0x00400000) != 0 {
+            // Quiet NaN.
+            1 << 9
+        } else if (bits & 0x7f800000) == 0x7f800000 && (bits & 0x003fffff) != 0 {
+            // Signalling NaN.
+            1 << 8
+        } else if v < 0.0 {
+            1 << 1
+        } else if v > 0.0 {
+            1 << 6
+        } else {
+            0
+        };
+        self.wx(rd, result);
+    }
+
+    // Instructions with rd rs1 rs2 operands.
+
+    fn fsgnj_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
+        // rd <- abs(rs1) * sgn(rs2)
+        let freg_rs1 = self.rf(rs1);
+        let freg_rs2 = self.rf(rs2);
+        self.wf(rd, freg_rs1.abs() * if freg_rs2 < 0.0 { -1.0 } else { 1.0 });
+    }
+
+    fn fmin_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
+        // rd <- min(rs1, rs2)
+        let freg_rs1 = self.rf(rs1);
+        let freg_rs2 = self.rf(rs2);
+        self.wf(rd, freg_rs1.min(freg_rs2));
+    }
+
+    fn fle_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
+        // rd <- (rs1 <= rs2) ? 1 : 0;
+        let freg_rs1 = self.rf(rs1);
+        let freg_rs2 = self.rf(rs2);
+        self.wx(rd, if freg_rs1 < freg_rs2 { 1 } else { 0 });
+    }
+
+    fn fsgnjn_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
+        // rd <- abs(rs1) * -sgn(rs2)
+        let freg_rs1 = self.rf(rs1);
+        let freg_rs2 = self.rf(rs2);
+        self.wf(rd, freg_rs1.abs() * if freg_rs2 < 0.0 { 1.0 } else { -1.0 });
+    }
+
+    fn fmax_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
+        // rd <- max(rs1, rs2)
+        let freg_rs1 = self.rf(rs1);
+        let freg_rs2 = self.rf(rs2);
+        self.wf(rd, freg_rs1.max(freg_rs2));
+    }
+
+    fn flt_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
+        // rd <- (rs1 < rs2) ? 1 : 0;
+        let freg_rs1 = self.rf(rs1);
+        let freg_rs2 = self.rf(rs2);
+        self.wx(rd, if freg_rs1 <= freg_rs2 { 1 } else { 0 });
+    }
+
+    fn fsgnjx_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
+        // rd <- abs(rs1) * (sgn(rs1) == sgn(rs2)) ? 1 : -1
+        let freg_rs1 = self.rf(rs1);
+        let freg_rs2 = self.rf(rs2);
+        // The sign bit is the XOR of the sign bits of rs1 and rs2.
+        let m = if (freg_rs1 < 0.0 && freg_rs2 >= 0.0) || (freg_rs1 >= 0.0 && freg_rs2 < 0.0) {
+            -1.0
+        } else {
+            1.0
+        };
+        self.wf(rd, freg_rs1.abs() * m);
+    }
+
+    fn feq_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
+        // rd <- (rs1 == rs2) ? 1 : 0;
+        let freg_rs1 = self.rf(rs1);
+        let freg_rs2 = self.rf(rs2);
+        self.wx(rd, if freg_rs1 == freg_rs2 { 1 } else { 0 });
     }
 }

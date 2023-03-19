@@ -156,6 +156,11 @@ impl ToBits {
     }
 
     #[inline]
+    pub fn rs2_bits(&self) -> u32 {
+        (self.0 >> 20) & 0x1f
+    }
+
+    #[inline]
     pub fn rs3(&self) -> Reg {
         to_reg((self.0 >> 27) & 0x1f)
     }

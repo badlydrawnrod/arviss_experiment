@@ -1,4 +1,4 @@
-use super::{tobits::Reg, DecodeRv32c, DecodeRv32i, DecodeRv32m};
+use super::{tobits::Reg, DecodeRv32c, DecodeRv32f, DecodeRv32i, DecodeRv32m};
 
 pub struct Disassembler;
 
@@ -32,8 +32,8 @@ fn abi(reg: Reg) -> &'static str {
     }
 }
 
-fn fabi(reg: u32) -> &'static str {
-    match reg {
+fn fabi(reg: Reg) -> &'static str {
+    match reg as usize {
         0..=31 => FABI_NAMES[reg as usize],
         _ => unreachable!(),
     }
@@ -252,7 +252,7 @@ impl DecodeRv32m for Disassembler {
 
 impl DecodeRv32c for Disassembler {
     type Item = String;
-    
+
     fn c_addi4spn(&mut self, rdp: Reg, imm: u32) -> Self::Item {
         // addi rdp, x2, nzuimm[9:2]
         self.addi(rdp, Reg::Sp, imm)
@@ -384,5 +384,113 @@ impl DecodeRv32c for Disassembler {
     fn c_slli(&mut self, rdrs1n0: Reg, imm: u32) -> Self::Item {
         // slli rd, rd, shamt[5:0]
         self.slli(rdrs1n0, rdrs1n0, imm)
+    }
+}
+
+impl DecodeRv32f for Disassembler {
+    type Item = String;
+
+    fn flw(&mut self, rd: Reg, rs1: Reg, iimm: u32) -> Self::Item {
+        format!("flw\t{}, {}({})", fabi(rd), iimm, fabi(rs1))
+    }
+
+    fn fsw(&mut self, rs1: Reg, rs2: Reg, simm: u32) -> Self::Item {
+        format!("fsw\t{}, {}({})", fabi(rs2), simm, fabi(rs1))
+    }
+
+    fn fsqrt_s(&mut self, rd: Reg, rs1: Reg, rm: u32) -> Self::Item {
+        format!("fsqrt.s {}, {}, {}", fabi(rd), fabi(rs1), rm)
+    }
+
+    fn fcvt_w_s(&mut self, rd: Reg, rs1: Reg, rm: u32) -> Self::Item {
+        format!("fcvt.w.s {}, {}, {}", abi(rd), fabi(rs1), rm)
+    }
+
+    fn fcvt_wu_s(&mut self, rd: Reg, rs1: Reg, rm: u32) -> Self::Item {
+        format!("fcvt.wu.s {}, {}, {}", abi(rd), fabi(rs1), rm)
+    }
+
+    fn fcvt_s_w(&mut self, rd: Reg, rs1: Reg, rm: u32) -> Self::Item {
+        format!("fcvt.s.w {}, {}, {}", fabi(rd), abi(rs1), rm)
+    }
+
+    fn fcvt_s_wu(&mut self, rd: Reg, rs1: Reg, rm: u32) -> Self::Item {
+        format!("fcvt.s.wu {}, {}, {}", fabi(rd), abi(rs1), rm)
+    }
+
+    fn fadd_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rm: u32) -> Self::Item {
+        format!("fadd.s {}, {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2), rm)
+    }
+
+    fn fsub_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rm: u32) -> Self::Item {
+        format!("fsub.s {}, {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2), rm)
+    }
+
+    fn fmul_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rm: u32) -> Self::Item {
+        format!("fmul.s {}, {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2), rm)
+    }
+
+    fn fdiv_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rm: u32) -> Self::Item {
+        format!("fdiv.s {}, {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2), rm)
+    }
+
+    fn fmadd_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rs3: Reg, rm: u32) -> Self::Item {
+        format!("fmadd.s {}, {}, {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2), fabi(rs3), rm)
+    }
+
+    fn fmsub_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rs3: Reg, rm: u32) -> Self::Item {
+        format!("fmsub.s {}, {}, {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2), fabi(rs3), rm)
+    }
+
+    fn fnmsub_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rs3: Reg, rm: u32) -> Self::Item {
+        format!("fnmsub.s {}, {}, {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2), fabi(rs3), rm)
+    }
+
+    fn fnmadd_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rs3: Reg, rm: u32) -> Self::Item {
+        format!("fnmadd.s {}, {}, {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2), fabi(rs3), rm)
+    }
+
+    fn fmv_x_w(&mut self, rd: Reg, rs1: Reg) -> Self::Item {
+        format!("fmv.x.w {}, {}", abi(rd), fabi(rs1))
+    }
+
+    fn fmv_w_x(&mut self, rd: Reg, rs1: Reg) -> Self::Item {
+        format!("fmv.w.x {}, {}", fabi(rd), abi(rs1))
+    }
+
+    fn fclass_s(&mut self, rd: Reg, rs1: Reg) -> Self::Item {
+        format!("fmv.x.w {}, {}", abi(rd), fabi(rs1))
+    }
+
+    fn fsgnj_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
+        format!("fsgnj.s {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2))
+    }
+
+    fn fmin_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
+        format!("fmin.s {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2))
+    }
+
+    fn fle_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
+        format!("fle.s {}, {}, {}", abi(rd), fabi(rs1), fabi(rs2))
+    }
+
+    fn fsgnjn_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
+        format!("fsgnjn.s {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2))
+    }
+
+    fn fmax_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
+        format!("fmax.s {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2))
+    }
+
+    fn flt_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
+        format!("flt.s {}, {}, {}", abi(rd), fabi(rs1), fabi(rs2))
+    }
+
+    fn fsgnjx_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
+        format!("fsgnjx.s {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2))
+    }
+
+    fn feq_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
+        format!("feq.s {}, {}, {}", abi(rd), fabi(rs1), fabi(rs2))
     }
 }

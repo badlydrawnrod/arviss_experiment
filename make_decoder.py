@@ -14,6 +14,7 @@ def generate_rust_code_v3(d, level=0):
         "rd rs1 rs2": "(c.rd(), c.rs1(), c.rs2())",
         "rd rs1 shamtw": "(c.rd(), c.rs1(), c.shamtw())",
         
+        # C-extension.
         "rd_p c_nzuimm10": "(c.rdp(), c.c_nzuimm10())",                         # c.addi4spn
         "rd_p rs1_p c_uimm7lo c_uimm7hi": "(c.rdp(), c.rs1p(), c.c_uimm7())",   # c.lw
         "rs1_p rs2_p c_uimm7lo c_uimm7hi": "(c.rs1p(), c.rs2p(), c.c_uimm7())", # c.sw
@@ -34,13 +35,18 @@ def generate_rust_code_v3(d, level=0):
         "c_rs2 c_uimm8sp_s": "(c.c_rs2(), c.c_uimm8sp_s())",                    # c.swsp
         "rd_rs1_p c_nzuimm6lo c_nzuimm6hi": "(c.rdrs1p(), c.c_nzuimm6())",      # c.srli, c.srai
         "rd_rs1_n0 c_nzuimm6hi c_nzuimm6lo": "(c.rdrs1n0(), c.c_nzuimm6())",    # c.slli
+
+        # F-extension.
+        "rd rs1 rs2 rs3 rm": "(c.rd(), c.rs1(), c.rs2(), c.rs3(), c.rm())",
+        "rd rs1 rs2 rm":     "(c.rd(), c.rs1(), c.rs2(), c.rm())",
+        "rd rs1 rm":         "(c.rd(), c.rs1(), c.rm())",
     }
     names = {
         (31, 27): "funct5()",
         (31, 25): "funct7()",
         (31, 20): "funct12()",
         (26, 25): "fmt()",
-        (24, 20): "rs2()",
+        (24, 20): "rs2_bits()",
         (19, 15): "rs1_bits()",
         (14, 12): "funct3()",
         (11, 7): "rd_bits()",
@@ -258,24 +264,24 @@ slli rd rs1 31..25=0  shamtw  14..12=1 6..0=0b0010011
 srli rd rs1 31..25=0  shamtw  14..12=5 6..0=0b0010011
 srai rd rs1 31..25=32 shamtw  14..12=5 6..0=0b0010011
 
-# # rv32m
+# rv32m
 
-# # mul     rd rs1 rs2 31..25=1 14..12=0 6..2=0x0C 1..0=3
-# # mulh    rd rs1 rs2 31..25=1 14..12=1 6..2=0x0C 1..0=3
-# # mulhsu  rd rs1 rs2 31..25=1 14..12=2 6..2=0x0C 1..0=3
-# # mulhu   rd rs1 rs2 31..25=1 14..12=3 6..2=0x0C 1..0=3
-# # div     rd rs1 rs2 31..25=1 14..12=4 6..2=0x0C 1..0=3
-# # divu    rd rs1 rs2 31..25=1 14..12=5 6..2=0x0C 1..0=3
-# # rem     rd rs1 rs2 31..25=1 14..12=6 6..2=0x0C 1..0=3
-# # remu    rd rs1 rs2 31..25=1 14..12=7 6..2=0x0C 1..0=3
-# mul     rd rs1 rs2 31..25=1 14..12=0 6..0=0b0110011
-# mulh    rd rs1 rs2 31..25=1 14..12=1 6..0=0b0110011
-# mulhsu  rd rs1 rs2 31..25=1 14..12=2 6..0=0b0110011
-# mulhu   rd rs1 rs2 31..25=1 14..12=3 6..0=0b0110011
-# div     rd rs1 rs2 31..25=1 14..12=4 6..0=0b0110011
-# divu    rd rs1 rs2 31..25=1 14..12=5 6..0=0b0110011
-# rem     rd rs1 rs2 31..25=1 14..12=6 6..0=0b0110011
-# remu    rd rs1 rs2 31..25=1 14..12=7 6..0=0b0110011
+# mul     rd rs1 rs2 31..25=1 14..12=0 6..2=0x0C 1..0=3
+# mulh    rd rs1 rs2 31..25=1 14..12=1 6..2=0x0C 1..0=3
+# mulhsu  rd rs1 rs2 31..25=1 14..12=2 6..2=0x0C 1..0=3
+# mulhu   rd rs1 rs2 31..25=1 14..12=3 6..2=0x0C 1..0=3
+# div     rd rs1 rs2 31..25=1 14..12=4 6..2=0x0C 1..0=3
+# divu    rd rs1 rs2 31..25=1 14..12=5 6..2=0x0C 1..0=3
+# rem     rd rs1 rs2 31..25=1 14..12=6 6..2=0x0C 1..0=3
+# remu    rd rs1 rs2 31..25=1 14..12=7 6..2=0x0C 1..0=3
+mul     rd rs1 rs2 31..25=1 14..12=0 6..0=0b0110011
+mulh    rd rs1 rs2 31..25=1 14..12=1 6..0=0b0110011
+mulhsu  rd rs1 rs2 31..25=1 14..12=2 6..0=0b0110011
+mulhu   rd rs1 rs2 31..25=1 14..12=3 6..0=0b0110011
+div     rd rs1 rs2 31..25=1 14..12=4 6..0=0b0110011
+divu    rd rs1 rs2 31..25=1 14..12=5 6..0=0b0110011
+rem     rd rs1 rs2 31..25=1 14..12=6 6..0=0b0110011
+remu    rd rs1 rs2 31..25=1 14..12=7 6..0=0b0110011
 
 # rv32c
 
@@ -381,6 +387,7 @@ c.slli rd_rs1_n0 c_nzuimm6hi c_nzuimm6lo  1..0=2 15..13=0
 # sret      11..7=0 19..15=0 31..20=0x102 14..12=0 6..2=0x1C 1..0=3
 # mret      11..7=0 19..15=0 31..20=0x302 14..12=0 6..2=0x1C 1..0=3
 
+# A lovely piece of music by Vivaldi.
 # rv554a: I, Allegro: https://music.youtube.com/watch?v=2m0Hp28FS4k&feature=share
 """
 
