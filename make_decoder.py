@@ -13,7 +13,7 @@ def generate_rust_code_v3(d, level=0):
         "rd rs1": "(c.rd(), c.rs1())",
         "rd rs1 rs2": "(c.rd(), c.rs1(), c.rs2())",
         "rd rs1 shamtw": "(c.rd(), c.rs1(), c.shamtw())",
-        
+
         # C-extension.
         "rd_p c_nzuimm10": "(c.rdp(), c.c_nzuimm10())",                         # c.addi4spn
         "rd_p rs1_p c_uimm7lo c_uimm7hi": "(c.rdp(), c.rs1p(), c.c_uimm7())",   # c.lw
@@ -35,7 +35,7 @@ def generate_rust_code_v3(d, level=0):
         "c_rs2 c_uimm8sp_s": "(c.c_rs2(), c.c_uimm8sp_s())",                    # c.swsp
         "rd_rs1_p c_nzuimm6lo c_nzuimm6hi": "(c.rdrs1p(), c.c_nzuimm6())",      # c.srli, c.srai
         "rd_rs1_n0 c_nzuimm6hi c_nzuimm6lo": "(c.rdrs1n0(), c.c_nzuimm6())",    # c.slli
-
+        
         # F-extension.
         "rd rs1 rs2 rs3 rm": "(c.rd(), c.rs1(), c.rs2(), c.rs3(), c.rm())",
         "rd rs1 rs2 rm":     "(c.rd(), c.rs1(), c.rs2(), c.rm())",
@@ -73,14 +73,40 @@ where
     for k, v in sorted(d.items()):
         hi, lo = k
         name = names.get((hi, lo), f"bits({hi}, {lo})")
-        print(f"{indent}match c.{name} {{")
-        for bit_pattern, content in sorted(v.items()):
-            width = 1 + (hi - lo)
-            print(f"{i2}0b{bit_pattern:0{width}b} => ", end="")
+        if len(v.items()) >= 2:
+            print(f"{indent}match c.{name} {{")
+            for bit_pattern, content in sorted(v.items()):
+                width = 1 + (hi - lo)
+                print(f"{i2}0b{bit_pattern:0{width}b} => ", end="")
 
+                if isinstance(content, dict):
+                    # We need to decode further, so generate another match recursively.
+                    print(f"{{")
+                    generate_rust_code_v3(v[bit_pattern], level + 2)
+                    print(f"{i2}}}")
+                else:
+                    # We've reached a terminal, so output the function call.
+
+                    # Transform the instruction name to something that Rust can handle, e.g., feq.s becomes feq_s.
+                    instruction = "_".join(s.lower()
+                                           for s in content[0].split("."))
+                    opcode = f"{instruction}"
+
+                    # Output the call. Function names are based on their operands.
+                    arg_part = " ".join(s.lower() for s in content[1])
+                    if len(arg_part) == 0:
+                        arg_part = "no_args"
+                    args = lut[arg_part]
+                    print(f"return decoder.{opcode}{args},")
+            print(f"{i2}_ => {{}}")
+            print(f"{indent}}}")
+        else:
+            bit_pattern, content = list(v.items())[0]
+            width = 1 + (hi - lo)
+            print(f"{indent}if c.{name} == 0b{bit_pattern:0{width}b} {{")
             if isinstance(content, dict):
                 # We need to decode further, so generate another match recursively.
-                print(f"{{")
+                # print(f"{{")
                 generate_rust_code_v3(v[bit_pattern], level + 2)
                 print(f"{i2}}}")
             else:
@@ -96,9 +122,8 @@ where
                 if len(arg_part) == 0:
                     arg_part = "no_args"
                 args = lut[arg_part]
-                print(f"return decoder.{opcode}{args},")
-        print(f"{i2}_ => {{}}")
-        print(f"{indent}}}")
+                print(f"{i2}return decoder.{opcode}{args}")
+                print(f"{indent}}}")
 
     if level == 0:
         print(f"{indent}decoder.illegal(code)")

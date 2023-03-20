@@ -23,60 +23,65 @@ where
         },
         0b01 => {
             match c.c_funct2() {
-                0b00 => match c.bits(12, 10) {
-                    0b011 => match c.c_funct3() {
-                        0b100 => return decoder.c_sub(c.rdrs1p(), c.rs2p()),
-                        _ => {}
-                    },
-                    _ => {}
-                },
-                0b01 => match c.bits(12, 10) {
-                    0b011 => match c.c_funct3() {
-                        0b100 => return decoder.c_xor(c.rdrs1p(), c.rs2p()),
-                        _ => {}
-                    },
-                    _ => {}
-                },
-                0b10 => match c.bits(12, 10) {
-                    0b011 => match c.c_funct3() {
-                        0b100 => return decoder.c_or(c.rdrs1p(), c.rs2p()),
-                        _ => {}
-                    },
-                    _ => {}
-                },
-                0b11 => match c.bits(12, 10) {
-                    0b011 => match c.c_funct3() {
-                        0b100 => return decoder.c_and(c.rdrs1p(), c.rs2p()),
-                        _ => {}
-                    },
-                    _ => {}
-                },
+                0b00 => {
+                    if c.bits(12, 10) == 0b011 {
+                        if c.c_funct3() == 0b100 {
+                            return decoder.c_sub(c.rdrs1p(), c.rs2p());
+                        }
+                    }
+                }
+                0b01 => {
+                    if c.bits(12, 10) == 0b011 {
+                        if c.c_funct3() == 0b100 {
+                            return decoder.c_xor(c.rdrs1p(), c.rs2p());
+                        }
+                    }
+                }
+                0b10 => {
+                    if c.bits(12, 10) == 0b011 {
+                        if c.c_funct3() == 0b100 {
+                            return decoder.c_or(c.rdrs1p(), c.rs2p());
+                        }
+                    }
+                }
+                0b11 => {
+                    if c.bits(12, 10) == 0b011 {
+                        if c.c_funct3() == 0b100 {
+                            return decoder.c_and(c.rdrs1p(), c.rs2p());
+                        }
+                    }
+                }
                 _ => {}
             }
             match c.rd_bits() {
-                0b00000 => match c.c_funct3() {
-                    0b000 => return decoder.c_nop(c.c_nzimm6()),
-                    _ => {}
-                },
-                0b00010 => match c.c_funct3() {
-                    0b011 => return decoder.c_addi16sp(c.c_nzimm10()),
-                    _ => {}
-                },
+                0b00000 => {
+                    if c.c_funct3() == 0b000 {
+                        return decoder.c_nop(c.c_nzimm6());
+                    }
+                }
+                0b00010 => {
+                    if c.c_funct3() == 0b011 {
+                        return decoder.c_addi16sp(c.c_nzimm10());
+                    }
+                }
                 _ => {}
             }
             match c.bits(11, 10) {
-                0b00 => match c.c_funct3() {
-                    0b100 => return decoder.c_srli(c.rdrs1p(), c.c_nzuimm6()),
-                    _ => {}
-                },
-                0b01 => match c.c_funct3() {
-                    0b100 => return decoder.c_srai(c.rdrs1p(), c.c_nzuimm6()),
-                    _ => {}
-                },
-                0b10 => match c.c_funct3() {
-                    0b100 => return decoder.c_andi(c.rdrs1p(), c.c_imm6()),
-                    _ => {}
-                },
+                0b00 => {
+                    if c.c_funct3() == 0b100 {
+                        return decoder.c_srli(c.rdrs1p(), c.c_nzuimm6());
+                    }
+                }
+                0b01 => {
+                    if c.c_funct3() == 0b100 {
+                        return decoder.c_srai(c.rdrs1p(), c.c_nzuimm6());
+                    }
+                }
+                0b10 => {
+                    if c.c_funct3() == 0b100 {
+                        return decoder.c_andi(c.rdrs1p(), c.c_imm6());
+                    }
+                }
                 _ => {}
             }
             match c.c_funct3() {
@@ -91,39 +96,39 @@ where
             }
         }
         0b10 => {
-            match c.bits(6, 2) {
-                0b00000 => match c.bits(12, 12) {
-                    0b0 => match c.c_funct3() {
-                        0b100 => return decoder.c_jr(c.rs1n0()),
-                        _ => {}
-                    },
-                    0b1 => match c.c_funct3() {
-                        0b100 => return decoder.c_jalr(c.rs1n0()),
-                        _ => {}
-                    },
+            if c.bits(6, 2) == 0b00000 {
+                match c.bits(12, 12) {
+                    0b0 => {
+                        if c.c_funct3() == 0b100 {
+                            return decoder.c_jr(c.rs1n0());
+                        }
+                    }
+                    0b1 => {
+                        if c.c_funct3() == 0b100 {
+                            return decoder.c_jalr(c.rs1n0());
+                        }
+                    }
                     _ => {}
-                },
-                _ => {}
+                }
             }
-            match c.bits(11, 2) {
-                0b0000000000 => match c.bits(12, 12) {
-                    0b1 => match c.c_funct3() {
-                        0b100 => return decoder.c_ebreak(),
-                        _ => {}
-                    },
-                    _ => {}
-                },
-                _ => {}
+            if c.bits(11, 2) == 0b0000000000 {
+                if c.bits(12, 12) == 0b1 {
+                    if c.c_funct3() == 0b100 {
+                        return decoder.c_ebreak();
+                    }
+                }
             }
             match c.bits(12, 12) {
-                0b0 => match c.c_funct3() {
-                    0b100 => return decoder.c_mv(c.rd(), c.rs2n0()),
-                    _ => {}
-                },
-                0b1 => match c.c_funct3() {
-                    0b100 => return decoder.c_add(c.rdrs1(), c.rs2n0()),
-                    _ => {}
-                },
+                0b0 => {
+                    if c.c_funct3() == 0b100 {
+                        return decoder.c_mv(c.rd(), c.rs2n0());
+                    }
+                }
+                0b1 => {
+                    if c.c_funct3() == 0b100 {
+                        return decoder.c_add(c.rdrs1(), c.rs2n0());
+                    }
+                }
                 _ => {}
             }
             match c.c_funct3() {
@@ -144,16 +149,18 @@ where
             0b101 => return decoder.lhu(c.rd(), c.rs1(), c.iimmediate()),
             _ => {}
         },
-        0b0001111 => match c.funct3() {
-            0b000 => return decoder.fence(c.fm(), c.rd(), c.rs1()),
-            _ => {}
-        },
+        0b0001111 => {
+            if c.funct3() == 0b000 {
+                return decoder.fence(c.fm(), c.rd(), c.rs1());
+            }
+        }
         0b0010011 => match c.funct3() {
             0b000 => return decoder.addi(c.rd(), c.rs1(), c.iimmediate()),
-            0b001 => match c.funct7() {
-                0b0000000 => return decoder.slli(c.rd(), c.rs1(), c.shamtw()),
-                _ => {}
-            },
+            0b001 => {
+                if c.funct7() == 0b0000000 {
+                    return decoder.slli(c.rd(), c.rs1(), c.shamtw());
+                }
+            }
             0b010 => return decoder.slti(c.rd(), c.rs1(), c.iimmediate()),
             0b011 => return decoder.sltiu(c.rd(), c.rs1(), c.iimmediate()),
             0b100 => return decoder.xori(c.rd(), c.rs1(), c.iimmediate()),
@@ -228,25 +235,25 @@ where
             0b111 => return decoder.bgeu(c.rs1(), c.rs2(), c.bimmediate()),
             _ => {}
         },
-        0b1100111 => match c.funct3() {
-            0b000 => return decoder.jalr(c.rd(), c.rs1(), c.iimmediate()),
-            _ => {}
-        },
+        0b1100111 => {
+            if c.funct3() == 0b000 {
+                return decoder.jalr(c.rd(), c.rs1(), c.iimmediate());
+            }
+        }
         0b1101111 => return decoder.jal(c.rd(), c.jimmediate()),
-        0b1110011 => match c.rd_bits() {
-            0b00000 => match c.funct3() {
-                0b000 => match c.rs1_bits() {
-                    0b00000 => match c.funct12() {
-                        0b000000000000 => return decoder.ecall(),
-                        0b000000000001 => return decoder.ebreak(),
-                        _ => {}
-                    },
-                    _ => {}
-                },
-                _ => {}
-            },
-            _ => {}
-        },
+        0b1110011 => {
+            if c.rd_bits() == 0b00000 {
+                if c.funct3() == 0b000 {
+                    if c.rs1_bits() == 0b00000 {
+                        match c.funct12() {
+                            0b000000000000 => return decoder.ecall(),
+                            0b000000000001 => return decoder.ebreak(),
+                            _ => {}
+                        }
+                    }
+                }
+            }
+        }
         _ => {}
     }
     decoder.illegal(code)
