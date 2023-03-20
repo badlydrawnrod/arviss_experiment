@@ -2,27 +2,16 @@ use super::{tobits::Reg, DecodeRv32c, DecodeRv32f, DecodeRv32i, DecodeRv32m};
 
 pub struct Disassembler;
 
-const ABI_NAMES: &[&'static str] = &[
+const ABI_NAMES: &[&str] = &[
     "zero", "ra", "sp", "gp", "tp", "t0", "t1", "t2", "s0", "s1", "a0", "a1", "a2", "a3", "a4",
     "a5", "a6", "a7", "s2", "s3", "s4", "s5", "s6", "s7", "s8", "s9", "s10", "s11", "t3", "t4",
     "t5", "t6",
 ];
 
-const FABI_NAMES: &[&'static str] = &[
+const FABI_NAMES: &[&str] = &[
     "ft0", "ft1", "ft2", "ft3", "ft4", "ft5", "ft6", "ft7", "fs0", "fs1", "fa0", "fa1", "fa2",
     "fa3", "fa4", "fa5", "fa6", "fa7", "fs2", "fs3", "fs4", "fs5", "fs6", "fs7", "fs8", "fs9",
     "fs10", "fs11", "ft8", "ft9", "ft10", "ft11",
-];
-
-const ROUNDING_MODES: &[&'static str] = &[
-    "rne",
-    "rtz",
-    "rdn",
-    "rup",
-    "rmm",
-    "reserved5",
-    "reserved6",
-    "dyn",
 ];
 
 fn abi(reg: Reg) -> &'static str {
@@ -35,13 +24,6 @@ fn abi(reg: Reg) -> &'static str {
 fn fabi(reg: Reg) -> &'static str {
     match reg as usize {
         0..=31 => FABI_NAMES[reg as usize],
-        _ => unreachable!(),
-    }
-}
-
-fn rounding_mode(mode: u32) -> &'static str {
-    match mode {
-        0..=7 => ROUNDING_MODES[mode as usize],
         _ => unreachable!(),
     }
 }
@@ -202,15 +184,15 @@ impl DecodeRv32i for Disassembler {
     }
 
     fn fence(&mut self, _fm: u32, _rd: Reg, _rs1: Reg) -> Self::Item {
-        format!("fence")
+        "fence".to_string()
     }
 
     fn ecall(&mut self) -> Self::Item {
-        format!("ecall")
+        "ecall".to_string()
     }
 
     fn ebreak(&mut self) -> Self::Item {
-        format!("ebreak")
+        "ebreak".to_string()
     }
 }
 
@@ -289,7 +271,7 @@ impl DecodeRv32c for Disassembler {
     }
 
     fn c_nop(&mut self, _imm: u32) -> Self::Item {
-        format!("c.nop")
+        "c.nop".to_string()
     }
 
     fn c_addi16sp(&mut self, imm: u32) -> Self::Item {
@@ -435,19 +417,47 @@ impl DecodeRv32f for Disassembler {
     }
 
     fn fmadd_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rs3: Reg, rm: u32) -> Self::Item {
-        format!("fmadd.s {}, {}, {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2), fabi(rs3), rm)
+        format!(
+            "fmadd.s {}, {}, {}, {}, {}",
+            fabi(rd),
+            fabi(rs1),
+            fabi(rs2),
+            fabi(rs3),
+            rm
+        )
     }
 
     fn fmsub_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rs3: Reg, rm: u32) -> Self::Item {
-        format!("fmsub.s {}, {}, {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2), fabi(rs3), rm)
+        format!(
+            "fmsub.s {}, {}, {}, {}, {}",
+            fabi(rd),
+            fabi(rs1),
+            fabi(rs2),
+            fabi(rs3),
+            rm
+        )
     }
 
     fn fnmsub_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rs3: Reg, rm: u32) -> Self::Item {
-        format!("fnmsub.s {}, {}, {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2), fabi(rs3), rm)
+        format!(
+            "fnmsub.s {}, {}, {}, {}, {}",
+            fabi(rd),
+            fabi(rs1),
+            fabi(rs2),
+            fabi(rs3),
+            rm
+        )
     }
 
     fn fnmadd_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg, rs3: Reg, rm: u32) -> Self::Item {
-        format!("fnmadd.s {}, {}, {}, {}, {}", fabi(rd), fabi(rs1), fabi(rs2), fabi(rs3), rm)
+        format!(
+            "fnmadd.s {}, {}, {}, {}, {}",
+            fabi(rd),
+            fabi(rs1),
+            fabi(rs2),
+            fabi(rs3),
+            rm
+        )
     }
 
     fn fmv_x_w(&mut self, rd: Reg, rs1: Reg) -> Self::Item {

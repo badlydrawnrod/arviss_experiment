@@ -1,4 +1,5 @@
 #[derive(Debug)]
+#[repr(u32)]
 pub enum TrapCause {
     // Non-interrupt traps.
     InstructionAddressMisaligned = 0,
@@ -33,6 +34,12 @@ pub trait TrapHandler {
 
 pub struct BasicTrapHandler {
     // TODO...
+}
+
+impl Default for BasicTrapHandler {
+    fn default() -> Self {
+        Self::new()
+    }
 }
 
 impl BasicTrapHandler {

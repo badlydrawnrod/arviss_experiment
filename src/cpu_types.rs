@@ -260,24 +260,33 @@ where
 
     fn sb(&mut self, rs1: Reg, rs2: Reg, simm: u32) {
         // m8(rs1 + imm_s) <- rs2[7:0], pc += 4
-        if let Err(_) = self.write8(self.rx(rs1).wrapping_add(simm), (self.rx(rs2) & 0xff) as u8) {
+        if self
+            .write8(self.rx(rs1).wrapping_add(simm), (self.rx(rs2) & 0xff) as u8)
+            .is_err()
+        {
             self.handle_trap(TrapCause::StoreAccessFault);
         }
     }
 
     fn sh(&mut self, rs1: Reg, rs2: Reg, simm: u32) {
         // m16(rs1 + imm_s) <- rs2[15:0], pc += 4
-        if let Err(_) = self.write16(
-            self.rx(rs1).wrapping_add(simm),
-            (self.rx(rs2) & 0xffff) as u16,
-        ) {
+        if self
+            .write16(
+                self.rx(rs1).wrapping_add(simm),
+                (self.rx(rs2) & 0xffff) as u16,
+            )
+            .is_err()
+        {
             self.handle_trap(TrapCause::StoreAccessFault);
         }
     }
 
     fn sw(&mut self, rs1: Reg, rs2: Reg, simm: u32) {
         // m32(rs1 + imm_s) <- rs2[31:0], pc += 4
-        if let Err(_) = self.write32(self.rx(rs1).wrapping_add(simm), self.rx(rs2)) {
+        if self
+            .write32(self.rx(rs1).wrapping_add(simm), self.rx(rs2))
+            .is_err()
+        {
             self.handle_trap(TrapCause::StoreAccessFault);
         }
     }
@@ -736,7 +745,7 @@ where
     fn fsw(&mut self, rs1: Reg, rs2: Reg, simm: u32) -> Self::Item {
         // f32(rs1 + imm_s) = rs2
         let data = f32::to_bits(self.rf(rs2));
-        if let Err(_) = self.write32(self.rx(rs1).wrapping_add(simm), data) {
+        if self.write32(self.rx(rs1).wrapping_add(simm), data).is_err() {
             self.handle_trap(TrapCause::StoreAccessFault);
         }
     }

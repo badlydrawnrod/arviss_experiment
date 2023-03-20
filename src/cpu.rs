@@ -23,6 +23,12 @@ pub struct Rv32iCpu<M, T = std::marker::PhantomData<DummyTrapHandler>> {
     trap_handler: T, // Trap handler.
 }
 
+impl Default for Rv32iCpu<BasicMem> {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl Rv32iCpu<BasicMem> {
     pub fn new() -> Self {
         Self::with_mem(BasicMem::new())
@@ -33,9 +39,15 @@ impl Rv32iCpu<BasicMem> {
             pc: 0,
             next_pc: 0,
             xreg: Default::default(),
-            mem: mem,
+            mem,
             trap_handler: std::marker::PhantomData::<DummyTrapHandler>,
         }
+    }
+}
+
+impl Default for Rv32iCpu<BasicMem, BasicTrapHandler> {
+    fn default() -> Self {
+        Self::new()
     }
 }
 
@@ -49,7 +61,7 @@ impl Rv32iCpu<BasicMem, BasicTrapHandler> {
             pc: 0,
             next_pc: 0,
             xreg: Default::default(),
-            mem: mem,
+            mem,
             trap_handler: BasicTrapHandler::new(),
         }
     }
@@ -71,7 +83,7 @@ where
                 // 32-bit instruction.
                 self.next_pc = self.pc.wrapping_add(4);
                 Ok(ins)
-            },
+            }
             Ok(ins) => {
                 // 16-bit instruction.
                 self.next_pc = self.pc.wrapping_add(2);

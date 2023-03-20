@@ -31,6 +31,12 @@ pub struct BasicMem {
     mem: [u8; MEMSIZE as usize],
 }
 
+impl Default for BasicMem {
+    fn default() -> Self {
+        Self::new()
+    }
+}
+
 impl BasicMem {
     pub fn new() -> Self {
         BasicMem {
@@ -60,7 +66,7 @@ impl Loader for BasicMem {
 
 impl Mem for BasicMem {
     fn read8(&self, address: Address) -> MemoryResult<u8> {
-        if address >= MEMBASE && address < MEMBASE + MEMSIZE {
+        if (MEMBASE..MEMBASE + MEMSIZE).contains(&address) {
             Ok(self.mem[(address - MEMBASE) as usize])
         } else if address == TTY_STATUS {
             Ok(1)
@@ -70,7 +76,7 @@ impl Mem for BasicMem {
     }
 
     fn read16(&self, address: Address) -> MemoryResult<u16> {
-        if address >= MEMBASE && address < MEMBASE + MEMSIZE - 1 {
+        if (MEMBASE..MEMBASE + MEMSIZE - 1).contains(&address) {
             let addr = (address - MEMBASE) as usize;
             if let Ok(slice) = &self.mem[addr..addr + 2].try_into() {
                 let result = u16::from_le_bytes(*slice);
@@ -81,7 +87,7 @@ impl Mem for BasicMem {
     }
 
     fn read32(&self, address: Address) -> MemoryResult<u32> {
-        if address >= MEMBASE && address < MEMBASE + MEMSIZE - 3 {
+        if (MEMBASE..MEMBASE + MEMSIZE - 3).contains(&address) {
             let addr = (address - MEMBASE) as usize;
             if let Ok(slice) = &self.mem[addr..addr + 4].try_into() {
                 let result = u32::from_le_bytes(*slice);
@@ -92,7 +98,7 @@ impl Mem for BasicMem {
     }
 
     fn write8(&mut self, address: Address, byte: u8) -> MemoryResult<()> {
-        if address >= RAMBASE && address < RAMBASE + RAMSIZE {
+        if (RAMBASE..RAMBASE + RAMSIZE).contains(&address) {
             let addr = (address - MEMBASE) as usize;
             self.mem[addr] = byte;
             Ok(())
@@ -105,10 +111,10 @@ impl Mem for BasicMem {
     }
 
     fn write16(&mut self, address: Address, half_word: u16) -> MemoryResult<()> {
-        if address >= MEMBASE && address < MEMBASE + MEMSIZE - 1 {
+        if (RAMBASE..RAMBASE + RAMSIZE - 1).contains(&address) {
             let addr = (address - MEMBASE) as usize;
             let bytes: [u8; 2] = half_word.to_le_bytes();
-            self.mem[addr + 0] = bytes[0];
+            self.mem[addr] = bytes[0];
             self.mem[addr + 1] = bytes[1];
             return Ok(());
         }
@@ -116,10 +122,10 @@ impl Mem for BasicMem {
     }
 
     fn write32(&mut self, address: Address, word: u32) -> MemoryResult<()> {
-        if address >= MEMBASE && address < MEMBASE + MEMSIZE - 3 {
+        if (RAMBASE..RAMBASE + RAMSIZE - 3).contains(&address) {
             let addr = (address - MEMBASE) as usize;
             let bytes: [u8; 4] = word.to_le_bytes();
-            self.mem[addr + 0] = bytes[0];
+            self.mem[addr] = bytes[0];
             self.mem[addr + 1] = bytes[1];
             self.mem[addr + 2] = bytes[2];
             self.mem[addr + 3] = bytes[3];

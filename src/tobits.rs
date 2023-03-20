@@ -289,7 +289,7 @@ impl ToBits {
         let a = ((imm & 0b11000000) >> 6) << 4; // 5:4
         let b = ((imm & 0b00111100) >> 2) << 6; // 9:6
         let c = ((imm & 0b00000010) >> 1) << 2; // 2
-        let d = ((imm & 0b00000001) >> 0) << 3; // 3
+        let d = (imm & 0b00000001) << 3; // 3
         a | b | c | d
     }
 
@@ -298,7 +298,7 @@ impl ToBits {
         // Zero extended.
         let a = ((self.0 >> 12) & 1) << 5; // offset[5]
         let b = ((self.0 & 0b11100) >> 2) << 3; // offset[4:3]
-        let c = ((self.0 & 0b00011) >> 0) << 6; // offset[7:6]
+        let c = (self.0 & 0b00011) << 6; // offset[7:6]
         a | b | c
     }
 
@@ -318,7 +318,7 @@ impl ToBits {
         let b = ((imm & 0b10000) >> 4) << 4; // nzimm[4]
         let c = ((imm & 0b01000) >> 3) << 6; // nzimm[6]
         let d = ((imm & 0b00110) >> 1) << 7; // nzimm[8:7]
-        let e = ((imm & 0b00001) >> 0) << 5; // nzimm[5]
+        let e = (imm & 0b00001) << 5; // nzimm[5]
         sext(a | b | c | d | e, 9)
     }
 
@@ -349,7 +349,7 @@ impl ToBits {
         let e = ((imm & 0b00000100000) >> 5) << 6; // offset[6]
         let f = ((imm & 0b00000010000) >> 4) << 7; // offset[7]
         let g = ((imm & 0b00000001110) >> 1) << 1; // offset[3:1]
-        let h = ((imm & 0b00000000001) >> 0) << 5; // offset[5]
+        let h = (imm & 0b00000000001) << 5; // offset[5]
         sext(a | b | c | d | e | f | g | h, 11)
     }
 
@@ -358,11 +358,11 @@ impl ToBits {
         // Sign extended.
         let imm1 = (self.0 >> 10) & 7;
         let a = ((imm1 & 0b100) >> 2) << 8; // offset[8]
-        let b = ((imm1 & 0b011) >> 0) << 3; // offset[4:3]
+        let b = (imm1 & 0b011) << 3; // offset[4:3]
         let imm2 = (self.0 >> 2) & 0x1f;
         let c = ((imm2 & 0b11000) >> 3) << 6; // offset[7:6]
         let d = ((imm2 & 0b00110) >> 1) << 1; // offset[2:1]
-        let e = ((imm2 & 0b00001) >> 0) << 5; // offset[5]
+        let e = (imm2 & 0b00001) << 5; // offset[5]
         sext(a | b | c | d | e, 8)
     }
 
@@ -372,7 +372,7 @@ impl ToBits {
         let a = ((self.0 >> 12) & 1) << 5; // offset[5]
         let imm = (self.0 >> 2) & 0x1f;
         let b = ((imm & 0b11100) >> 2) << 2; // offset[4:2]
-        let c = ((imm & 0b00011) >> 0) << 6; // offset[7:6]
+        let c = (imm & 0b00011) << 6; // offset[7:6]
         a | b | c
     }
 
@@ -381,7 +381,7 @@ impl ToBits {
         // Zero extended.
         let imm = (self.0 >> 7) & 0x3f;
         let a = ((imm & 0b111100) >> 2) << 2; // offset[5:2]
-        let b = ((imm & 0b000011) >> 0) << 6; // offset[7:6]
+        let b = (imm & 0b000011) << 6; // offset[7:6]
         a | b
     }
 
