@@ -24,31 +24,23 @@ where
         0b01 => {
             match c.c_funct2() {
                 0b00 => {
-                    if c.bits(12, 10) == 0b011 {
-                        if c.c_funct3() == 0b100 {
-                            return decoder.c_sub(c.rdrs1p(), c.rs2p());
-                        }
+                    if c.bits(12, 10) == 0b011 && c.c_funct3() == 0b100 {
+                        return decoder.c_sub(c.rdrs1p(), c.rs2p());
                     }
                 }
                 0b01 => {
-                    if c.bits(12, 10) == 0b011 {
-                        if c.c_funct3() == 0b100 {
-                            return decoder.c_xor(c.rdrs1p(), c.rs2p());
-                        }
+                    if c.bits(12, 10) == 0b011 && c.c_funct3() == 0b100 {
+                        return decoder.c_xor(c.rdrs1p(), c.rs2p());
                     }
                 }
                 0b10 => {
-                    if c.bits(12, 10) == 0b011 {
-                        if c.c_funct3() == 0b100 {
-                            return decoder.c_or(c.rdrs1p(), c.rs2p());
-                        }
+                    if c.bits(12, 10) == 0b011 && c.c_funct3() == 0b100 {
+                        return decoder.c_or(c.rdrs1p(), c.rs2p());
                     }
                 }
                 0b11 => {
-                    if c.bits(12, 10) == 0b011 {
-                        if c.c_funct3() == 0b100 {
-                            return decoder.c_and(c.rdrs1p(), c.rs2p());
-                        }
+                    if c.bits(12, 10) == 0b011 && c.c_funct3() == 0b100 {
+                        return decoder.c_and(c.rdrs1p(), c.rs2p());
                     }
                 }
                 _ => {}
@@ -111,12 +103,8 @@ where
                     _ => {}
                 }
             }
-            if c.bits(11, 2) == 0b0000000000 {
-                if c.bits(12, 12) == 0b1 {
-                    if c.c_funct3() == 0b100 {
-                        return decoder.c_ebreak();
-                    }
-                }
+            if c.bits(11, 2) == 0b0000000000 && c.bits(12, 12) == 0b1 && c.c_funct3() == 0b100 {
+                return decoder.c_ebreak();
             }
             match c.bits(12, 12) {
                 0b0 => {
@@ -242,15 +230,11 @@ where
         }
         0b1101111 => return decoder.jal(c.rd(), c.jimmediate()),
         0b1110011 => {
-            if c.rd_bits() == 0b00000 {
-                if c.funct3() == 0b000 {
-                    if c.rs1_bits() == 0b00000 {
-                        match c.funct12() {
-                            0b000000000000 => return decoder.ecall(),
-                            0b000000000001 => return decoder.ebreak(),
-                            _ => {}
-                        }
-                    }
+            if c.rd_bits() == 0b00000 && c.funct3() == 0b000 && c.rs1_bits() == 0b00000 {
+                match c.funct12() {
+                    0b000000000000 => return decoder.ecall(),
+                    0b000000000001 => return decoder.ebreak(),
+                    _ => {}
                 }
             }
         }
