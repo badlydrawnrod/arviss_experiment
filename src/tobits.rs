@@ -4,9 +4,9 @@ pub struct ToBits(pub u32);
 pub struct Reg(u32);
 
 impl Reg {
-    pub const Zero: Reg = Reg(0);
-    pub const Ra: Reg = Reg(1);
-    pub const Sp: Reg = Reg(2);
+    pub const ZERO: Reg = Reg(0);
+    pub const RA: Reg = Reg(1);
+    pub const SP: Reg = Reg(2);
 
     // Gp,
     // Tp,
@@ -51,10 +51,10 @@ impl From<u32> for Reg {
     }
 }
 
-impl Into<usize> for Reg {
+impl From<Reg> for usize {
     #[inline]
-    fn into(self) -> usize {
-        self.0 as usize % 32
+    fn from(r: Reg) -> Self {
+        r.0 as usize % 32
     }
 }
 

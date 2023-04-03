@@ -239,7 +239,7 @@ impl DecodeRv32c for Disassembler {
 
     fn c_addi4spn(&mut self, rdp: Reg, imm: u32) -> Self::Item {
         // addi rdp, x2, nzuimm[9:2]
-        self.addi(rdp, Reg::Sp, imm)
+        self.addi(rdp, Reg::SP, imm)
     }
 
     fn c_lw(&mut self, rdp: Reg, rs1p: Reg, imm: u32) -> Self::Item {
@@ -278,7 +278,7 @@ impl DecodeRv32c for Disassembler {
 
     fn c_addi16sp(&mut self, imm: u32) -> Self::Item {
         // addi x2, x2, nzimm[9:4]
-        self.addi(Reg::Sp, Reg::Sp, imm)
+        self.addi(Reg::SP, Reg::SP, imm)
     }
 
     fn c_andi(&mut self, rsrs1p: Reg, imm: u32) -> Self::Item {
@@ -293,7 +293,7 @@ impl DecodeRv32c for Disassembler {
 
     fn c_li(&mut self, rd: Reg, imm: u32) -> Self::Item {
         // addi rd, x0, imm[5:0]
-        self.addi(rd, Reg::Zero, imm)
+        self.addi(rd, Reg::ZERO, imm)
     }
 
     fn c_lui(&mut self, rdn2: Reg, imm: u32) -> Self::Item {
@@ -303,27 +303,27 @@ impl DecodeRv32c for Disassembler {
 
     fn c_j(&mut self, imm: u32) -> Self::Item {
         // jal x0, offset[11:1]
-        self.jal(Reg::Zero, imm)
+        self.jal(Reg::ZERO, imm)
     }
 
     fn c_beqz(&mut self, rs1p: Reg, imm: u32) -> Self::Item {
         // beq rs1p, x0, offset[8:1]
-        self.beq(rs1p, Reg::Zero, imm)
+        self.beq(rs1p, Reg::ZERO, imm)
     }
 
     fn c_bnez(&mut self, rs1p: Reg, imm: u32) -> Self::Item {
         // bne rs1p, x0, offset[8:1]
-        self.bne(rs1p, Reg::Zero, imm)
+        self.bne(rs1p, Reg::ZERO, imm)
     }
 
     fn c_jr(&mut self, rs1n0: Reg) -> Self::Item {
         // jalr x0, 0(rs1)
-        self.jalr(Reg::Zero, rs1n0, 0)
+        self.jalr(Reg::ZERO, rs1n0, 0)
     }
 
     fn c_jalr(&mut self, rs1n0: Reg) -> Self::Item {
         // jalr x1, 0(rs1)
-        self.jalr(Reg::Ra, rs1n0, 0)
+        self.jalr(Reg::RA, rs1n0, 0)
     }
 
     fn c_ebreak(&mut self) -> Self::Item {
@@ -332,7 +332,7 @@ impl DecodeRv32c for Disassembler {
 
     fn c_mv(&mut self, rd: Reg, rs2n0: Reg) -> Self::Item {
         // add rd, x0, rs2
-        self.add(rd, Reg::Zero, rs2n0)
+        self.add(rd, Reg::ZERO, rs2n0)
     }
 
     fn c_add(&mut self, rdrs1: Reg, rs2n0: Reg) -> Self::Item {
@@ -342,17 +342,17 @@ impl DecodeRv32c for Disassembler {
 
     fn c_lwsp(&mut self, rdn0: Reg, imm: u32) -> Self::Item {
         // lw rd, offset[7:2](x2)
-        self.lw(rdn0, Reg::Sp, imm)
+        self.lw(rdn0, Reg::SP, imm)
     }
 
     fn c_swsp(&mut self, rs2: Reg, imm: u32) -> Self::Item {
         // sw rs2, offset[7:2](x2)
-        self.sw(Reg::Sp, rs2, imm)
+        self.sw(Reg::SP, rs2, imm)
     }
 
     fn c_jal(&mut self, imm: u32) -> Self::Item {
         // jal x1, offset[11:1]
-        self.jal(Reg::Ra, imm)
+        self.jal(Reg::RA, imm)
     }
 
     fn c_srli(&mut self, rdrs1p: Reg, imm: u32) -> Self::Item {
