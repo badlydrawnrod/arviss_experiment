@@ -132,11 +132,13 @@ where
     T: TrapHandler,
 {
     fn rx(&self, reg: Reg) -> u32 {
-        self.xreg[reg as usize]
+        let index: usize = Into::into(reg);
+        self.xreg[index]
     }
 
     fn wx(&mut self, reg: Reg, val: u32) {
-        self.xreg[reg as usize] = val;
+        let index: usize = Into::into(reg);
+        self.xreg[index] = val;
         self.xreg[0] = 0;
     }
 }

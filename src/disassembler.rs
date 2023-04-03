@@ -15,15 +15,17 @@ const FABI_NAMES: &[&str] = &[
 ];
 
 fn abi(reg: Reg) -> &'static str {
-    match reg as usize {
-        0..=31 => ABI_NAMES[reg as usize],
+    let r: usize = Into::into(reg);
+    match r {
+        0..=31 => ABI_NAMES[r],
         _ => unreachable!(),
     }
 }
 
 fn fabi(reg: Reg) -> &'static str {
-    match reg as usize {
-        0..=31 => FABI_NAMES[reg as usize],
+    let r: usize = Into::into(reg);
+    match r {
+        0..=31 => FABI_NAMES[r],
         _ => unreachable!(),
     }
 }

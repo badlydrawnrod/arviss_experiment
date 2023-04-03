@@ -1,83 +1,142 @@
 pub struct ToBits(pub u32);
 
-// We know that there are 32 registers. The Rust compiler doesn't, but if we convert to this type then it renders
-// bounds checking unnecessary when accesing registers.
-#[derive(Clone, Copy, Debug)]
-pub enum Reg {
-    Zero,
-    Ra,
-    Sp,
-    Gp,
-    Tp,
-    T0,
-    T1,
-    T2,
-    S0,
-    S1,
-    A0,
-    A1,
-    A2,
-    A3,
-    A4,
-    A5,
-    A6,
-    A7,
-    S2,
-    S3,
-    S4,
-    S5,
-    S6,
-    S7,
-    S8,
-    S9,
-    S10,
-    S11,
-    T3,
-    T4,
-    T5,
-    T6,
-}
+#[derive(Copy, Clone)]
+pub struct Reg(u32);
 
-fn to_reg(r: u32) -> Reg {
-    match r {
-        0 => Reg::Zero,
-        1 => Reg::Ra,
-        2 => Reg::Sp,
-        3 => Reg::Gp,
-        4 => Reg::Tp,
-        5 => Reg::T0,
-        6 => Reg::T1,
-        7 => Reg::T2,
-        8 => Reg::S0,
-        9 => Reg::S1,
-        10 => Reg::A0,
-        11 => Reg::A1,
-        12 => Reg::A2,
-        13 => Reg::A3,
-        14 => Reg::A4,
-        15 => Reg::A5,
-        16 => Reg::A6,
-        17 => Reg::A7,
-        18 => Reg::S2,
-        19 => Reg::S3,
-        20 => Reg::S4,
-        21 => Reg::S5,
-        22 => Reg::S6,
-        23 => Reg::S7,
-        24 => Reg::S8,
-        25 => Reg::S9,
-        26 => Reg::S10,
-        27 => Reg::S11,
-        28 => Reg::T3,
-        29 => Reg::T4,
-        30 => Reg::T5,
-        31 => Reg::T6,
-        _ => unreachable!(),
+impl Reg {
+    pub const Zero: Reg = Reg(0);
+    pub const Ra: Reg = Reg(1);
+    pub const Sp: Reg = Reg(2);
+
+    // Gp,
+    // Tp,
+    // T0,
+    // T1,
+    // T2,
+    // S0,
+    // S1,
+    // A0,
+    // A1,
+    // A2,
+    // A3,
+    // A4,
+    // A5,
+    // A6,
+    // A7,
+    // S2,
+    // S3,
+    // S4,
+    // S5,
+    // S6,
+    // S7,
+    // S8,
+    // S9,
+    // S10,
+    // S11,
+    // T3,
+    // T4,
+    // T5,
+    // T6,
+
+    #[inline]
+    fn new(r: u32) -> Self {
+        Reg(r % 32)
     }
 }
 
+impl From<u32> for Reg {
+    #[inline]
+    fn from(r: u32) -> Self {
+        Reg(r)
+    }
+}
+
+impl Into<usize> for Reg {
+    #[inline]
+    fn into(self) -> usize {
+        self.0 as usize % 32
+    }
+}
+
+// // We know that there are 32 registers. The Rust compiler doesn't, but if we convert to this type then it renders
+// // bounds checking unnecessary when accesing registers.
+// #[derive(Clone, Copy, Debug)]
+// pub enum Reg {
+//     Zero,
+//     Ra,
+//     Sp,
+//     Gp,
+//     Tp,
+//     T0,
+//     T1,
+//     T2,
+//     S0,
+//     S1,
+//     A0,
+//     A1,
+//     A2,
+//     A3,
+//     A4,
+//     A5,
+//     A6,
+//     A7,
+//     S2,
+//     S3,
+//     S4,
+//     S5,
+//     S6,
+//     S7,
+//     S8,
+//     S9,
+//     S10,
+//     S11,
+//     T3,
+//     T4,
+//     T5,
+//     T6,
+// }
+
+// fn to_reg(r: u32) -> Reg {
+//     match r {
+//         0 => Reg::Zero,
+//         1 => Reg::Ra,
+//         2 => Reg::Sp,
+//         3 => Reg::Gp,
+//         4 => Reg::Tp,
+//         5 => Reg::T0,
+//         6 => Reg::T1,
+//         7 => Reg::T2,
+//         8 => Reg::S0,
+//         9 => Reg::S1,
+//         10 => Reg::A0,
+//         11 => Reg::A1,
+//         12 => Reg::A2,
+//         13 => Reg::A3,
+//         14 => Reg::A4,
+//         15 => Reg::A5,
+//         16 => Reg::A6,
+//         17 => Reg::A7,
+//         18 => Reg::S2,
+//         19 => Reg::S3,
+//         20 => Reg::S4,
+//         21 => Reg::S5,
+//         22 => Reg::S6,
+//         23 => Reg::S7,
+//         24 => Reg::S8,
+//         25 => Reg::S9,
+//         26 => Reg::S10,
+//         27 => Reg::S11,
+//         28 => Reg::T3,
+//         29 => Reg::T4,
+//         30 => Reg::T5,
+//         31 => Reg::T6,
+//         _ => unreachable!(),
+//     }
+// }
+
+#[inline]
 fn creg(r: u32) -> Reg {
-    to_reg(8 + r)
+    Reg::new(8 + r)
 }
 
 #[inline]
@@ -132,7 +191,7 @@ impl ToBits {
 
     #[inline]
     pub fn rd(&self) -> Reg {
-        to_reg((self.0 >> 7) & 0x1f)
+        Reg::new(self.0 >> 7)
     }
 
     #[inline]
@@ -142,7 +201,7 @@ impl ToBits {
 
     #[inline]
     pub fn rs1(&self) -> Reg {
-        to_reg((self.0 >> 15) & 0x1f)
+        Reg::new(self.0 >> 15)
     }
 
     #[inline]
@@ -152,7 +211,7 @@ impl ToBits {
 
     #[inline]
     pub fn rs2(&self) -> Reg {
-        to_reg((self.0 >> 20) & 0x1f)
+        Reg::new(self.0 >> 20)
     }
 
     #[inline]
@@ -162,7 +221,7 @@ impl ToBits {
 
     #[inline]
     pub fn rs3(&self) -> Reg {
-        to_reg((self.0 >> 27) & 0x1f)
+        Reg::new(self.0 >> 27)
     }
 
     #[inline]
@@ -264,12 +323,12 @@ impl ToBits {
 
     #[inline]
     pub fn rs1n0(&self) -> Reg {
-        to_reg((self.0 >> 7) & 0x1f)
+        Reg::new(self.0 >> 7)
     }
 
     #[inline]
     pub fn rs2n0(&self) -> Reg {
-        to_reg((self.0 >> 2) & 0x1f)
+        Reg::new(self.0 >> 2)
     }
 
     #[inline]
@@ -279,7 +338,7 @@ impl ToBits {
 
     #[inline]
     pub fn c_rs2(&self) -> Reg {
-        to_reg((self.0 >> 2) & 0x1f)
+        Reg::new(self.0 >> 2)
     }
 
     #[inline]
