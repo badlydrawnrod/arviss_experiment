@@ -124,4 +124,4 @@ where
         _ => {}
     }
     decoder.illegal(code)
-}   
+}

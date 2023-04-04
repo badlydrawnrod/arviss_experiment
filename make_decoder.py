@@ -1,10 +1,9 @@
+import argparse
+
 from dataclasses import dataclass
 from typing import List, Tuple
 
-
-# See: https://github.com/riscv/riscv-opcodes
-opcodes_to_parse = """\
-# format of a line in this file:
+# Format of lines in opcodes.
 # <instruction name> <args> <opcode>
 #
 # <opcode> is given by specifying one or more range/value pairs:
@@ -12,9 +11,9 @@ opcodes_to_parse = """\
 #
 # <args> is one of rd, rs1, rs2, rs3, imm20, imm12, imm12lo, imm12hi,
 # shamtw, shamt, rm
+# See: https://github.com/riscv/riscv-opcodes
 
-# rv32i
-
+rv32i = """\
 beq     bimm12hi rs1 rs2 bimm12lo 14..12=0 6..2=0x18 1..0=3
 bne     bimm12hi rs1 rs2 bimm12lo 14..12=1 6..2=0x18 1..0=3
 blt     bimm12hi rs1 rs2 bimm12lo 14..12=4 6..2=0x18 1..0=3
@@ -64,14 +63,12 @@ ebreak    11..7=0 19..15=0 31..20=0x001 14..12=0 6..2=0x1C 1..0=3
 
 # fence.i     imm12                       rs1 14..12=1 rd 6..2=0x03 1..0=3
 
-# shifts
-
 slli rd rs1 31..25=0  shamtw  14..12=1 6..2=0x04 1..0=3
 srli rd rs1 31..25=0  shamtw  14..12=5 6..2=0x04 1..0=3
 srai rd rs1 31..25=32 shamtw  14..12=5 6..2=0x04 1..0=3
+"""
 
-# rv32m
-
+rv32m = """\
 mul     rd rs1 rs2 31..25=1 14..12=0 6..2=0x0C 1..0=3
 mulh    rd rs1 rs2 31..25=1 14..12=1 6..2=0x0C 1..0=3
 mulhsu  rd rs1 rs2 31..25=1 14..12=2 6..2=0x0C 1..0=3
@@ -80,9 +77,9 @@ div     rd rs1 rs2 31..25=1 14..12=4 6..2=0x0C 1..0=3
 divu    rd rs1 rs2 31..25=1 14..12=5 6..2=0x0C 1..0=3
 rem     rd rs1 rs2 31..25=1 14..12=6 6..2=0x0C 1..0=3
 remu    rd rs1 rs2 31..25=1 14..12=7 6..2=0x0C 1..0=3
+"""
 
-# rv32c
-
+rv32c = """\
 # quadrant 0
 c.addi4spn rd_p c_nzuimm10              1..0=0 15..13=0
 c.lw rd_p rs1_p c_uimm7lo c_uimm7hi     1..0=0 15..13=2
@@ -118,49 +115,51 @@ c.jal c_imm12              1..0=1 15..13=1
 c.srli rd_rs1_p c_nzuimm6lo c_nzuimm6hi   1..0=1 15..13=4 11..10=0
 c.srai rd_rs1_p c_nzuimm6lo c_nzuimm6hi   1..0=1 15..13=4 11..10=1
 c.slli rd_rs1_n0 c_nzuimm6hi c_nzuimm6lo  1..0=2 15..13=0
+"""
 
-# rv32f
+rv32f = """\
+fadd.s    rd rs1 rs2      31..27=0x00 rm       26..25=0 6..2=0x14 1..0=3
+fsub.s    rd rs1 rs2      31..27=0x01 rm       26..25=0 6..2=0x14 1..0=3
+fmul.s    rd rs1 rs2      31..27=0x02 rm       26..25=0 6..2=0x14 1..0=3
+fdiv.s    rd rs1 rs2      31..27=0x03 rm       26..25=0 6..2=0x14 1..0=3
+fsgnj.s   rd rs1 rs2      31..27=0x04 14..12=0 26..25=0 6..2=0x14 1..0=3
+fsgnjn.s  rd rs1 rs2      31..27=0x04 14..12=1 26..25=0 6..2=0x14 1..0=3
+fsgnjx.s  rd rs1 rs2      31..27=0x04 14..12=2 26..25=0 6..2=0x14 1..0=3
+fmin.s    rd rs1 rs2      31..27=0x05 14..12=0 26..25=0 6..2=0x14 1..0=3
+fmax.s    rd rs1 rs2      31..27=0x05 14..12=1 26..25=0 6..2=0x14 1..0=3
+fsqrt.s   rd rs1 24..20=0 31..27=0x0B rm       26..25=0 6..2=0x14 1..0=3
 
-# fadd.s    rd rs1 rs2      31..27=0x00 rm       26..25=0 6..2=0x14 1..0=3
-# fsub.s    rd rs1 rs2      31..27=0x01 rm       26..25=0 6..2=0x14 1..0=3
-# fmul.s    rd rs1 rs2      31..27=0x02 rm       26..25=0 6..2=0x14 1..0=3
-# fdiv.s    rd rs1 rs2      31..27=0x03 rm       26..25=0 6..2=0x14 1..0=3
-# fsgnj.s   rd rs1 rs2      31..27=0x04 14..12=0 26..25=0 6..2=0x14 1..0=3
-# fsgnjn.s  rd rs1 rs2      31..27=0x04 14..12=1 26..25=0 6..2=0x14 1..0=3
-# fsgnjx.s  rd rs1 rs2      31..27=0x04 14..12=2 26..25=0 6..2=0x14 1..0=3
-# fmin.s    rd rs1 rs2      31..27=0x05 14..12=0 26..25=0 6..2=0x14 1..0=3
-# fmax.s    rd rs1 rs2      31..27=0x05 14..12=1 26..25=0 6..2=0x14 1..0=3
-# fsqrt.s   rd rs1 24..20=0 31..27=0x0B rm       26..25=0 6..2=0x14 1..0=3
+fle.s     rd rs1 rs2      31..27=0x14 14..12=0 26..25=0 6..2=0x14 1..0=3
+flt.s     rd rs1 rs2      31..27=0x14 14..12=1 26..25=0 6..2=0x14 1..0=3
+feq.s     rd rs1 rs2      31..27=0x14 14..12=2 26..25=0 6..2=0x14 1..0=3
 
-# fle.s     rd rs1 rs2      31..27=0x14 14..12=0 26..25=0 6..2=0x14 1..0=3
-# flt.s     rd rs1 rs2      31..27=0x14 14..12=1 26..25=0 6..2=0x14 1..0=3
-# feq.s     rd rs1 rs2      31..27=0x14 14..12=2 26..25=0 6..2=0x14 1..0=3
+fcvt.w.s  rd rs1 24..20=0 31..27=0x18 rm       26..25=0 6..2=0x14 1..0=3
+fcvt.wu.s rd rs1 24..20=1 31..27=0x18 rm       26..25=0 6..2=0x14 1..0=3
+fmv.x.w   rd rs1 24..20=0 31..27=0x1C 14..12=0 26..25=0 6..2=0x14 1..0=3
+fclass.s  rd rs1 24..20=0 31..27=0x1C 14..12=1 26..25=0 6..2=0x14 1..0=3
 
-# fcvt.w.s  rd rs1 24..20=0 31..27=0x18 rm       26..25=0 6..2=0x14 1..0=3
-# fcvt.wu.s rd rs1 24..20=1 31..27=0x18 rm       26..25=0 6..2=0x14 1..0=3
-# fmv.x.w   rd rs1 24..20=0 31..27=0x1C 14..12=0 26..25=0 6..2=0x14 1..0=3
-# fclass.s  rd rs1 24..20=0 31..27=0x1C 14..12=1 26..25=0 6..2=0x14 1..0=3
+fcvt.s.w  rd rs1 24..20=0 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3
+fcvt.s.wu rd rs1 24..20=1 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3
+fmv.w.x   rd rs1 24..20=0 31..27=0x1E 14..12=0 26..25=0 6..2=0x14 1..0=3
 
-# fcvt.s.w  rd rs1 24..20=0 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3
-# fcvt.s.wu rd rs1 24..20=1 31..27=0x1A rm       26..25=0 6..2=0x14 1..0=3
-# fmv.w.x   rd rs1 24..20=0 31..27=0x1E 14..12=0 26..25=0 6..2=0x14 1..0=3
+flw       rd rs1 imm12 14..12=2 6..2=0x01 1..0=3
 
-# flw       rd rs1 imm12 14..12=2 6..2=0x01 1..0=3
+fsw       imm12hi rs1 rs2 imm12lo 14..12=2 6..2=0x09 1..0=3
 
-# fsw       imm12hi rs1 rs2 imm12lo 14..12=2 6..2=0x09 1..0=3
+fmadd.s   rd rs1 rs2 rs3 rm 26..25=0 6..2=0x10 1..0=3
+fmsub.s   rd rs1 rs2 rs3 rm 26..25=0 6..2=0x11 1..0=3
+fnmsub.s  rd rs1 rs2 rs3 rm 26..25=0 6..2=0x12 1..0=3
+fnmadd.s  rd rs1 rs2 rs3 rm 26..25=0 6..2=0x13 1..0=3
+"""
 
-# fmadd.s   rd rs1 rs2 rs3 rm 26..25=0 6..2=0x10 1..0=3
-# fmsub.s   rd rs1 rs2 rs3 rm 26..25=0 6..2=0x11 1..0=3
-# fnmsub.s  rd rs1 rs2 rs3 rm 26..25=0 6..2=0x12 1..0=3
-# fnmadd.s  rd rs1 rs2 rs3 rm 26..25=0 6..2=0x13 1..0=3
+system = """\
+sret      11..7=0 19..15=0 31..20=0x102 14..12=0 6..2=0x1C 1..0=3
+mret      11..7=0 19..15=0 31..20=0x302 14..12=0 6..2=0x1C 1..0=3
+"""
 
-# system
-
-# sret      11..7=0 19..15=0 31..20=0x102 14..12=0 6..2=0x1C 1..0=3
-# mret      11..7=0 19..15=0 31..20=0x302 14..12=0 6..2=0x1C 1..0=3
-
-# A lovely piece of music by Vivaldi.
-# rv554a: I, Allegro: https://music.youtube.com/watch?v=2m0Hp28FS4k&feature=share
+# A lovely piece of music by Vivaldi. Don't try to decode it. Just listen and enjoy.
+rv554a = """\
+rv554a: I, Allegro: https://music.youtube.com/watch?v=2m0Hp28FS4k&feature=share
 """
 
 lut = {
@@ -341,26 +340,22 @@ def make_bitpattern(bits, values) -> int:
     return result
 
 
-def generate_bitmask_code(specs: List[Spec]):
+def generate_bitmask_code(specs: List[Spec], extensions: str):
     """Generates a decoder that uses Rust match expressions based on bitmasks."""
 
-    preamble = """\
+    patterns = "\n        + ".join(f"DecodeRv32{x}\n        + DecodeRv32{x}<Item = U>" for x in extensions)
+    preamble = f"""\
 pub fn decode<T, U>(decoder: &mut T, code: u32) -> U
 where
-    T: DecodeRv32i
-        + DecodeRv32i<Item = U>
-        + DecodeRv32c
-        + DecodeRv32c<Item = U>
-        + DecodeRv32m
-        + DecodeRv32m<Item = U>,
-{
+    T: {patterns},
+{{
     // This function is generated by make_decoder.py. Do not edit.
     let c = ToBits(code);
 """
 
     postamble = """\
     decoder.illegal(code)
-}   
+}
 """
 
     all_patterns = dict()
@@ -390,9 +385,29 @@ where
     print(postamble)
 
 
+def parse_command_line():
+    parser = argparse.ArgumentParser(description="Generate a RISC-V decoder for the RV32I base ISA plus extensions.")
+    parser.add_argument("-c", dest="extensions", help="Enable the 'C' extension", action="append_const", const="c")
+    parser.add_argument("-f", dest="extensions", help="Enable the 'F' extension", action="append_const", const="f")
+    parser.add_argument("-m", dest="extensions", help="Enable the 'M' extension", action="append_const", const="m")
+    args = parser.parse_args()
+    args.extensions = "i" + "".join(sorted(list(set(args.extensions)) if args.extensions is not None else []))
+    return args
+
 if __name__ == "__main__":
+    args = parse_command_line()
+
+    decoders = dict(
+        i=rv32i,
+        c=rv32c,
+        f=rv32f,
+        m=rv32m,
+    )
+
+    opcodes_to_parse = "\n".join(decoders[x] for x in args.extensions)
+
     specs = parse(opcodes_to_parse)
     # generate_naive_code(specs)
     # generate_matching_code(specs)
 
-    generate_bitmask_code(specs)
+    generate_bitmask_code(specs, args.extensions)
