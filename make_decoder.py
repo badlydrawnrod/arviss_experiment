@@ -373,7 +373,10 @@ where
     print(preamble)        
     for k, v in ordered_patterns.items():
         mask = make_bitmask(k)
-        print(f"    match code & 0x{mask:08x} {{")
+        if mask != 0xffffffff:
+            print(f"    match code & 0x{mask:08x} {{")
+        else:
+            print("    match code {")
         for value, operator, operands in v:
             match_value = make_bitpattern(k, value)
             operator = operator.replace(".", "_")
