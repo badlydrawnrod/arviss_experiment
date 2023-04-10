@@ -59,6 +59,7 @@ impl Loader for BasicMem {
 }
 
 impl Mem for BasicMem {
+    #[inline]
     fn read8(&self, address: Address) -> MemoryResult<u8> {
         if (MEMBASE..MEMBASE + MEMSIZE).contains(&address) {
             Ok(self.mem[(address - MEMBASE) as usize])
@@ -69,6 +70,7 @@ impl Mem for BasicMem {
         }
     }
 
+    #[inline]
     fn read16(&self, address: Address) -> MemoryResult<u16> {
         if (MEMBASE..MEMBASE + MEMSIZE - 1).contains(&address) {
             let addr = (address - MEMBASE) as usize;
@@ -80,6 +82,7 @@ impl Mem for BasicMem {
         Err(address)
     }
 
+    #[inline]
     fn read32(&self, address: Address) -> MemoryResult<u32> {
         if (MEMBASE..MEMBASE + MEMSIZE - 3).contains(&address) {
             let addr = (address - MEMBASE) as usize;
@@ -91,6 +94,7 @@ impl Mem for BasicMem {
         Err(address)
     }
 
+    #[inline]
     fn write8(&mut self, address: Address, byte: u8) -> MemoryResult<()> {
         if (RAMBASE..RAMBASE + RAMSIZE).contains(&address) {
             let addr = (address - MEMBASE) as usize;
@@ -104,6 +108,7 @@ impl Mem for BasicMem {
         }
     }
 
+    #[inline]
     fn write16(&mut self, address: Address, half_word: u16) -> MemoryResult<()> {
         if (RAMBASE..RAMBASE + RAMSIZE - 1).contains(&address) {
             let addr = (address - MEMBASE) as usize;
@@ -115,6 +120,7 @@ impl Mem for BasicMem {
         Err(address)
     }
 
+    #[inline]
     fn write32(&mut self, address: Address, word: u32) -> MemoryResult<()> {
         if (RAMBASE..RAMBASE + RAMSIZE - 3).contains(&address) {
             let addr = (address - MEMBASE) as usize;
