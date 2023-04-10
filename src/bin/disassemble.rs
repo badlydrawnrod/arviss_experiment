@@ -1,4 +1,4 @@
-use arviss_experiment::{decode, Disassembler};
+use arviss_experiment::{Disassembler, Rv32imfcDecoder};
 
 pub fn main() {
     let mut disassembler = Disassembler {};
@@ -28,7 +28,7 @@ pub fn main() {
         0x00_c0_80_e7, // jalr  12(ra)
         0x00_10_00_73, // ebreak
     ] {
-        let result = decode(&mut disassembler, ins);
+        let result = disassembler.decode_rv32imfc(ins);
         println!("{:08x} {}", ins, result);
     }
 }
