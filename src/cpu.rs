@@ -1,6 +1,6 @@
 use super::{
-    cpu_types::{Address, CoreCpu, Xreg},
-    memory::{BasicMem, Mem, MemoryResult},
+    cpu_types::{CoreCpu, Xreg},
+    memory::{Address, BasicMem, Mem, MemoryResult},
     tobits::Reg,
     trap_handler::{TrapCause, TrapHandler},
 };
@@ -122,7 +122,7 @@ where
         self.trap_state.cause = None
     }
 
-    fn handle_trap(&mut self, cause: TrapCause, _value: u32) {
+    fn handle_trap(&mut self, cause: TrapCause) {
         self.trap_state.cause = Some(cause);
     }
 }

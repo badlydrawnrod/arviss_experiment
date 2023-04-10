@@ -1,8 +1,6 @@
-use crate::TrapHandler;
+use crate::{Address, TrapHandler};
 
 use super::{memory::MemoryResult, tobits::Reg, trap_handler::TrapCause};
-
-pub type Address = u32;
 
 pub trait CoreCpu {
     fn get_pc(&self) -> Address;
@@ -102,7 +100,7 @@ where
     // Illegal instruction.
 
     fn illegal(&mut self, ins: u32) {
-        self.handle_trap(TrapCause::IllegalInstruction, ins);
+        self.handle_trap(TrapCause::IllegalInstruction(ins));
     }
 
     // B-type instructions.
@@ -162,7 +160,7 @@ where
                 self.wx(rd, (((byte as i8) as i16) as i32) as u32); // TODO: this should be a function.
             }
             Err(address) => {
-                self.handle_trap(TrapCause::LoadAccessFault, address);
+                self.handle_trap(TrapCause::LoadAccessFault(address));
             }
         }
     }
@@ -174,7 +172,7 @@ where
                 self.wx(rd, ((half_word as i16) as i32) as u32); // TODO: this should be a function.
             }
             Err(address) => {
-                self.handle_trap(TrapCause::LoadAccessFault, address);
+                self.handle_trap(TrapCause::LoadAccessFault(address));
             }
         }
     }
@@ -186,7 +184,7 @@ where
                 self.wx(rd, word);
             }
             Err(address) => {
-                self.handle_trap(TrapCause::LoadAccessFault, address);
+                self.handle_trap(TrapCause::LoadAccessFault(address));
             }
         }
     }
@@ -198,7 +196,7 @@ where
                 self.wx(rd, byte as u32);
             }
             Err(address) => {
-                self.handle_trap(TrapCause::LoadAccessFault, address);
+                self.handle_trap(TrapCause::LoadAccessFault(address));
             }
         }
     }
@@ -209,7 +207,7 @@ where
             Ok(half_word) => {
                 self.wx(rd, half_word as u32);
             }
-            Err(address) => self.handle_trap(TrapCause::LoadAccessFault, address),
+            Err(address) => self.handle_trap(TrapCause::LoadAccessFault(address)),
         }
     }
 
@@ -261,7 +259,7 @@ where
         if let Err(address) =
             self.write8(self.rx(rs1).wrapping_add(simm), (self.rx(rs2) & 0xff) as u8)
         {
-            self.handle_trap(TrapCause::StoreAccessFault, address)
+            self.handle_trap(TrapCause::StoreAccessFault(address))
         }
     }
 
@@ -271,14 +269,14 @@ where
             self.rx(rs1).wrapping_add(simm),
             (self.rx(rs2) & 0xffff) as u16,
         ) {
-            self.handle_trap(TrapCause::StoreAccessFault, address)
+            self.handle_trap(TrapCause::StoreAccessFault(address))
         }
     }
 
     fn sw(&mut self, rs1: Reg, rs2: Reg, simm: u32) {
         // m32(rs1 + imm_s) <- rs2[31:0], pc += 4
         if let Err(address) = self.write32(self.rx(rs1).wrapping_add(simm), self.rx(rs2)) {
-            self.handle_trap(TrapCause::StoreAccessFault, address)
+            self.handle_trap(TrapCause::StoreAccessFault(address))
         }
     }
 
@@ -731,7 +729,7 @@ where
                 self.wf(rd, f32::from_bits(word));
             }
             Err(address) => {
-                self.handle_trap(TrapCause::LoadAccessFault, address);
+                self.handle_trap(TrapCause::LoadAccessFault(address));
             }
         }
     }
@@ -742,7 +740,7 @@ where
         // f32(rs1 + imm_s) = rs2
         let data = f32::to_bits(self.rf(rs2));
         if let Err(address) = self.write32(self.rx(rs1).wrapping_add(simm), data) {
-            self.handle_trap(TrapCause::StoreAccessFault, address);
+            self.handle_trap(TrapCause::StoreAccessFault(address));
         }
     }
 
