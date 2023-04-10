@@ -25,6 +25,12 @@ $ cd arviss_execute
 $ cargo build --release
 ```
 
+- Run the tests
+
+```
+$ cargo test
+```
+
 ## Running
 
 Run the simulator (the `runner` binary), passing it the path to the `app.bin` that you generated when you built [the sample application](https://github.com/badlydrawnrod/rt_app).
