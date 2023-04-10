@@ -1,3 +1,5 @@
+use crate::TrapHandler;
+
 use super::{memory::MemoryResult, tobits::Reg, trap_handler::TrapCause};
 
 pub type Address = u32;
@@ -14,8 +16,6 @@ pub trait CoreCpu {
     fn write8(&mut self, address: Address, value: u8) -> MemoryResult<()>;
     fn write16(&mut self, address: Address, value: u16) -> MemoryResult<()>;
     fn write32(&mut self, address: Address, value: u32) -> MemoryResult<()>;
-
-    fn handle_trap(&mut self, cause: TrapCause);
 }
 
 pub trait Xreg {
@@ -95,7 +95,7 @@ pub trait DecodeRv32i {
 
 impl<T> DecodeRv32i for T
 where
-    T: CoreCpu + Xreg,
+    T: CoreCpu + TrapHandler + Xreg,
 {
     type Item = ();
 
@@ -390,8 +390,13 @@ where
     fn fence(&mut self, _fm: u32, _rd: Reg, _rs1: Reg) {}
 
     // System instructions.
-    fn ecall(&mut self) {}
-    fn ebreak(&mut self) {}
+    fn ecall(&mut self) {
+        self.handle_ecall()
+    }
+
+    fn ebreak(&mut self) {
+        self.handle_ebreak()
+    }
 }
 
 pub trait DecodeRv32m {
@@ -722,7 +727,7 @@ pub trait DecodeRv32f {
 
 impl<T> DecodeRv32f for T
 where
-    T: CoreCpu + Xreg + Freg,
+    T: CoreCpu + TrapHandler + Xreg + Freg,
 {
     type Item = ();
 

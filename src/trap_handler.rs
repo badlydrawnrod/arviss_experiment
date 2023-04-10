@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug, Clone, Copy)]
 #[repr(u32)]
 pub enum TrapCause {
     // Non-interrupt traps.
@@ -27,37 +27,21 @@ pub enum TrapCause {
 
 // Trap handling is a trait.
 pub trait TrapHandler {
-    fn handle_trap(&self, cause: TrapCause);
-    fn handle_ecall(&self);
-    fn handle_ebreak(&self);
-}
+    fn trap_cause(&self) -> Option<TrapCause>;
 
-pub struct BasicTrapHandler {
-    // TODO...
-}
+    fn clear_trap(&mut self);
 
-impl Default for BasicTrapHandler {
-    fn default() -> Self {
-        Self::new()
-    }
-}
+    fn handle_trap(&mut self, cause: TrapCause);
 
-impl BasicTrapHandler {
-    pub fn new() -> Self {
-        BasicTrapHandler {}
-    }
-}
-
-impl TrapHandler for BasicTrapHandler {
-    fn handle_trap(&self, cause: TrapCause) {
-        println!("TRAP: {:#?}", cause);
+    fn is_trapped(&self) -> bool {
+        self.trap_cause().is_some()
     }
 
-    fn handle_ecall(&self) {
-        println!("ECALL!");
+    fn handle_ecall(&mut self) {
+        self.handle_trap(TrapCause::EnvironmentCallFromMMode)
     }
 
-    fn handle_ebreak(&self) {
-        println!("EBREAK!");
+    fn handle_ebreak(&mut self) {
+        self.handle_trap(TrapCause::Breakpoint)
     }
 }
