@@ -18,7 +18,7 @@ Arviss as a rewrite-it-in-Rust experiment.
 $ git clone https://github.com/badlydrawnrod/arviss_execute
 ```
 
-- Perform a releae build
+- Perform a release build
 
 ```
 $ cd arviss_execute
