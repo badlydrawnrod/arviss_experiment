@@ -471,7 +471,7 @@ impl DecodeRv32f for Disassembler {
     }
 
     fn fclass_s(&mut self, rd: Reg, rs1: Reg) -> Self::Item {
-        format!("fmv.x.w {}, {}", abi(rd), fabi(rs1))
+        format!("fclass.s {}, {}", abi(rd), fabi(rs1))
     }
 
     fn fsgnj_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
