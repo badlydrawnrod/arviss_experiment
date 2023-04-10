@@ -1,12 +1,6 @@
 pub type Address = u32;
 
-#[derive(Debug)]
-pub enum BusCode {
-    LoadAccessFault,
-    StoreAccessFault,
-}
-
-pub type MemoryResult<T> = Result<T, BusCode>;
+pub type MemoryResult<T> = Result<T, Address>;
 
 // Memory access is a trait.
 pub trait Mem {
@@ -60,21 +54,23 @@ impl Loader for BasicMem {
             dst.copy_from_slice(bytes);
             return Ok(());
         }
-        Err(BusCode::StoreAccessFault)
+        Err(start as u32)
     }
 }
 
 impl Mem for BasicMem {
+    #[inline]
     fn read8(&self, address: Address) -> MemoryResult<u8> {
         if (MEMBASE..MEMBASE + MEMSIZE).contains(&address) {
             Ok(self.mem[(address - MEMBASE) as usize])
         } else if address == TTY_STATUS {
             Ok(1)
         } else {
-            Err(BusCode::LoadAccessFault)
+            Err(address)
         }
     }
 
+    #[inline]
     fn read16(&self, address: Address) -> MemoryResult<u16> {
         if (MEMBASE..MEMBASE + MEMSIZE - 1).contains(&address) {
             let addr = (address - MEMBASE) as usize;
@@ -83,9 +79,10 @@ impl Mem for BasicMem {
                 return Ok(result);
             }
         }
-        Err(BusCode::LoadAccessFault)
+        Err(address)
     }
 
+    #[inline]
     fn read32(&self, address: Address) -> MemoryResult<u32> {
         if (MEMBASE..MEMBASE + MEMSIZE - 3).contains(&address) {
             let addr = (address - MEMBASE) as usize;
@@ -94,9 +91,10 @@ impl Mem for BasicMem {
                 return Ok(result);
             }
         }
-        Err(BusCode::LoadAccessFault)
+        Err(address)
     }
 
+    #[inline]
     fn write8(&mut self, address: Address, byte: u8) -> MemoryResult<()> {
         if (RAMBASE..RAMBASE + RAMSIZE).contains(&address) {
             let addr = (address - MEMBASE) as usize;
@@ -106,10 +104,11 @@ impl Mem for BasicMem {
             print!("{}", byte as char);
             Ok(())
         } else {
-            Err(BusCode::StoreAccessFault)
+            Err(address)
         }
     }
 
+    #[inline]
     fn write16(&mut self, address: Address, half_word: u16) -> MemoryResult<()> {
         if (RAMBASE..RAMBASE + RAMSIZE - 1).contains(&address) {
             let addr = (address - MEMBASE) as usize;
@@ -118,9 +117,10 @@ impl Mem for BasicMem {
             self.mem[addr + 1] = bytes[1];
             return Ok(());
         }
-        Err(BusCode::StoreAccessFault)
+        Err(address)
     }
 
+    #[inline]
     fn write32(&mut self, address: Address, word: u32) -> MemoryResult<()> {
         if (RAMBASE..RAMBASE + RAMSIZE - 3).contains(&address) {
             let addr = (address - MEMBASE) as usize;
@@ -131,7 +131,7 @@ impl Mem for BasicMem {
             self.mem[addr + 3] = bytes[3];
             return Ok(());
         }
-        Err(BusCode::StoreAccessFault)
+        Err(address)
     }
 }
 

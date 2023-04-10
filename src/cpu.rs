@@ -1,26 +1,21 @@
 use super::{
-    cpu_types::{Address, CoreCpu, Xreg},
-    memory::{BasicMem, Mem, MemoryResult},
+    cpu_types::{CoreCpu, Xreg},
+    memory::{Address, BasicMem, Mem, MemoryResult},
     tobits::Reg,
-    trap_handler::{BasicTrapHandler, TrapCause, TrapHandler},
+    trap_handler::{TrapCause, TrapHandler},
 };
 
-pub struct DummyTrapHandler;
-
-impl TrapHandler for std::marker::PhantomData<DummyTrapHandler> {
-    fn handle_trap(&self, _cause: TrapCause) {}
-
-    fn handle_ecall(&self) {}
-
-    fn handle_ebreak(&self) {}
+#[derive(Default, Clone, Copy)]
+pub struct TrapState {
+    cause: Option<TrapCause>,
 }
 
-pub struct Rv32iCpu<M, T = std::marker::PhantomData<DummyTrapHandler>> {
-    pc: u32,         // The program counter.
-    next_pc: u32,    // The program counter for the next instruction.
-    xreg: [u32; 32], // Regular registers, x0-x31.
-    mem: M,          // Memory.
-    trap_handler: T, // Trap handler.
+pub struct Rv32iCpu<M> {
+    pc: u32,               // The program counter.
+    next_pc: u32,          // The program counter for the next instruction.
+    xreg: [u32; 32],       // Regular registers, x0-x31.
+    mem: M,                // Memory.
+    trap_state: TrapState, // The current trap state.
 }
 
 impl Default for Rv32iCpu<BasicMem> {
@@ -40,37 +35,14 @@ impl Rv32iCpu<BasicMem> {
             next_pc: 0,
             xreg: Default::default(),
             mem,
-            trap_handler: std::marker::PhantomData::<DummyTrapHandler>,
+            trap_state: Default::default(),
         }
     }
 }
 
-impl Default for Rv32iCpu<BasicMem, BasicTrapHandler> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl Rv32iCpu<BasicMem, BasicTrapHandler> {
-    pub fn new() -> Self {
-        Self::with_mem(BasicMem::new())
-    }
-
-    pub fn with_mem(mem: BasicMem) -> Self {
-        Self {
-            pc: 0,
-            next_pc: 0,
-            xreg: Default::default(),
-            mem,
-            trap_handler: BasicTrapHandler::new(),
-        }
-    }
-}
-
-impl<M, T> CoreCpu for Rv32iCpu<M, T>
+impl<M> CoreCpu for Rv32iCpu<M>
 where
     M: Mem,
-    T: TrapHandler,
 {
     fn get_pc(&self) -> Address {
         self.pc
@@ -120,16 +92,11 @@ where
     fn write32(&mut self, address: Address, value: u32) -> MemoryResult<()> {
         self.mem.write32(address, value)
     }
-
-    fn handle_trap(&mut self, cause: TrapCause) {
-        self.trap_handler.handle_trap(cause)
-    }
 }
 
-impl<M, T> Xreg for Rv32iCpu<M, T>
+impl<M> Xreg for Rv32iCpu<M>
 where
     M: Mem,
-    T: TrapHandler,
 {
     fn rx(&self, reg: Reg) -> u32 {
         let index: usize = Into::into(reg);
@@ -140,5 +107,22 @@ where
         let index: usize = Into::into(reg);
         self.xreg[index] = val;
         self.xreg[0] = 0;
+    }
+}
+
+impl<M> TrapHandler for Rv32iCpu<M>
+where
+    M: Mem,
+{
+    fn trap_cause(&self) -> Option<TrapCause> {
+        self.trap_state.cause
+    }
+
+    fn clear_trap(&mut self) {
+        self.trap_state.cause = None
+    }
+
+    fn handle_trap(&mut self, cause: TrapCause) {
+        self.trap_state.cause = Some(cause);
     }
 }

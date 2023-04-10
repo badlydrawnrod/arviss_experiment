@@ -3,10 +3,15 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 
-use arviss_experiment::{BasicMem, CoreCpu, Disassembler, Loader, Rv32iCpu, Rv32imcDecoder};
+use arviss_experiment::{
+    BasicMem, CoreCpu, Disassembler, Loader, Rv32iCpu, Rv32iDecoder, TrapCause, TrapHandler,
+};
 
-const EBREAK: u32 = 0x00_10_00_73;
-const C_EBREAK: u32 = 0x9002;
+// A shim that makes it easy to change decoders.
+#[inline]
+fn decode<T>(decoder: &mut impl Rv32iDecoder<Item = T>, code: u32) -> T {
+    decoder.decode_rv32i(code)
+}
 
 pub fn main() -> io::Result<()> {
     let args = env::args().collect::<Vec<_>>();
@@ -38,21 +43,24 @@ pub fn main() -> io::Result<()> {
     if disassemble {
         println!("pc       (pc)     Code");
     }
-    loop {
+    while !cpu.is_trapped() {
         // Fetch.
         let ins = cpu.fetch().unwrap();
 
         // Disassemble if the user asked for it.
         if disassemble {
-            let result = disassembler.decode_rv32imc(ins);
+            let result = decode(&mut disassembler, ins);
             println!("{:08x} {:08x} {}", cpu.get_pc(), ins, result);
-        }
-        if ins == EBREAK || ins == C_EBREAK {
-            break;
         }
 
         // Decode and execute
-        cpu.decode_rv32imc(ins);
+        decode(&mut cpu, ins);
+    }
+
+    match cpu.trap_cause() {
+        Some(TrapCause::Breakpoint) => {}
+        Some(cause) => println!("{:?} at 0x{:08x}", cause, cpu.get_pc()),
+        None => {}
     }
 
     Ok(())
