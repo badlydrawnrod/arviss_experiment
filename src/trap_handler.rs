@@ -31,17 +31,17 @@ pub trait TrapHandler {
 
     fn clear_trap(&mut self);
 
-    fn handle_trap(&mut self, cause: TrapCause);
+    fn handle_trap(&mut self, cause: TrapCause, value: u32);
 
     fn is_trapped(&self) -> bool {
         self.trap_cause().is_some()
     }
 
     fn handle_ecall(&mut self) {
-        self.handle_trap(TrapCause::EnvironmentCallFromMMode)
+        self.handle_trap(TrapCause::EnvironmentCallFromMMode, 0)
     }
 
     fn handle_ebreak(&mut self) {
-        self.handle_trap(TrapCause::Breakpoint)
+        self.handle_trap(TrapCause::Breakpoint, 0)
     }
 }

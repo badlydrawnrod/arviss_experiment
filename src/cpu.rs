@@ -122,7 +122,7 @@ where
         self.trap_state.cause = None
     }
 
-    fn handle_trap(&mut self, cause: TrapCause) {
+    fn handle_trap(&mut self, cause: TrapCause, _value: u32) {
         self.trap_state.cause = Some(cause);
     }
 }

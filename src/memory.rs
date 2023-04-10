@@ -1,12 +1,6 @@
 pub type Address = u32;
 
-#[derive(Debug)]
-pub enum BusCode {
-    LoadAccessFault,
-    StoreAccessFault,
-}
-
-pub type MemoryResult<T> = Result<T, BusCode>;
+pub type MemoryResult<T> = Result<T, Address>;
 
 // Memory access is a trait.
 pub trait Mem {
@@ -60,7 +54,7 @@ impl Loader for BasicMem {
             dst.copy_from_slice(bytes);
             return Ok(());
         }
-        Err(BusCode::StoreAccessFault)
+        Err(start as u32)
     }
 }
 
@@ -71,7 +65,7 @@ impl Mem for BasicMem {
         } else if address == TTY_STATUS {
             Ok(1)
         } else {
-            Err(BusCode::LoadAccessFault)
+            Err(address)
         }
     }
 
@@ -83,7 +77,7 @@ impl Mem for BasicMem {
                 return Ok(result);
             }
         }
-        Err(BusCode::LoadAccessFault)
+        Err(address)
     }
 
     fn read32(&self, address: Address) -> MemoryResult<u32> {
@@ -94,7 +88,7 @@ impl Mem for BasicMem {
                 return Ok(result);
             }
         }
-        Err(BusCode::LoadAccessFault)
+        Err(address)
     }
 
     fn write8(&mut self, address: Address, byte: u8) -> MemoryResult<()> {
@@ -106,7 +100,7 @@ impl Mem for BasicMem {
             print!("{}", byte as char);
             Ok(())
         } else {
-            Err(BusCode::StoreAccessFault)
+            Err(address)
         }
     }
 
@@ -118,7 +112,7 @@ impl Mem for BasicMem {
             self.mem[addr + 1] = bytes[1];
             return Ok(());
         }
-        Err(BusCode::StoreAccessFault)
+        Err(address)
     }
 
     fn write32(&mut self, address: Address, word: u32) -> MemoryResult<()> {
@@ -131,7 +125,7 @@ impl Mem for BasicMem {
             self.mem[addr + 3] = bytes[3];
             return Ok(());
         }
-        Err(BusCode::StoreAccessFault)
+        Err(address)
     }
 }
 
