@@ -7,6 +7,12 @@ use arviss_experiment::{
     BasicMem, CoreCpu, Disassembler, Loader, Rv32iCpu, Rv32iDecoder, TrapCause, TrapHandler,
 };
 
+// A shim that makes it easy to change decoders.
+#[inline]
+fn decode<T>(decoder: &mut impl Rv32iDecoder<Item = T>, code: u32) -> T {
+    decoder.decode_rv32i(code)
+}
+
 pub fn main() -> io::Result<()> {
     let args = env::args().collect::<Vec<_>>();
     let (disassemble, filename) = match args.len() {
@@ -43,12 +49,12 @@ pub fn main() -> io::Result<()> {
 
         // Disassemble if the user asked for it.
         if disassemble {
-            let result = disassembler.decode_rv32i(ins);
+            let result = decode(&mut disassembler, ins);
             println!("{:08x} {:08x} {}", cpu.get_pc(), ins, result);
         }
 
         // Decode and execute
-        cpu.decode_rv32i(ins);
+        decode(&mut cpu, ins);
     }
 
     match cpu.trap_cause() {
