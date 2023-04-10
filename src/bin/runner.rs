@@ -46,7 +46,6 @@ pub fn main() -> io::Result<()> {
         if disassemble {
             let result = disassembler.decode_rv32imc(ins);
             println!("{:08x} {:08x} {}", cpu.get_pc(), ins, result);
-            // println!("{:08x} {:08x}", cpu.get_pc(), ins);
         }
         if ins == EBREAK || ins == C_EBREAK {
             break;
