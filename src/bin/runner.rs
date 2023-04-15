@@ -4,13 +4,13 @@ use std::io;
 use std::io::prelude::*;
 
 use arviss_experiment::{
-    BasicMem, CoreCpu, Disassembler, Loader, Rv32iCpu, Rv32iDecoder, TrapCause, TrapHandler,
+    BasicMem, CoreCpu, Disassembler, Loader, Rv32iCpu, Rv32iDispatcher, TrapCause, TrapHandler,
 };
 
-// A shim that makes it easy to change decoders.
+// A shim that makes it easy to change dispatchers.
 #[inline]
-fn decode<T>(decoder: &mut impl Rv32iDecoder<Item = T>, code: u32) -> T {
-    decoder.decode_rv32i(code)
+fn dispatch<T>(dispatcher: &mut impl Rv32iDispatcher<Item = T>, code: u32) -> T {
+    dispatcher.dispatch_rv32i(code)
 }
 
 pub fn main() -> io::Result<()> {
@@ -49,12 +49,12 @@ pub fn main() -> io::Result<()> {
 
         // Disassemble if the user asked for it.
         if disassemble {
-            let result = decode(&mut disassembler, ins);
+            let result = dispatch(&mut disassembler, ins);
             println!("{:08x} {:08x} {}", cpu.get_pc(), ins, result);
         }
 
-        // Decode and execute
-        decode(&mut cpu, ins);
+        // Decode and dispatch.
+        dispatch(&mut cpu, ins);
     }
 
     match cpu.trap_cause() {

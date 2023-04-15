@@ -1,4 +1,4 @@
-use super::{tobits::Reg, DecodeRv32c, DecodeRv32f, DecodeRv32i, DecodeRv32m};
+use super::{tobits::Reg, Rv32c, Rv32f, Rv32i, Rv32m};
 
 pub struct Disassembler;
 
@@ -30,7 +30,7 @@ fn fabi(reg: Reg) -> &'static str {
     }
 }
 
-impl DecodeRv32i for Disassembler {
+impl Rv32i for Disassembler {
     type Item = String;
 
     fn illegal(&mut self, ins: u32) -> Self::Item {
@@ -198,7 +198,7 @@ impl DecodeRv32i for Disassembler {
     }
 }
 
-impl DecodeRv32m for Disassembler {
+impl Rv32m for Disassembler {
     type Item = String;
 
     fn mul(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
@@ -234,7 +234,7 @@ impl DecodeRv32m for Disassembler {
     }
 }
 
-impl DecodeRv32c for Disassembler {
+impl Rv32c for Disassembler {
     type Item = String;
 
     fn c_addi4spn(&mut self, rdp: Reg, imm: u32) -> Self::Item {
@@ -371,7 +371,7 @@ impl DecodeRv32c for Disassembler {
     }
 }
 
-impl DecodeRv32f for Disassembler {
+impl Rv32f for Disassembler {
     type Item = String;
 
     fn flw(&mut self, rd: Reg, rs1: Reg, iimm: u32) -> Self::Item {

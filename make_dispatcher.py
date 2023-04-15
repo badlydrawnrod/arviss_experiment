@@ -278,7 +278,7 @@ def generate_naive_code(specs: List[Spec]):
         )
         operator = spec.operator.replace(".", "_")
         operands = lut.get(" ".join(spec.operands), "()")
-        expression = f"if {condition} {{ return decoder.{operator}{operands} }}"
+        expression = f"if {condition} {{ return self.{operator}{operands} }}"
         print(expression)
 
 
@@ -302,7 +302,7 @@ def count_bits(patterns: List[Tuple]) -> int:
 
 
 def generate_matching_code(specs: List[Spec]):
-    """Generates a decoder that uses Rust match expressions."""
+    """Generates a dispatcher that uses Rust match expressions."""
     all_patterns = dict()
     for spec in specs:
         patterns = tuple((pattern.hi, pattern.lo) for pattern in spec.patterns)
@@ -321,7 +321,7 @@ def generate_matching_code(specs: List[Spec]):
             match_condition = ", ".join(str(n) for n in value)
             operator = operator.replace(".", "_")
             operands = lut.get(" ".join(operands), "()")
-            print(f"({match_condition}) => return decoder.{operator}{operands},")
+            print(f"({match_condition}) => return self.{operator}{operands},")
         print("_ => {}")
         print("}")
 
@@ -342,11 +342,11 @@ def make_bitpattern(bits, values) -> int:
 
 
 def generate_bitmask_code(specs: List[Spec], extensions: str):
-    """Generates a decoder that uses Rust match expressions based on bitmasks."""
+    """Generates a dispatcher that uses Rust match expressions based on bitmasks."""
 
     command_line = " ".join(sys.argv[0:])
-    trait_name = f"Rv32{extensions}Decoder"
-    function_name = f"decode_rv32{extensions}"
+    trait_name = f"Rv32{extensions}Dispatcher"
+    function_name = f"dispatch_rv32{extensions}"
 
     patterns = "\n        + ".join(f"DecodeRv32{x}\n        + DecodeRv32{x}<Item = U>" for x in extensions)
     preamble = f"""\
@@ -407,7 +407,7 @@ where
 
 
 def parse_command_line():
-    parser = argparse.ArgumentParser(description="Generate a RISC-V decoder for the RV32I base ISA plus extensions.")
+    parser = argparse.ArgumentParser(description="Generate a RISC-V instruction dispatcher for the RV32I base ISA plus extensions.")
     parser.add_argument("-c", dest="extensions", help="Enable the 'C' extension", action="append_const", const="c")
     parser.add_argument("-f", dest="extensions", help="Enable the 'F' extension", action="append_const", const="f")
     parser.add_argument("-m", dest="extensions", help="Enable the 'M' extension", action="append_const", const="m")
@@ -422,14 +422,14 @@ def parse_command_line():
 if __name__ == "__main__":
     args = parse_command_line()
 
-    decoders = dict(
+    dispatchers = dict(
         i=rv32i,
         c=rv32c,
         f=rv32f,
         m=rv32m,
     )
 
-    opcodes_to_parse = "\n".join(decoders[x] for x in args.extensions)
+    opcodes_to_parse = "\n".join(dispatchers[x] for x in args.extensions)
 
     specs = parse(opcodes_to_parse)
     # generate_naive_code(specs)

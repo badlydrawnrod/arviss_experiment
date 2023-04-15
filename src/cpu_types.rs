@@ -56,7 +56,7 @@ pub trait Freg {
 }
 
 /// Implements the functions of the base RV32I ISA.
-pub trait DecodeRv32i {
+pub trait Rv32i {
     type Item;
 
     // Illegal instruction.
@@ -121,7 +121,7 @@ pub trait DecodeRv32i {
     fn ebreak(&mut self) -> Self::Item;
 }
 
-impl<T> DecodeRv32i for T
+impl<T> Rv32i for T
 where
     T: CoreCpu + TrapHandler + Xreg,
 {
@@ -418,7 +418,7 @@ where
     }
 }
 
-pub trait DecodeRv32m {
+pub trait Rv32m {
     type Item;
 
     fn mul(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item;
@@ -431,7 +431,7 @@ pub trait DecodeRv32m {
     fn remu(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item;
 }
 
-impl<T> DecodeRv32m for T
+impl<T> Rv32m for T
 where
     T: CoreCpu + Xreg,
 {
@@ -528,7 +528,7 @@ where
     }
 }
 
-pub trait DecodeRv32c {
+pub trait Rv32c {
     type Item;
 
     fn c_addi4spn(&mut self, rdp: Reg, imm: u32) -> Self::Item;
@@ -560,9 +560,9 @@ pub trait DecodeRv32c {
     fn c_slli(&mut self, rdrs1n0: Reg, imm: u32) -> Self::Item;
 }
 
-impl<T> DecodeRv32c for T
+impl<T> Rv32c for T
 where
-    T: CoreCpu + Xreg + DecodeRv32i,
+    T: CoreCpu + Xreg + Rv32i,
 {
     type Item = ();
 
@@ -700,7 +700,7 @@ where
     }
 }
 
-pub trait DecodeRv32f {
+pub trait Rv32f {
     type Item;
 
     // I-type instructions.
@@ -744,7 +744,7 @@ pub trait DecodeRv32f {
     fn feq_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item;
 }
 
-impl<T> DecodeRv32f for T
+impl<T> Rv32f for T
 where
     T: CoreCpu + TrapHandler + Xreg + Freg,
 {
