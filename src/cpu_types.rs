@@ -2,30 +2,60 @@ use crate::{Address, TrapHandler};
 
 use super::{memory::MemoryResult, tobits::Reg, trap_handler::TrapCause};
 
+/// [CoreCpu] represents the basic operations of a CPU that don't involve registers.
+///
+/// A [CoreCpu] provides an abstraction over the basic CPU operations that don't involve general purpose registers,
+/// such as reading and updating the program counter, fetching the next instruction, and reading from and writing to
+/// memory.
 pub trait CoreCpu {
+    /// Returns the current value of the program counter.
     fn get_pc(&self) -> Address;
+
+    /// Sets the program counter to the value last set by `set_next_pc`, retrieves the instruction at the memory address
+    /// in the program counter, then sets next pc to the address of the next instruction.
     fn fetch(&mut self) -> MemoryResult<u32>;
+
+    /// Sets the value of next_pc, the address that's copied into the program counter when `fetch` is called.
     fn set_next_pc(&mut self, address: Address);
 
+    /// Reads a byte from memory.
     fn read8(&self, address: Address) -> MemoryResult<u8>;
+
+    /// Reads a 16-bit half-word from memory.
     fn read16(&self, address: Address) -> MemoryResult<u16>;
+
+    /// Reads a 32-bit word from memory.
     fn read32(&self, address: Address) -> MemoryResult<u32>;
 
+    /// Writes a byte to memory.
     fn write8(&mut self, address: Address, value: u8) -> MemoryResult<()>;
+
+    /// Writes a 16-bit half word to memory.
     fn write16(&mut self, address: Address, value: u16) -> MemoryResult<()>;
+
+    /// Writes a 32-bit word to memory.
     fn write32(&mut self, address: Address, value: u32) -> MemoryResult<()>;
 }
 
+/// [Xreg] represents access to the base RV32I integer registers.
 pub trait Xreg {
+    /// Returns the value in the given integer register.
     fn rx(&self, reg: Reg) -> u32;
+
+    /// Writes a value to the given integer register.
     fn wx(&mut self, reg: Reg, val: u32);
 }
 
+/// [Freg] represents access to the single-precision floating point registers used by the 'F' extension.
 pub trait Freg {
+    /// Returns the value in the given floating point register.
     fn rf(&self, reg: Reg) -> f32;
+
+    /// Writes a value to the given floating point register.
     fn wf(&mut self, reg: Reg, val: f32);
 }
 
+/// Implements the functions of the base RV32I ISA.
 pub trait DecodeRv32i {
     type Item;
 
