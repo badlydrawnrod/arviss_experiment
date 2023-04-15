@@ -55,7 +55,7 @@ pub trait Freg {
     fn wf(&mut self, reg: Reg, val: f32);
 }
 
-/// Implements the functions of the base RV32I ISA.
+/// Implements the instructions from the base RV32I ISA.
 pub trait Rv32i {
     type Item;
 
@@ -418,6 +418,7 @@ where
     }
 }
 
+/// Implements the instructions from the 'M' extension for integer multiplication and division.
 pub trait Rv32m {
     type Item;
 
@@ -528,6 +529,7 @@ where
     }
 }
 
+/// Implements the instructions from the 'C' extension for compressed instructions.
 pub trait Rv32c {
     type Item;
 
@@ -700,6 +702,7 @@ where
     }
 }
 
+/// Implements the instructions from the 'F' extension for single-precision floating point.
 pub trait Rv32f {
     type Item;
 
