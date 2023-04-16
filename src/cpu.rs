@@ -48,21 +48,9 @@ where
         self.pc
     }
 
-    fn fetch(&mut self) -> MemoryResult<u32> {
+    fn transfer(&mut self) -> Address {
         self.pc = self.next_pc;
-        match self.mem.read32(self.pc) {
-            Ok(ins) if (ins & 0b11) == 0b11 => {
-                // 32-bit instruction.
-                self.next_pc = self.pc.wrapping_add(4);
-                Ok(ins)
-            }
-            Ok(ins) => {
-                // 16-bit instruction.
-                self.next_pc = self.pc.wrapping_add(2);
-                Ok(ins & 0xffff)
-            }
-            Err(e) => Err(e),
-        }
+        self.pc
     }
 
     fn set_next_pc(&mut self, address: Address) {
