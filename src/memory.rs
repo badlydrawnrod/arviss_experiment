@@ -4,11 +4,22 @@ pub type MemoryResult<T> = Result<T, Address>;
 
 /// Memory access as a trait.
 pub trait Mem {
+    /// Reads a byte from memory.
     fn read8(&self, address: Address) -> MemoryResult<u8>;
+
+    /// Reads a 16-bit half-word from memory.
     fn read16(&self, address: Address) -> MemoryResult<u16>;
+
+    /// Reads a 32-bit word from memory.
     fn read32(&self, address: Address) -> MemoryResult<u32>;
+
+    /// Writes a byte to memory.
     fn write8(&mut self, address: Address, byte: u8) -> MemoryResult<()>;
+
+    /// Writes a 16-bit half word to memory.
     fn write16(&mut self, address: Address, half_word: u16) -> MemoryResult<()>;
+    
+    /// Writes a 32-bit word to memory.
     fn write32(&mut self, address: Address, word: u32) -> MemoryResult<()>;
 }
 
@@ -22,6 +33,9 @@ const TTY_STATUS: Address = MEMBASE + MEMSIZE;
 const TTY_DATA: Address = TTY_STATUS + 1;
 
 /// A very simple memory implementation.
+/// 
+/// A very basic implementation of memory. The first 16K is ROM. The next 16K is RAM. Then there's a tty status register
+/// and a tty data register.
 ///
 /// The address space has the following layout.
 ///
@@ -58,6 +72,7 @@ impl BasicMem {
 
 /// Loads data into memory.
 pub trait Loader {
+    /// Loads a slice of bytes into memory starting at the given address.
     fn write_bytes(&mut self, start: Address, bytes: &[u8]) -> MemoryResult<()>;
 }
 
