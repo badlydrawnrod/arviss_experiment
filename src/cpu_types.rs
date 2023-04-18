@@ -1,3 +1,5 @@
+//! Core traits used to implement RISC-V CPUs.
+
 use crate::{Address, TrapHandler};
 
 use super::{memory::MemoryResult, tobits::Reg, trap_handler::TrapCause};

@@ -1,4 +1,6 @@
-use crate::memory::Address;
+//! Trap handling.
+
+use crate::Address;
 
 #[derive(Debug, Clone, Copy)]
 pub enum TrapCause {

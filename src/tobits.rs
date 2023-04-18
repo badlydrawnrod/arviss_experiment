@@ -1,5 +1,6 @@
-pub struct ToBits(pub u32);
+//! Bit manipulation.
 
+/// A RISC-V register index.
 #[derive(Copy, Clone)]
 pub struct Reg(u32);
 
@@ -8,8 +9,8 @@ impl Reg {
     pub const RA: Reg = Reg(1);
     pub const SP: Reg = Reg(2);
 
-    // Gp,
-    // Tp,
+    // GP,
+    // TP,
     // T0,
     // T1,
     // T2,
@@ -58,82 +59,6 @@ impl From<Reg> for usize {
     }
 }
 
-// // We know that there are 32 registers. The Rust compiler doesn't, but if we convert to this type then it renders
-// // bounds checking unnecessary when accesing registers.
-// #[derive(Clone, Copy, Debug)]
-// pub enum Reg {
-//     Zero,
-//     Ra,
-//     Sp,
-//     Gp,
-//     Tp,
-//     T0,
-//     T1,
-//     T2,
-//     S0,
-//     S1,
-//     A0,
-//     A1,
-//     A2,
-//     A3,
-//     A4,
-//     A5,
-//     A6,
-//     A7,
-//     S2,
-//     S3,
-//     S4,
-//     S5,
-//     S6,
-//     S7,
-//     S8,
-//     S9,
-//     S10,
-//     S11,
-//     T3,
-//     T4,
-//     T5,
-//     T6,
-// }
-
-// fn to_reg(r: u32) -> Reg {
-//     match r {
-//         0 => Reg::Zero,
-//         1 => Reg::Ra,
-//         2 => Reg::Sp,
-//         3 => Reg::Gp,
-//         4 => Reg::Tp,
-//         5 => Reg::T0,
-//         6 => Reg::T1,
-//         7 => Reg::T2,
-//         8 => Reg::S0,
-//         9 => Reg::S1,
-//         10 => Reg::A0,
-//         11 => Reg::A1,
-//         12 => Reg::A2,
-//         13 => Reg::A3,
-//         14 => Reg::A4,
-//         15 => Reg::A5,
-//         16 => Reg::A6,
-//         17 => Reg::A7,
-//         18 => Reg::S2,
-//         19 => Reg::S3,
-//         20 => Reg::S4,
-//         21 => Reg::S5,
-//         22 => Reg::S6,
-//         23 => Reg::S7,
-//         24 => Reg::S8,
-//         25 => Reg::S9,
-//         26 => Reg::S10,
-//         27 => Reg::S11,
-//         28 => Reg::T3,
-//         29 => Reg::T4,
-//         30 => Reg::T5,
-//         31 => Reg::T6,
-//         _ => unreachable!(),
-//     }
-// }
-
 #[inline]
 fn creg(r: u32) -> Reg {
     Reg::new(8 + r)
@@ -144,6 +69,9 @@ fn sext(n: u32, top_bit: i32) -> u32 {
     let shift = 31 - top_bit;
     (((n << shift) as i32) >> shift) as u32
 }
+
+/// A handy wrapper around an instruction that enables easy decoding.
+pub struct ToBits(pub u32);
 
 impl ToBits {
     #[inline]

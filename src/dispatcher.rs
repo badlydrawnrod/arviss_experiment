@@ -1,3 +1,5 @@
+//! Traits that decode RISC-V instructions and dispatch them to handlers.
+
 use super::{
     cpu_types::{Rv32c, Rv32f, Rv32i, Rv32m},
     tobits::ToBits,

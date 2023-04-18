@@ -11,18 +11,20 @@
 //! - the 'C' standard extension for compressed instructions
 //!
 
+pub mod basic_mem;
 pub mod cpu;
 pub mod cpu_types;
-pub mod dispatcher;
 pub mod disassembler;
+pub mod dispatcher;
 pub mod memory;
 pub mod tobits;
 pub mod trap_handler;
 
+pub use self::basic_mem::*;
 pub use self::cpu::*;
 pub use self::cpu_types::*;
-pub use self::dispatcher::*;
 pub use self::disassembler::*;
+pub use self::dispatcher::*;
 pub use self::memory::*;
 pub use self::tobits::*;
 pub use self::trap_handler::*;

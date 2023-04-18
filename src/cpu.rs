@@ -1,9 +1,12 @@
+//! CPU implementations.
+
 use super::{
     cpu_types::{CoreCpu, Xreg},
-    memory::{Address, BasicMem, Mem, MemoryResult},
+    memory::{Address, Mem, MemoryResult},
     tobits::Reg,
     trap_handler::{TrapCause, TrapHandler},
 };
+use crate::BasicMem;
 
 #[derive(Default, Clone, Copy)]
 pub struct TrapState {
