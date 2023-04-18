@@ -2,7 +2,7 @@ pub type Address = u32;
 
 pub type MemoryResult<T> = Result<T, Address>;
 
-// Memory access is a trait.
+/// Memory access as a trait.
 pub trait Mem {
     fn read8(&self, address: Address) -> MemoryResult<u8>;
     fn read16(&self, address: Address) -> MemoryResult<u16>;
@@ -21,6 +21,23 @@ const RAMSIZE: Address = 0x4000;
 const TTY_STATUS: Address = MEMBASE + MEMSIZE;
 const TTY_DATA: Address = TTY_STATUS + 1;
 
+/// A very simple memory implementation.
+///
+/// The address space has the following layout.
+///
+/// |  Start |    End | Usage |
+/// |--------|--------|-------|
+/// | 0x0000 | 0x3fff | ROM   |
+/// | 0x4000 | 0x7fff | RAM   |
+/// | 0x8000 | 0x8001 | I/O   |
+///
+/// Where:
+///
+/// | Address | Usage | Access |
+/// |---------|-------|--------|
+/// |  0x8000 | TTY status | R/O |
+/// |  0x8001 | TTY data   | W/O |
+///
 pub struct BasicMem {
     mem: [u8; MEMSIZE as usize],
 }
@@ -39,6 +56,7 @@ impl BasicMem {
     }
 }
 
+/// Loads data into memory.
 pub trait Loader {
     fn write_bytes(&mut self, start: Address, bytes: &[u8]) -> MemoryResult<()>;
 }

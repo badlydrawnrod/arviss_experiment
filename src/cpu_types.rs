@@ -17,20 +17,20 @@ pub trait CoreCpu {
     /// Sets the program counter to `next_pc`, retrieves the instruction at the memory address in the program counter,
     /// then sets `next_pc` to the address of the next instruction. This can vary depending on instruction length.
     fn fetch(&mut self) -> MemoryResult<u32> {
-            let pc = self.transfer();
-            match self.read32(pc) {
-                Ok(ins) if (ins & 0b11) == 0b11 => {
-                    // 32-bit instruction.
-                    self.set_next_pc(pc.wrapping_add(4));
-                    Ok(ins)
-                }
-                Ok(ins) => {
-                    // 16-bit compressed instruction.
-                    self.set_next_pc(pc.wrapping_add(2));
-                    Ok(ins & 0xffff)
-                }
-                Err(e) => Err(e),
+        let pc = self.transfer();
+        match self.read32(pc) {
+            Ok(ins) if (ins & 0b11) == 0b11 => {
+                // 32-bit instruction.
+                self.set_next_pc(pc.wrapping_add(4));
+                Ok(ins)
             }
+            Ok(ins) => {
+                // 16-bit compressed instruction.
+                self.set_next_pc(pc.wrapping_add(2));
+                Ok(ins & 0xffff)
+            }
+            Err(e) => Err(e),
+        }
     }
 
     /// Sets the value of `next_pc`, the address that's copied into the program counter when `fetch` is called.

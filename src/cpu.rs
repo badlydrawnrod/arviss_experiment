@@ -10,6 +10,7 @@ pub struct TrapState {
     cause: Option<TrapCause>,
 }
 
+/// A basic RV32I CPU with integer registers but no floating point.
 pub struct Rv32iCpu<M> {
     pc: u32,               // The program counter.
     next_pc: u32,          // The program counter for the next instruction.
@@ -25,10 +26,12 @@ impl Default for Rv32iCpu<BasicMem> {
 }
 
 impl Rv32iCpu<BasicMem> {
+    /// Creates a new CPU.
     pub fn new() -> Self {
         Self::with_mem(BasicMem::new())
     }
 
+    /// Creates a new CPU with caller-supplied memory.
     pub fn with_mem(mem: BasicMem) -> Self {
         Self {
             pc: 0,
