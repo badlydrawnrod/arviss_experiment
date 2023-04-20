@@ -1,10 +1,12 @@
 //! CPU implementations.
 
-use crate::basic_mem::BasicMem;
-use crate::cpu_types::{CoreCpu, Xreg};
-use crate::memory::{Address, Mem, MemoryResult};
-use crate::tobits::Reg;
-use crate::trap_handler::{TrapCause, TrapHandler};
+use crate::{
+    basic_mem::BasicMem,
+    cpu_types::{CoreCpu, Xreg},
+    memory::{Address, Mem, MemoryResult},
+    tobits::Reg,
+    trap_handler::{TrapCause, TrapHandler},
+};
 
 #[derive(Default, Clone, Copy)]
 pub struct TrapState {

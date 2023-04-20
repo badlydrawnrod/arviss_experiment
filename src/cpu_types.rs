@@ -1,8 +1,10 @@
 //! Core traits used to implement RISC-V CPUs.
 
-use crate::memory::{Address, MemoryResult};
-use crate::tobits::Reg;
-use crate::trap_handler::{TrapCause, TrapHandler};
+use crate::{
+    memory::{Address, MemoryResult},
+    tobits::Reg,
+    trap_handler::{TrapCause, TrapHandler},
+};
 
 /// [CoreCpu] represents the basic operations of a CPU that don't involve registers.
 ///
