@@ -1,3 +1,5 @@
+//! # Arviss
+//!
 //! Arviss is ***A*** ***R***ISC-***V*** ***I***nstruction ***S***et ***S***imulator for 32-bit variants of the
 //! [RISC-V](https://en.wikipedia.org/wiki/RISC-V) instruction set architecture
 //! ([ISA](https://en.wikipedia.org/wiki/Instruction_set_architecture)).
@@ -19,5 +21,6 @@ pub mod cpu_types;
 pub mod disassembler;
 pub mod dispatcher;
 pub mod memory;
+pub mod reg;
 pub mod tobits;
 pub mod trap_handler;

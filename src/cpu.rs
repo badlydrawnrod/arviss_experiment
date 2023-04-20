@@ -4,7 +4,7 @@ use crate::{
     basic_mem::BasicMem,
     cpu_types::{CoreCpu, Xreg},
     memory::{Address, Mem, MemoryResult},
-    tobits::Reg,
+    reg::Reg,
     trap_handler::{TrapCause, TrapHandler},
 };
 

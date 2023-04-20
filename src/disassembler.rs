@@ -2,7 +2,7 @@
 
 use crate::{
     cpu_types::{Rv32c, Rv32f, Rv32i, Rv32m},
-    tobits::Reg,
+    reg::Reg,
 };
 
 pub struct Disassembler;

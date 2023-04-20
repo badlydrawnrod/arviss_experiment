@@ -2,7 +2,7 @@
 
 use crate::{
     memory::{Address, MemoryResult},
-    tobits::Reg,
+    reg::Reg,
     trap_handler::{TrapCause, TrapHandler},
 };
 
