@@ -3,9 +3,7 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 
-use arviss_experiment::{
-    BasicMem, CoreCpu, Disassembler, Loader, Rv32iCpu, Rv32iDispatcher, TrapCause, TrapHandler,
-};
+use arviss_experiment::prelude::*;
 
 // A shim that makes it easy to change dispatchers.
 #[inline]

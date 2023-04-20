@@ -1,6 +1,7 @@
 //! A disassembler.
 
-use super::{tobits::Reg, Rv32c, Rv32f, Rv32i, Rv32m};
+use crate::cpu_types::{Rv32c, Rv32f, Rv32i, Rv32m};
+use crate::tobits::Reg;
 
 pub struct Disassembler;
 

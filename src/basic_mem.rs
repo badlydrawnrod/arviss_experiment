@@ -1,6 +1,6 @@
 //! A very basic implementation of memory.
 
-use crate::{Address, Loader, Mem, MemoryResult};
+use crate::memory::{Address, Loader, Mem, MemoryResult};
 
 const MEMBASE: Address = 0;
 const MEMSIZE: Address = 0x8000;
@@ -143,8 +143,7 @@ impl Mem for BasicMem {
 
 #[cfg(test)]
 mod tests {
-    use super::{BasicMem, TTY_DATA};
-    use crate::Mem;
+    use super::{BasicMem, Mem, TTY_DATA};
 
     #[test]
     fn test_the_tty_is_writable() {
