@@ -1,7 +1,6 @@
-//! CPU implementations.
+//! An RV32I CPU with integer registers but not floating point.
 
 use crate::{
-    basic_mem::BasicMem,
     cpu_types::{CoreCpu, Xreg},
     memory::{Address, Mem, MemoryResult},
     reg::Reg,
@@ -9,12 +8,16 @@ use crate::{
 };
 
 #[derive(Default, Clone, Copy)]
+/// The current trap state of the CPU.
 pub struct TrapState {
     cause: Option<TrapCause>,
 }
 
 /// A basic RV32I CPU with integer registers but no floating point.
-pub struct Rv32iCpu<M> {
+pub struct Rv32iCpu<M>
+where
+    M: Mem,
+{
     pc: u32,               // The program counter.
     next_pc: u32,          // The program counter for the next instruction.
     xreg: [u32; 32],       // Regular registers, x0-x31.
@@ -22,20 +25,12 @@ pub struct Rv32iCpu<M> {
     trap_state: TrapState, // The current trap state.
 }
 
-impl Default for Rv32iCpu<BasicMem> {
-    fn default() -> Self {
-        Self::new()
-    }
-}
-
-impl Rv32iCpu<BasicMem> {
-    /// Creates a new CPU.
-    pub fn new() -> Self {
-        Self::with_mem(BasicMem::new())
-    }
-
+impl<M> Rv32iCpu<M>
+where
+    M: Mem,
+{
     /// Creates a new CPU with caller-supplied memory.
-    pub fn with_mem(mem: BasicMem) -> Self {
+    pub fn with_mem(mem: M) -> Self {
         Self {
             pc: 0,
             next_pc: 0,

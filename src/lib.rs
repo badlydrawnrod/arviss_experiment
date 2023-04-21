@@ -16,11 +16,12 @@
 pub mod prelude;
 
 pub mod basic_mem;
-pub mod cpu;
+pub mod cpu_basic_mem;
 pub mod cpu_types;
 pub mod disassembler;
 pub mod dispatcher;
 pub mod memory;
 pub mod reg;
+pub mod rv32icpu;
 pub mod tobits;
 pub mod trap_handler;
