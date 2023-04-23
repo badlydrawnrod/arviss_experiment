@@ -14,29 +14,89 @@
 //!
 //!
 //! ## Examples
-//! This example uses the [`basic_mem::BasicMem`] memory map with an [`rv32icpu::Rv32iCpu`]. It fetches instructions
-//! from memory and dispatches them with [`dispatcher::Rv32iDispatcher`] which is implemented for [`cpu_types::Rv32i`].
-//! It does this until the CPU hits a trap.
-//! ```rust
+//! This example loads a binary RV32I image into simulator memory then executes it.
+//!
+//! To do this, it loads the data from an image and uses it to populate a [`profiles::basic::BasicMem`] memory
+//! implementation. It then creates an [`rv32icpu::Rv32iCpu`] using that memory, then executes instructions from that
+//! memory by fetching them then dispatching them with [`dispatcher::Rv32iDispatcher`] which is implemented for
+//! [`cpu_types::Rv32i`].
+//!
+//! It does this until the CPU hits a trap, which it will do when it reaches an `ebreak`.
+//!
+//! If you run this example it should output "Hello, world from Rust!" multiple times.
+//!
+//! ```
+//! use std::fs::File;
+//! use std::io::prelude::*;
+//!
 //! use arviss_experiment::prelude::*;
-//! use arviss_experiment::basic_mem::BasicMem;
+//! use arviss_experiment::profiles::basic::BasicMem;
 //! use arviss_experiment::rv32icpu::Rv32iCpu;
 //!
+//! // Load an RV32I image into a buffer.
+//! let mut f = File::open("images/hello_world.rv32i").expect("Failed to open image.");
+//! let mut buffer = Vec::new();
+//! f.read_to_end(&mut buffer).expect("Failed to load image.");
+//!
+//! // Copy the image into simulator memory.
 //! let mut mem = BasicMem::new();
+//! let image = buffer.as_slice();
+//! mem.write_bytes(0, image).expect("Failed to initialize memory.");
+//!
+//! // Execute the image.
 //! let mut cpu = Rv32iCpu::<BasicMem>::with_mem(mem);
 //! while !cpu.is_trapped() {
-//!     let instruction = cpu.fetch().unwrap();
+//!     let instruction = cpu.fetch().expect("Failed to fetch instruction.");
 //!     cpu.dispatch_rv32i(instruction);
+//! }
+//! ```
+//!
+//! This example loads a binary RV32IC image and disassembles it.
+//!
+//! ```
+//! use std::fs::File;
+//! use std::io::prelude::*;
+//!
+//! use arviss_experiment::disassembler::Disassembler;
+//! use arviss_experiment::prelude::*;
+//!
+//! // Load an RV32IC image into a buffer.
+//! let mut f = File::open("images/hello_world.rv32ic").expect("Failed to open image.");
+//! let mut buffer = Vec::new();
+//! f.read_to_end(&mut buffer).expect("Failed to load image.");
+//!
+//! // Disassemble the image, one instruction at a time, taking into account that compact
+//! // instructions are only 2 bytes.
+//! let mut disassembler = Disassembler {};
+//! let mut index: usize = 0;
+//! let image = buffer.as_slice();
+//! println!("addr     instr    code");
+//! while index < image.len() - 4 {
+//!     if let Ok(slice) = &image[index..index + 4].try_into() {
+//!         let word = u32::from_le_bytes(*slice);
+//!         let is_compact = (word & 3) != 3;
+//!         let word = if is_compact { word & 0xffff } else { word };
+//!         let result = disassembler.dispatch_rv32ic(word);
+//!         if is_compact {
+//!             // Compact instructions are 2 bytes each.
+//!             println!("{:08x}     {:04x} {}", index, word, result);
+//!             index = index + 2;
+//!         } else {
+//!             // Regular instructions are 4 bytes each.
+//!             println!("{:08x} {:08x} {}", index, word, result);
+//!             index = index + 4;
+//!         }
+//!     }
 //! }
 //! ```
 
 pub mod prelude;
 
-pub mod basic_mem;
 pub mod cpu_types;
 pub mod disassembler;
 pub mod dispatcher;
 pub mod memory;
+pub mod profiles;
 pub mod reg;
 pub mod rv32icpu;
 pub mod tobits;
