@@ -12,11 +12,27 @@
 //! - the 'F' standard extension for single-precision floating point
 //! - the 'C' standard extension for compressed instructions
 //!
+//!
+//! ## Examples
+//! This example uses the [`basic_mem::BasicMem`] memory map with an [`rv32icpu::Rv32iCpu`]. It fetches instructions
+//! from memory and dispatches them with [`dispatcher::Rv32iDispatcher`] which is implemented for [`cpu_types::Rv32i`].
+//! It does this until the CPU hits a trap.
+//! ```rust
+//! use arviss_experiment::prelude::*;
+//! use arviss_experiment::basic_mem::BasicMem;
+//! use arviss_experiment::rv32icpu::Rv32iCpu;
+//!
+//! let mut mem = BasicMem::new();
+//! let mut cpu = Rv32iCpu::<BasicMem>::with_mem(mem);
+//! while !cpu.is_trapped() {
+//!     let instruction = cpu.fetch().unwrap();
+//!     cpu.dispatch_rv32i(instruction);
+//! }
+//! ```
 
 pub mod prelude;
 
 pub mod basic_mem;
-pub mod cpu_basic_mem;
 pub mod cpu_types;
 pub mod disassembler;
 pub mod dispatcher;

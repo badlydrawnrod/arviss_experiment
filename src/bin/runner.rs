@@ -3,6 +3,7 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 
+use arviss_experiment::basic_mem::BasicMem;
 use arviss_experiment::disassembler::Disassembler;
 use arviss_experiment::prelude::*;
 use arviss_experiment::rv32icpu::Rv32iCpu;
