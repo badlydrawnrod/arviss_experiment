@@ -1,6 +1,13 @@
 # arviss_experiment
 
-Arviss as a rewrite-it-in-Rust experiment.
+Arviss is ***A*** ***R***ISC-***V*** ***I***nstruction ***S***et ***S***imulator for 32-bit variants of the [RISC-V](https://en.wikipedia.org/wiki/RISC-V) instruction set architecture ([ISA](https://en.wikipedia.org/wiki/Instruction_set_architecture)).
+
+It provides a toolkit for creating software implementations of the base 32-bit variant of the RISC-V ISA and a number of its extensions, including:
+
+- the RV32I base integer instruction set
+- the ‘M’ standard extension for integer multiplication and division
+- the ‘F’ standard extension for single-precision floating point
+- the ‘C’ standard extension for compressed instructions
 
 # Building
 
@@ -62,7 +69,7 @@ Hello, world from Rust!
 
 This loads an RV32IC image and disassembles it to stdout.
 ```
-$ cargo run --bin disassemble_hello_world`
+$ cargo run --bin disassemble_hello_world
 ```
 You should see output that looks like this.
 ```
