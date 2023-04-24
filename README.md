@@ -4,41 +4,46 @@ Arviss as a rewrite-it-in-Rust experiment.
 
 # Building
 
-## Install the prerequisites
+## Pre-requisites
 
-- Install and build the [simple RISC-V runtime](https://github.com/badlydrawnrod/rt) and its prerequisites as described in its [README](https://github.com/badlydrawnrod/rt/blob/master/README.md).
-
-- Install and build [the sample application](https://github.com/badlydrawnrod/rt_app)
+[Install Rust](https://forge.rust-lang.org/infra/other-installation-methods.html). This is a link to the docs that give you some sensible choices of how to install Rust. I strongly recommend that you do *not* run the convenient yet highly insecure method of piping the output of `curl` directly into `sh`.
 
 ## Build the simulator
 
-- `git clone` this code into a parallel directory
+### Clone this repository.
 
 ```
 $ git clone https://github.com/badlydrawnrod/arviss_execute
 ```
 
-- Perform a release build
+### Perform a release build.
 
 ```
 $ cd arviss_execute
 $ cargo build --release
 ```
 
-- Run the tests
+## Run the tests
 
 ```
 $ cargo test
 ```
 
-## Running
-
-Run the simulator (the `runner` binary), passing it the path to the `app.bin` that you generated when you built [the sample application](https://github.com/badlydrawnrod/rt_app).
+## Build the documentation
 
 ```
-$ cargo run --release --bin runner ../rt_app/app.bin
+$ cargo doc --open
 ```
 
+# Running
+## Run the examples
+
+### Run `hello_world`
+
+This loads an image and executes it with an RV32I CPU.
+```
+$ cargo run --bin hello_world
+```
 You should see output that looks like this.
 ```
 Hello, world from Rust!
@@ -53,15 +58,23 @@ Hello, world from Rust!
 Hello, world from Rust!
 ```
 
-If you want to disassemble each instruction as it is executed then supply the `-d` flag before the filename.
+### Run `disassemble_hello_world`
 
+This loads an RV32IC image and disassembles it to stdout.
 ```
-$ cargo run --release --bin runner -- -d ../rt_app/app.bin
-pc       (pc)     Code
+$ cargo run --bin disassemble_hello_world`
+```
+You should see output that looks like this.
+```
+addr     instr    code
 00000000 00005197 auipc gp, 5
 00000004 80018193 addi  gp, gp, -2048
 00000008 00008117 auipc sp, 8
 0000000c ff810113 addi  sp, sp, -8
-00000010 00010433 add   s0, sp, zero
+00000010     840a add   s0, zero, sp
+00000012 00004517 auipc a0, 4
 ...
+0000020a     4b12 lw    s6, 4(sp)
+0000020c     6105 addi  sp, sp, 32
+0000020e     8082 jalr  zero, ra, 0
 ```
