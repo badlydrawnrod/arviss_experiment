@@ -3,5 +3,5 @@
 version = 3
 
 [[package]]
-name = "arviss_experiment"
+name = "arviss"
 version = "0.1.0"

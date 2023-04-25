@@ -1,8 +1,9 @@
 use std::fs::File;
 use std::io::prelude::*;
 
-use arviss_experiment::disassembler::Disassembler;
-use arviss_experiment::prelude::*;
+use arviss::prelude::*;
+
+use arviss::disassembler::Disassembler;
 
 pub fn main() {
     // Load an RV32IC image into a buffer.
@@ -25,11 +26,11 @@ pub fn main() {
             if is_compact {
                 // Compact instructions are 2 bytes each.
                 println!("{:08x}     {:04x} {}", index, word, result);
-                index = index + 2;
+                index += 2;
             } else {
                 // Regular instructions are 4 bytes each.
                 println!("{:08x} {:08x} {}", index, word, result);
-                index = index + 4;
+                index += 4;
             }
         }
     }

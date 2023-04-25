@@ -6,7 +6,7 @@ pub type Address = u32;
 /// The result of a memory operation. The error variant returns the address that caused the error.
 pub type MemoryResult<T> = Result<T, Address>;
 
-/// Trait for memory access.
+/// Memory access.
 pub trait Mem {
     /// Reads a byte from memory.
     fn read8(&self, address: Address) -> MemoryResult<u8>;

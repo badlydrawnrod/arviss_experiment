@@ -2,6 +2,7 @@
 
 use crate::memory::Address;
 
+/// Denotes the cause of a trap.
 #[derive(Debug, Clone, Copy)]
 pub enum TrapCause {
     // Non-interrupt traps.
@@ -28,7 +29,7 @@ pub enum TrapCause {
     MachineExternalInterrupt,
 }
 
-// Trap handling is a trait.
+/// A trait for dealing with traps.
 pub trait TrapHandler {
     fn trap_cause(&self) -> Option<TrapCause>;
 

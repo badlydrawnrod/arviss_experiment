@@ -18,8 +18,8 @@
 //!
 //! To do this, it loads the data from an image and uses it to populate a [`profiles::basic::BasicMem`] memory
 //! implementation. It then creates an [`rv32icpu::Rv32iCpu`] using that memory, then executes instructions from that
-//! memory by fetching them then dispatching them with [`dispatcher::Rv32iDispatcher`] which is implemented for
-//! [`cpu_types::Rv32i`].
+//! memory by fetching them then dispatching them with [`Rv32iDispatcher`] which is implemented for
+//! [`Rv32i`].
 //!
 //! It does this until the CPU hits a trap, which it will do when it reaches an `ebreak`.
 //!
@@ -29,9 +29,10 @@
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //!
-//! use arviss_experiment::prelude::*;
-//! use arviss_experiment::profiles::basic::BasicMem;
-//! use arviss_experiment::rv32icpu::Rv32iCpu;
+//! use arviss::prelude::*;
+//!
+//! use arviss::profiles::basic::BasicMem;
+//! use arviss::rv32icpu::Rv32iCpu;
 //!
 //! // Load an RV32I image into a buffer.
 //! let mut f = File::open("images/hello_world.rv32i").expect("Failed to open image.");
@@ -57,8 +58,9 @@
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //!
-//! use arviss_experiment::disassembler::Disassembler;
-//! use arviss_experiment::prelude::*;
+//! use arviss::prelude::*;
+//!
+//! use arviss::disassembler::Disassembler;
 //!
 //! // Load an RV32IC image into a buffer.
 //! let mut f = File::open("images/hello_world.rv32ic").expect("Failed to open image.");
@@ -80,11 +82,11 @@
 //!         if is_compact {
 //!             // Compact instructions are 2 bytes each.
 //!             println!("{:08x}     {:04x} {}", index, word, result);
-//!             index = index + 2;
+//!             index += 2;
 //!         } else {
 //!             // Regular instructions are 4 bytes each.
 //!             println!("{:08x} {:08x} {}", index, word, result);
-//!             index = index + 4;
+//!             index += 4;
 //!         }
 //!     }
 //! }
@@ -100,4 +102,16 @@ pub mod profiles;
 pub mod reg;
 pub mod rv32icpu;
 pub mod tobits;
-pub mod trap_handler;
+pub mod trap;
+
+#[doc(inline)]
+pub use cpu_types::*;
+
+#[doc(inline)]
+pub use dispatcher::*;
+
+#[doc(inline)]
+pub use memory::*;
+
+#[doc(inline)]
+pub use trap::*;

@@ -4,7 +4,7 @@ use crate::{
     cpu_types::{CoreCpu, Xreg},
     memory::{Address, Mem, MemoryResult},
     reg::Reg,
-    trap_handler::{TrapCause, TrapHandler},
+    trap::{TrapCause, TrapHandler},
 };
 
 #[derive(Default, Clone, Copy)]

@@ -3,10 +3,10 @@
 use crate::{
     memory::{Address, MemoryResult},
     reg::Reg,
-    trap_handler::{TrapCause, TrapHandler},
+    trap::{TrapCause, TrapHandler},
 };
 
-/// [CoreCpu] represents the basic operations of a CPU that don't involve registers.
+/// The basic operations of a CPU that don't involve registers.
 ///
 /// A [CoreCpu] provides an abstraction over the basic CPU operations that don't involve general purpose registers,
 /// such as reading and updating the program counter, fetching the next instruction, and reading from and writing to
@@ -59,7 +59,7 @@ pub trait CoreCpu {
     fn write32(&mut self, address: Address, value: u32) -> MemoryResult<()>;
 }
 
-/// [Xreg] represents access to the base RV32I integer registers.
+/// Provides access to the base RV32I integer registers.
 pub trait Xreg {
     /// Returns the value in the given integer register.
     fn rx(&self, reg: Reg) -> u32;
@@ -68,7 +68,7 @@ pub trait Xreg {
     fn wx(&mut self, reg: Reg, val: u32);
 }
 
-/// [Freg] represents access to the single-precision floating point registers used by the 'F' extension.
+/// Provides access to the single-precision floating point registers used by the 'F' extension.
 pub trait Freg {
     /// Returns the value in the given floating point register.
     fn rf(&self, reg: Reg) -> f32;

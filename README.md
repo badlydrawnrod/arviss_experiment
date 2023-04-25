@@ -1,4 +1,4 @@
-# arviss_experiment
+# arviss
 
 Arviss is ***A*** ***R***ISC-***V*** ***I***nstruction ***S***et ***S***imulator for 32-bit variants of the [RISC-V](https://en.wikipedia.org/wiki/RISC-V) instruction set architecture ([ISA](https://en.wikipedia.org/wiki/Instruction_set_architecture)).
 
@@ -20,13 +20,13 @@ It provides a toolkit for creating software implementations of the base 32-bit v
 ### Clone this repository.
 
 ```
-$ git clone https://github.com/badlydrawnrod/arviss_execute
+$ git clone https://github.com/badlydrawnrod/arviss_experiment
 ```
 
 ### Perform a release build.
 
 ```
-$ cd arviss_execute
+$ cd arviss_experiment
 $ cargo build --release
 ```
 

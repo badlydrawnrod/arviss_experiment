@@ -1,9 +1,10 @@
 use std::fs::File;
 use std::io::prelude::*;
 
-use arviss_experiment::prelude::*;
-use arviss_experiment::profiles::basic::BasicMem;
-use arviss_experiment::rv32icpu::Rv32iCpu;
+use arviss::prelude::*;
+
+use arviss::profiles::basic::BasicMem;
+use arviss::rv32icpu::Rv32iCpu;
 
 pub fn main() {
     // Load the image into a buffer.

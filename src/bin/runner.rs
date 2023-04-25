@@ -3,10 +3,11 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 
-use arviss_experiment::disassembler::Disassembler;
-use arviss_experiment::prelude::*;
-use arviss_experiment::profiles::basic::BasicMem;
-use arviss_experiment::rv32icpu::Rv32iCpu;
+use arviss::prelude::*;
+
+use arviss::disassembler::Disassembler;
+use arviss::profiles::basic::BasicMem;
+use arviss::rv32icpu::Rv32iCpu;
 
 // A shim that makes it easy to change dispatchers.
 #[inline]
