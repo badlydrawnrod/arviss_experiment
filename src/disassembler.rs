@@ -1,7 +1,7 @@
 //! A disassembler.
 
 use crate::{
-    cpu_types::{Rv32c, Rv32f, Rv32i, Rv32m},
+    cpu::{Rv32c, Rv32f, Rv32i, Rv32m},
     reg::Reg,
 };
 

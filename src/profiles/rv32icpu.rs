@@ -1,7 +1,7 @@
 //! An RV32I CPU with integer registers but not floating point.
 
 use crate::{
-    cpu_types::{CoreCpu, Xreg},
+    cpu::{CoreCpu, Xreg},
     memory::{Address, Mem, MemoryResult},
     reg::Reg,
     trap::{TrapCause, TrapHandler},

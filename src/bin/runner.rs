@@ -6,8 +6,8 @@ use std::io::prelude::*;
 use arviss::prelude::*;
 
 use arviss::disassembler::Disassembler;
-use arviss::profiles::basic::BasicMem;
-use arviss::rv32icpu::Rv32iCpu;
+use arviss::profiles::cpu::Rv32iCpu;
+use arviss::profiles::memory::BasicMem;
 
 // A shim that makes it easy to change dispatchers.
 #[inline]

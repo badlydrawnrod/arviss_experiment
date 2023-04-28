@@ -16,8 +16,8 @@
 //! ## Examples
 //! This example loads a binary RV32I image into simulator memory then executes it.
 //!
-//! To do this, it loads the data from an image and uses it to populate a [`profiles::basic::BasicMem`] memory
-//! implementation. It then creates an [`rv32icpu::Rv32iCpu`] using that memory, then executes instructions from that
+//! To do this, it loads the data from an image and uses it to populate a [`profiles::memory::BasicMem`] memory
+//! implementation. It then creates an [`profiles::cpu::Rv32iCpu`] using that memory, then executes instructions from that
 //! memory by fetching them then dispatching them with [`Rv32iDispatcher`] which is implemented for
 //! [`Rv32i`].
 //!
@@ -31,8 +31,8 @@
 //!
 //! use arviss::prelude::*;
 //!
-//! use arviss::profiles::basic::BasicMem;
-//! use arviss::rv32icpu::Rv32iCpu;
+//! use arviss::profiles::memory::BasicMem;
+//! use arviss::profiles::cpu::Rv32iCpu;
 //!
 //! // Load an RV32I image into a buffer.
 //! let mut f = File::open("images/hello_world.rv32i").expect("Failed to open image.");
@@ -94,18 +94,17 @@
 
 pub mod prelude;
 
-pub mod cpu_types;
+pub mod cpu;
 pub mod disassembler;
 pub mod dispatcher;
 pub mod memory;
 pub mod profiles;
 pub mod reg;
-pub mod rv32icpu;
 pub mod tobits;
 pub mod trap;
 
 #[doc(inline)]
-pub use cpu_types::*;
+pub use cpu::*;
 
 #[doc(inline)]
 pub use dispatcher::*;
