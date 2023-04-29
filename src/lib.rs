@@ -29,11 +29,14 @@
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //!
-//! use arviss::prelude::*;
-//!
-//! use arviss::profiles::memory::BasicMem;
+//! use arviss::cpu::CoreCpu;
+//! use arviss::memory::Loader;
+//! use arviss::Rv32iDispatcher;
+//! use arviss::TrapHandler;
+//! 
 //! use arviss::profiles::cpu::Rv32iCpu;
-//!
+//! use arviss::profiles::memory::BasicMem;
+//! 
 //! // Load an RV32I image into a buffer.
 //! let mut f = File::open("images/hello_world.rv32i").expect("Failed to open image.");
 //! let mut buffer = Vec::new();
@@ -48,7 +51,7 @@
 //! let mut cpu = Rv32iCpu::<BasicMem>::with_mem(mem);
 //! while !cpu.is_trapped() {
 //!     let instruction = cpu.fetch().expect("Failed to fetch instruction.");
-//!     cpu.dispatch_rv32i(instruction);
+//!     cpu.dispatch(instruction);
 //! }
 //! ```
 //!
@@ -58,9 +61,8 @@
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //!
-//! use arviss::prelude::*;
-//!
 //! use arviss::disassembler::Disassembler;
+//! use arviss::Rv32icDispatcher;
 //!
 //! // Load an RV32IC image into a buffer.
 //! let mut f = File::open("images/hello_world.rv32ic").expect("Failed to open image.");
@@ -78,7 +80,7 @@
 //!         let word = u32::from_le_bytes(*slice);
 //!         let is_compact = (word & 3) != 3;
 //!         let word = if is_compact { word & 0xffff } else { word };
-//!         let result = disassembler.dispatch_rv32ic(word);
+//!         let result = disassembler.dispatch(word);
 //!         if is_compact {
 //!             // Compact instructions are 2 bytes each.
 //!             println!("{:08x}     {:04x} {}", index, word, result);

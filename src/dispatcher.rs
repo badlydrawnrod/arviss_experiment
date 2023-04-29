@@ -12,7 +12,9 @@ pub trait Rv32iDispatcher {
     type Item;
 
     /// Decodes the input word to an RV32I instruction and dispatches it to a handler.
-    fn dispatch_rv32i(&mut self, code: u32) -> Self::Item;
+    fn dispatch(&mut self, code: u32) -> <Self as Rv32i>::Item
+    where
+        Self: Rv32i;
 }
 
 impl<T, U> Rv32iDispatcher for T
@@ -21,7 +23,7 @@ where
 {
     type Item = U;
 
-    fn dispatch_rv32i(&mut self, code: u32) -> Self::Item {
+    fn dispatch(&mut self, code: u32) -> Self::Item {
         #![allow(clippy::single_match)]
 
         let c = ToBits(code);
@@ -89,7 +91,9 @@ pub trait Rv32imDispatcher {
     type Item;
 
     /// Decodes the input word to an RV32IM instruction and dispatches it to a handler.
-    fn dispatch_rv32im(&mut self, code: u32) -> Self::Item;
+    fn dispatch(&mut self, code: u32) -> <Self as Rv32i>::Item
+    where
+        Self: Rv32i + Rv32m;
 }
 
 impl<T, U> Rv32imDispatcher for T
@@ -98,7 +102,7 @@ where
 {
     type Item = U;
 
-    fn dispatch_rv32im(&mut self, code: u32) -> Self::Item {
+    fn dispatch(&mut self, code: u32) -> Self::Item {
         #![allow(clippy::single_match)]
 
         let c = ToBits(code);
@@ -174,7 +178,9 @@ pub trait Rv32icDispatcher {
     type Item;
 
     /// Decodes the input word to an RV32IC instruction and dispatches it to a handler.
-    fn dispatch_rv32ic(&mut self, code: u32) -> Self::Item;
+    fn dispatch(&mut self, code: u32) -> <Self as Rv32c>::Item
+    where
+        Self: Rv32i + Rv32c;
 }
 
 impl<T, U> Rv32icDispatcher for T
@@ -183,7 +189,7 @@ where
 {
     type Item = U;
 
-    fn dispatch_rv32ic(&mut self, code: u32) -> Self::Item {
+    fn dispatch(&mut self, code: u32) -> Self::Item {
         #![allow(clippy::single_match)]
 
         let c = ToBits(code);
@@ -299,7 +305,9 @@ pub trait Rv32imcDispatcher {
     type Item;
 
     /// Decodes the input word to an RV32IMC instruction and dispatches it to a handler.
-    fn dispatch_rv32imc(&mut self, code: u32) -> Self::Item;
+    fn dispatch(&mut self, code: u32) -> <Self as Rv32i>::Item
+    where
+        Self: Rv32i + Rv32m + Rv32c;
 }
 
 impl<T, U> Rv32imcDispatcher for T
@@ -308,7 +316,7 @@ where
 {
     type Item = U;
 
-    fn dispatch_rv32imc(&mut self, code: u32) -> Self::Item {
+    fn dispatch(&mut self, code: u32) -> Self::Item {
         #![allow(clippy::single_match)]
 
         let c = ToBits(code);
@@ -432,7 +440,9 @@ pub trait Rv32imfDispatcher {
     type Item;
 
     /// Decodes the input word to an RV32IMF instruction and dispatches it to a handler.
-    fn dispatch_rv32imf(&mut self, code: u32) -> Self::Item;
+    fn dispatch(&mut self, code: u32) -> <Self as Rv32i>::Item
+    where
+        Self: Rv32i + Rv32m + Rv32f;
 }
 
 impl<T, U> Rv32imfDispatcher for T
@@ -441,7 +451,7 @@ where
 {
     type Item = U;
 
-    fn dispatch_rv32imf(&mut self, code: u32) -> Self::Item {
+    fn dispatch(&mut self, code: u32) -> Self::Item {
         #![allow(clippy::single_match)]
 
         let c = ToBits(code);
@@ -558,7 +568,9 @@ pub trait Rv32imfcDispatcher {
     type Item;
 
     /// Decodes the input word to an RV32IMFC instruction and dispatches it to a handler.
-    fn dispatch_rv32imfc(&mut self, code: u32) -> Self::Item;
+    fn dispatch(&mut self, code: u32) -> <Self as Rv32i>::Item
+    where
+        Self: Rv32i + Rv32m + Rv32f + Rv32c;
 }
 
 impl<T, U> Rv32imfcDispatcher for T
@@ -574,7 +586,7 @@ where
 {
     type Item = U;
 
-    fn dispatch_rv32imfc(&mut self, code: u32) -> Self::Item {
+    fn dispatch(&mut self, code: u32) -> Self::Item {
         #![allow(clippy::single_match)]
 
         let c = ToBits(code);
@@ -735,7 +747,6 @@ where
 
 #[cfg(test)]
 mod test {
-    use super::{Rv32iDispatcher, Rv32icDispatcher, Rv32imDispatcher, Rv32imfDispatcher};
     use crate::cpu::{Rv32c, Rv32f, Rv32i, Rv32m};
     use crate::reg::Reg;
 
@@ -1126,47 +1137,49 @@ mod test {
 
     #[test]
     fn dispatch_rv32i() {
+        use super::Rv32iDispatcher;
+
         let mut c = Checker {};
-        assert_eq!("add", c.dispatch_rv32i(enc(MATCH_ADD, MASK_ADD)));
-        assert_eq!("addi", c.dispatch_rv32i(enc(MATCH_ADDI, MASK_ADDI)));
-        assert_eq!("and", c.dispatch_rv32i(enc(MATCH_AND, MASK_AND)));
-        assert_eq!("andi", c.dispatch_rv32i(enc(MATCH_ANDI, MASK_ANDI)));
-        assert_eq!("auipc", c.dispatch_rv32i(enc(MATCH_AUIPC, MASK_AUIPC)));
-        assert_eq!("beq", c.dispatch_rv32i(enc(MATCH_BEQ, MASK_BEQ)));
-        assert_eq!("bge", c.dispatch_rv32i(enc(MATCH_BGE, MASK_BGE)));
-        assert_eq!("bgeu", c.dispatch_rv32i(enc(MATCH_BGEU, MASK_BGEU)));
-        assert_eq!("blt", c.dispatch_rv32i(enc(MATCH_BLT, MASK_BLT)));
-        assert_eq!("bltu", c.dispatch_rv32i(enc(MATCH_BLTU, MASK_BLTU)));
-        assert_eq!("bne", c.dispatch_rv32i(enc(MATCH_BNE, MASK_BNE)));
-        assert_eq!("ebreak", c.dispatch_rv32i(enc(MATCH_EBREAK, MASK_EBREAK)));
-        assert_eq!("ecall", c.dispatch_rv32i(enc(MATCH_ECALL, MASK_ECALL)));
-        assert_eq!("fence", c.dispatch_rv32i(enc(MATCH_FENCE, MASK_FENCE)));
-        assert_eq!("jal", c.dispatch_rv32i(enc(MATCH_JAL, MASK_JAL)));
-        assert_eq!("jalr", c.dispatch_rv32i(enc(MATCH_JALR, MASK_JALR)));
-        assert_eq!("lb", c.dispatch_rv32i(enc(MATCH_LB, MASK_LB)));
-        assert_eq!("lbu", c.dispatch_rv32i(enc(MATCH_LBU, MASK_LBU)));
-        assert_eq!("lh", c.dispatch_rv32i(enc(MATCH_LH, MASK_LH)));
-        assert_eq!("lhu", c.dispatch_rv32i(enc(MATCH_LHU, MASK_LHU)));
-        assert_eq!("lui", c.dispatch_rv32i(enc(MATCH_LUI, MASK_LUI)));
-        assert_eq!("lw", c.dispatch_rv32i(enc(MATCH_LW, MASK_LW)));
-        assert_eq!("or", c.dispatch_rv32i(enc(MATCH_OR, MASK_OR)));
-        assert_eq!("ori", c.dispatch_rv32i(enc(MATCH_ORI, MASK_ORI)));
-        assert_eq!("sb", c.dispatch_rv32i(enc(MATCH_SB, MASK_SB)));
-        assert_eq!("sh", c.dispatch_rv32i(enc(MATCH_SH, MASK_SH)));
-        assert_eq!("sll", c.dispatch_rv32i(enc(MATCH_SLL, MASK_SLL)));
-        assert_eq!("slli", c.dispatch_rv32i(enc(MATCH_SLLI, MASK_SLLI)));
-        assert_eq!("slt", c.dispatch_rv32i(enc(MATCH_SLT, MASK_SLT)));
-        assert_eq!("slti", c.dispatch_rv32i(enc(MATCH_SLTI, MASK_SLTI)));
-        assert_eq!("sltiu", c.dispatch_rv32i(enc(MATCH_SLTIU, MASK_SLTIU)));
-        assert_eq!("sltu", c.dispatch_rv32i(enc(MATCH_SLTU, MASK_SLTU)));
-        assert_eq!("sra", c.dispatch_rv32i(enc(MATCH_SRA, MASK_SRA)));
-        assert_eq!("srai", c.dispatch_rv32i(enc(MATCH_SRAI, MASK_SRAI)));
-        assert_eq!("srl", c.dispatch_rv32i(enc(MATCH_SRL, MASK_SRL)));
-        assert_eq!("srli", c.dispatch_rv32i(enc(MATCH_SRLI, MASK_SRLI)));
-        assert_eq!("sub", c.dispatch_rv32i(enc(MATCH_SUB, MASK_SUB)));
-        assert_eq!("sw", c.dispatch_rv32i(enc(MATCH_SW, MASK_SW)));
-        assert_eq!("xor", c.dispatch_rv32i(enc(MATCH_XOR, MASK_XOR)));
-        assert_eq!("xori", c.dispatch_rv32i(enc(MATCH_XORI, MASK_XORI)));
+        assert_eq!("add", c.dispatch(enc(MATCH_ADD, MASK_ADD)));
+        assert_eq!("addi", c.dispatch(enc(MATCH_ADDI, MASK_ADDI)));
+        assert_eq!("and", c.dispatch(enc(MATCH_AND, MASK_AND)));
+        assert_eq!("andi", c.dispatch(enc(MATCH_ANDI, MASK_ANDI)));
+        assert_eq!("auipc", c.dispatch(enc(MATCH_AUIPC, MASK_AUIPC)));
+        assert_eq!("beq", c.dispatch(enc(MATCH_BEQ, MASK_BEQ)));
+        assert_eq!("bge", c.dispatch(enc(MATCH_BGE, MASK_BGE)));
+        assert_eq!("bgeu", c.dispatch(enc(MATCH_BGEU, MASK_BGEU)));
+        assert_eq!("blt", c.dispatch(enc(MATCH_BLT, MASK_BLT)));
+        assert_eq!("bltu", c.dispatch(enc(MATCH_BLTU, MASK_BLTU)));
+        assert_eq!("bne", c.dispatch(enc(MATCH_BNE, MASK_BNE)));
+        assert_eq!("ebreak", c.dispatch(enc(MATCH_EBREAK, MASK_EBREAK)));
+        assert_eq!("ecall", c.dispatch(enc(MATCH_ECALL, MASK_ECALL)));
+        assert_eq!("fence", c.dispatch(enc(MATCH_FENCE, MASK_FENCE)));
+        assert_eq!("jal", c.dispatch(enc(MATCH_JAL, MASK_JAL)));
+        assert_eq!("jalr", c.dispatch(enc(MATCH_JALR, MASK_JALR)));
+        assert_eq!("lb", c.dispatch(enc(MATCH_LB, MASK_LB)));
+        assert_eq!("lbu", c.dispatch(enc(MATCH_LBU, MASK_LBU)));
+        assert_eq!("lh", c.dispatch(enc(MATCH_LH, MASK_LH)));
+        assert_eq!("lhu", c.dispatch(enc(MATCH_LHU, MASK_LHU)));
+        assert_eq!("lui", c.dispatch(enc(MATCH_LUI, MASK_LUI)));
+        assert_eq!("lw", c.dispatch(enc(MATCH_LW, MASK_LW)));
+        assert_eq!("or", c.dispatch(enc(MATCH_OR, MASK_OR)));
+        assert_eq!("ori", c.dispatch(enc(MATCH_ORI, MASK_ORI)));
+        assert_eq!("sb", c.dispatch(enc(MATCH_SB, MASK_SB)));
+        assert_eq!("sh", c.dispatch(enc(MATCH_SH, MASK_SH)));
+        assert_eq!("sll", c.dispatch(enc(MATCH_SLL, MASK_SLL)));
+        assert_eq!("slli", c.dispatch(enc(MATCH_SLLI, MASK_SLLI)));
+        assert_eq!("slt", c.dispatch(enc(MATCH_SLT, MASK_SLT)));
+        assert_eq!("slti", c.dispatch(enc(MATCH_SLTI, MASK_SLTI)));
+        assert_eq!("sltiu", c.dispatch(enc(MATCH_SLTIU, MASK_SLTIU)));
+        assert_eq!("sltu", c.dispatch(enc(MATCH_SLTU, MASK_SLTU)));
+        assert_eq!("sra", c.dispatch(enc(MATCH_SRA, MASK_SRA)));
+        assert_eq!("srai", c.dispatch(enc(MATCH_SRAI, MASK_SRAI)));
+        assert_eq!("srl", c.dispatch(enc(MATCH_SRL, MASK_SRL)));
+        assert_eq!("srli", c.dispatch(enc(MATCH_SRLI, MASK_SRLI)));
+        assert_eq!("sub", c.dispatch(enc(MATCH_SUB, MASK_SUB)));
+        assert_eq!("sw", c.dispatch(enc(MATCH_SW, MASK_SW)));
+        assert_eq!("xor", c.dispatch(enc(MATCH_XOR, MASK_XOR)));
+        assert_eq!("xori", c.dispatch(enc(MATCH_XORI, MASK_XORI)));
     }
 
     impl Rv32m for Checker {
@@ -1207,15 +1220,17 @@ mod test {
 
     #[test]
     fn dispatch_rv32im() {
+        use super::Rv32imDispatcher;
+
         let mut c = Checker {};
-        assert_eq!("div", c.dispatch_rv32im(enc(MATCH_DIV, MASK_DIV)));
-        assert_eq!("divu", c.dispatch_rv32im(enc(MATCH_DIVU, MASK_DIVU)));
-        assert_eq!("mul", c.dispatch_rv32im(enc(MATCH_MUL, MASK_MUL)));
-        assert_eq!("mulh", c.dispatch_rv32im(enc(MATCH_MULH, MASK_MULH)));
-        assert_eq!("mulhsu", c.dispatch_rv32im(enc(MATCH_MULHSU, MASK_MULHSU)));
-        assert_eq!("mulhu", c.dispatch_rv32im(enc(MATCH_MULHU, MASK_MULHU)));
-        assert_eq!("rem", c.dispatch_rv32im(enc(MATCH_REM, MASK_REM)));
-        assert_eq!("remu", c.dispatch_rv32im(enc(MATCH_REMU, MASK_REMU)));
+        assert_eq!("div", c.dispatch(enc(MATCH_DIV, MASK_DIV)));
+        assert_eq!("divu", c.dispatch(enc(MATCH_DIVU, MASK_DIVU)));
+        assert_eq!("mul", c.dispatch(enc(MATCH_MUL, MASK_MUL)));
+        assert_eq!("mulh", c.dispatch(enc(MATCH_MULH, MASK_MULH)));
+        assert_eq!("mulhsu", c.dispatch(enc(MATCH_MULHSU, MASK_MULHSU)));
+        assert_eq!("mulhu", c.dispatch(enc(MATCH_MULHU, MASK_MULHU)));
+        assert_eq!("rem", c.dispatch(enc(MATCH_REM, MASK_REM)));
+        assert_eq!("remu", c.dispatch(enc(MATCH_REMU, MASK_REMU)));
     }
 
     impl Rv32c for Checker {
@@ -1332,43 +1347,42 @@ mod test {
 
     #[test]
     fn dispatch_rv32ic() {
+        use super::Rv32icDispatcher;
+
         let mut c = Checker {};
-        assert_eq!("c.add", c.dispatch_rv32ic(enc(MATCH_C_ADD, MASK_C_ADD)));
-        assert_eq!("c.addi", c.dispatch_rv32ic(enc(MATCH_C_ADDI, MASK_C_ADDI)));
+        assert_eq!("c.add", c.dispatch(enc(MATCH_C_ADD, MASK_C_ADD)));
+        assert_eq!("c.addi", c.dispatch(enc(MATCH_C_ADDI, MASK_C_ADDI)));
         assert_eq!(
             "c.addi16sp",
-            c.dispatch_rv32ic(enc(MATCH_C_ADDI16SP, MASK_C_ADDI16SP))
+            c.dispatch(enc(MATCH_C_ADDI16SP, MASK_C_ADDI16SP))
         );
         assert_eq!(
             "c.addi4spn",
-            c.dispatch_rv32ic(enc(MATCH_C_ADDI4SPN, MASK_C_ADDI4SPN))
+            c.dispatch(enc(MATCH_C_ADDI4SPN, MASK_C_ADDI4SPN))
         );
-        assert_eq!("c.and", c.dispatch_rv32ic(enc(MATCH_C_AND, MASK_C_AND)));
-        assert_eq!("c.andi", c.dispatch_rv32ic(enc(MATCH_C_ANDI, MASK_C_ANDI)));
-        assert_eq!("c.beqz", c.dispatch_rv32ic(enc(MATCH_C_BEQZ, MASK_C_BEQZ)));
-        assert_eq!("c.bnez", c.dispatch_rv32ic(enc(MATCH_C_BNEZ, MASK_C_BNEZ)));
-        assert_eq!(
-            "c.ebreak",
-            c.dispatch_rv32ic(enc(MATCH_C_EBREAK, MASK_C_EBREAK))
-        );
-        assert_eq!("c.j", c.dispatch_rv32ic(enc(MATCH_C_J, MASK_C_J)));
-        assert_eq!("c.jal", c.dispatch_rv32ic(enc(MATCH_C_JAL, MASK_C_JAL)));
-        assert_eq!("c.jalr", c.dispatch_rv32ic(enc(MATCH_C_JALR, MASK_C_JALR)));
-        assert_eq!("c.jr", c.dispatch_rv32ic(enc(MATCH_C_JR, MASK_C_JR)));
-        assert_eq!("c.li", c.dispatch_rv32ic(enc(MATCH_C_LI, MASK_C_LI)));
-        assert_eq!("c.lui", c.dispatch_rv32ic(enc(MATCH_C_LUI, MASK_C_LUI)));
-        assert_eq!("c.lw", c.dispatch_rv32ic(enc(MATCH_C_LW, MASK_C_LW)));
-        assert_eq!("c.lwsp", c.dispatch_rv32ic(enc(MATCH_C_LWSP, MASK_C_LWSP)));
-        assert_eq!("c.mv", c.dispatch_rv32ic(enc(MATCH_C_MV, MASK_C_MV)));
-        assert_eq!("c.nop", c.dispatch_rv32ic(enc(MATCH_C_NOP, MASK_C_NOP)));
-        assert_eq!("c.or", c.dispatch_rv32ic(enc(MATCH_C_OR, MASK_C_OR)));
-        assert_eq!("c.slli", c.dispatch_rv32ic(enc(MATCH_C_SLLI, MASK_C_SLLI)));
-        assert_eq!("c.srai", c.dispatch_rv32ic(enc(MATCH_C_SRAI, MASK_C_SRAI)));
-        assert_eq!("c.srli", c.dispatch_rv32ic(enc(MATCH_C_SRLI, MASK_C_SRLI)));
-        assert_eq!("c.sub", c.dispatch_rv32ic(enc(MATCH_C_SUB, MASK_C_SUB)));
-        assert_eq!("c.sw", c.dispatch_rv32ic(enc(MATCH_C_SW, MASK_C_SW)));
-        assert_eq!("c.swsp", c.dispatch_rv32ic(enc(MATCH_C_SWSP, MASK_C_SWSP)));
-        assert_eq!("c.xor", c.dispatch_rv32ic(enc(MATCH_C_XOR, MASK_C_XOR)));
+        assert_eq!("c.and", c.dispatch(enc(MATCH_C_AND, MASK_C_AND)));
+        assert_eq!("c.andi", c.dispatch(enc(MATCH_C_ANDI, MASK_C_ANDI)));
+        assert_eq!("c.beqz", c.dispatch(enc(MATCH_C_BEQZ, MASK_C_BEQZ)));
+        assert_eq!("c.bnez", c.dispatch(enc(MATCH_C_BNEZ, MASK_C_BNEZ)));
+        assert_eq!("c.ebreak", c.dispatch(enc(MATCH_C_EBREAK, MASK_C_EBREAK)));
+        assert_eq!("c.j", c.dispatch(enc(MATCH_C_J, MASK_C_J)));
+        assert_eq!("c.jal", c.dispatch(enc(MATCH_C_JAL, MASK_C_JAL)));
+        assert_eq!("c.jalr", c.dispatch(enc(MATCH_C_JALR, MASK_C_JALR)));
+        assert_eq!("c.jr", c.dispatch(enc(MATCH_C_JR, MASK_C_JR)));
+        assert_eq!("c.li", c.dispatch(enc(MATCH_C_LI, MASK_C_LI)));
+        assert_eq!("c.lui", c.dispatch(enc(MATCH_C_LUI, MASK_C_LUI)));
+        assert_eq!("c.lw", c.dispatch(enc(MATCH_C_LW, MASK_C_LW)));
+        assert_eq!("c.lwsp", c.dispatch(enc(MATCH_C_LWSP, MASK_C_LWSP)));
+        assert_eq!("c.mv", c.dispatch(enc(MATCH_C_MV, MASK_C_MV)));
+        assert_eq!("c.nop", c.dispatch(enc(MATCH_C_NOP, MASK_C_NOP)));
+        assert_eq!("c.or", c.dispatch(enc(MATCH_C_OR, MASK_C_OR)));
+        assert_eq!("c.slli", c.dispatch(enc(MATCH_C_SLLI, MASK_C_SLLI)));
+        assert_eq!("c.srai", c.dispatch(enc(MATCH_C_SRAI, MASK_C_SRAI)));
+        assert_eq!("c.srli", c.dispatch(enc(MATCH_C_SRLI, MASK_C_SRLI)));
+        assert_eq!("c.sub", c.dispatch(enc(MATCH_C_SUB, MASK_C_SUB)));
+        assert_eq!("c.sw", c.dispatch(enc(MATCH_C_SW, MASK_C_SW)));
+        assert_eq!("c.swsp", c.dispatch(enc(MATCH_C_SWSP, MASK_C_SWSP)));
+        assert_eq!("c.xor", c.dispatch(enc(MATCH_C_XOR, MASK_C_XOR)));
     }
 
     impl Rv32f for Checker {
@@ -1481,77 +1495,40 @@ mod test {
 
     #[test]
     fn dispatch_rv32imf() {
+        use super::Rv32imfDispatcher;
+
         let mut c = Checker {};
-        assert_eq!("fadd.s", c.dispatch_rv32imf(enc(MATCH_FADD_S, MASK_FADD_S)));
-        assert_eq!(
-            "fclass.s",
-            c.dispatch_rv32imf(enc(MATCH_FCLASS_S, MASK_FCLASS_S))
-        );
-        assert_eq!(
-            "fcvt.s.w",
-            c.dispatch_rv32imf(enc(MATCH_FCVT_S_W, MASK_FCVT_S_W))
-        );
+        assert_eq!("fadd.s", c.dispatch(enc(MATCH_FADD_S, MASK_FADD_S)));
+        assert_eq!("fclass.s", c.dispatch(enc(MATCH_FCLASS_S, MASK_FCLASS_S)));
+        assert_eq!("fcvt.s.w", c.dispatch(enc(MATCH_FCVT_S_W, MASK_FCVT_S_W)));
         assert_eq!(
             "fcvt.s.wu",
-            c.dispatch_rv32imf(enc(MATCH_FCVT_S_WU, MASK_FCVT_S_WU))
+            c.dispatch(enc(MATCH_FCVT_S_WU, MASK_FCVT_S_WU))
         );
-        assert_eq!(
-            "fcvt.w.s",
-            c.dispatch_rv32imf(enc(MATCH_FCVT_W_S, MASK_FCVT_W_S))
-        );
+        assert_eq!("fcvt.w.s", c.dispatch(enc(MATCH_FCVT_W_S, MASK_FCVT_W_S)));
         assert_eq!(
             "fcvt.wu.s",
-            c.dispatch_rv32imf(enc(MATCH_FCVT_WU_S, MASK_FCVT_WU_S))
+            c.dispatch(enc(MATCH_FCVT_WU_S, MASK_FCVT_WU_S))
         );
-        assert_eq!("fdiv.s", c.dispatch_rv32imf(enc(MATCH_FDIV_S, MASK_FDIV_S)));
-        assert_eq!("feq.s", c.dispatch_rv32imf(enc(MATCH_FEQ_S, MASK_FEQ_S)));
-        assert_eq!("fle.s", c.dispatch_rv32imf(enc(MATCH_FLE_S, MASK_FLE_S)));
-        assert_eq!("flt.s", c.dispatch_rv32imf(enc(MATCH_FLT_S, MASK_FLT_S)));
-        assert_eq!("flw", c.dispatch_rv32imf(enc(MATCH_FLW, MASK_FLW)));
-        assert_eq!(
-            "fmadd.s",
-            c.dispatch_rv32imf(enc(MATCH_FMADD_S, MASK_FMADD_S))
-        );
-        assert_eq!("fmax.s", c.dispatch_rv32imf(enc(MATCH_FMAX_S, MASK_FMAX_S)));
-        assert_eq!("fmin.s", c.dispatch_rv32imf(enc(MATCH_FMIN_S, MASK_FMIN_S)));
-        assert_eq!(
-            "fmsub.s",
-            c.dispatch_rv32imf(enc(MATCH_FMSUB_S, MASK_FMSUB_S))
-        );
-        assert_eq!("fmul.s", c.dispatch_rv32imf(enc(MATCH_FMUL_S, MASK_FMUL_S)));
-        assert_eq!(
-            "fmv.w.x",
-            c.dispatch_rv32imf(enc(MATCH_FMV_W_X, MASK_FMV_W_X))
-        );
-        assert_eq!(
-            "fmv.x.w",
-            c.dispatch_rv32imf(enc(MATCH_FMV_X_W, MASK_FMV_X_W))
-        );
-        assert_eq!(
-            "fnmadd.s",
-            c.dispatch_rv32imf(enc(MATCH_FNMADD_S, MASK_FNMADD_S))
-        );
-        assert_eq!(
-            "fnmsub.s",
-            c.dispatch_rv32imf(enc(MATCH_FNMSUB_S, MASK_FNMSUB_S))
-        );
-        assert_eq!(
-            "fsgnj.s",
-            c.dispatch_rv32imf(enc(MATCH_FSGNJ_S, MASK_FSGNJ_S))
-        );
-        assert_eq!(
-            "fsgnjn.s",
-            c.dispatch_rv32imf(enc(MATCH_FSGNJN_S, MASK_FSGNJN_S))
-        );
-        assert_eq!(
-            "fsgnjx.s",
-            c.dispatch_rv32imf(enc(MATCH_FSGNJX_S, MASK_FSGNJX_S))
-        );
-        assert_eq!(
-            "fsqrt.s",
-            c.dispatch_rv32imf(enc(MATCH_FSQRT_S, MASK_FSQRT_S))
-        );
-        assert_eq!("fsub.s", c.dispatch_rv32imf(enc(MATCH_FSUB_S, MASK_FSUB_S)));
-        assert_eq!("fsw", c.dispatch_rv32imf(enc(MATCH_FSW, MASK_FSW)));
+        assert_eq!("fdiv.s", c.dispatch(enc(MATCH_FDIV_S, MASK_FDIV_S)));
+        assert_eq!("feq.s", c.dispatch(enc(MATCH_FEQ_S, MASK_FEQ_S)));
+        assert_eq!("fle.s", c.dispatch(enc(MATCH_FLE_S, MASK_FLE_S)));
+        assert_eq!("flt.s", c.dispatch(enc(MATCH_FLT_S, MASK_FLT_S)));
+        assert_eq!("flw", c.dispatch(enc(MATCH_FLW, MASK_FLW)));
+        assert_eq!("fmadd.s", c.dispatch(enc(MATCH_FMADD_S, MASK_FMADD_S)));
+        assert_eq!("fmax.s", c.dispatch(enc(MATCH_FMAX_S, MASK_FMAX_S)));
+        assert_eq!("fmin.s", c.dispatch(enc(MATCH_FMIN_S, MASK_FMIN_S)));
+        assert_eq!("fmsub.s", c.dispatch(enc(MATCH_FMSUB_S, MASK_FMSUB_S)));
+        assert_eq!("fmul.s", c.dispatch(enc(MATCH_FMUL_S, MASK_FMUL_S)));
+        assert_eq!("fmv.w.x", c.dispatch(enc(MATCH_FMV_W_X, MASK_FMV_W_X)));
+        assert_eq!("fmv.x.w", c.dispatch(enc(MATCH_FMV_X_W, MASK_FMV_X_W)));
+        assert_eq!("fnmadd.s", c.dispatch(enc(MATCH_FNMADD_S, MASK_FNMADD_S)));
+        assert_eq!("fnmsub.s", c.dispatch(enc(MATCH_FNMSUB_S, MASK_FNMSUB_S)));
+        assert_eq!("fsgnj.s", c.dispatch(enc(MATCH_FSGNJ_S, MASK_FSGNJ_S)));
+        assert_eq!("fsgnjn.s", c.dispatch(enc(MATCH_FSGNJN_S, MASK_FSGNJN_S)));
+        assert_eq!("fsgnjx.s", c.dispatch(enc(MATCH_FSGNJX_S, MASK_FSGNJX_S)));
+        assert_eq!("fsqrt.s", c.dispatch(enc(MATCH_FSQRT_S, MASK_FSQRT_S)));
+        assert_eq!("fsub.s", c.dispatch(enc(MATCH_FSUB_S, MASK_FSUB_S)));
+        assert_eq!("fsw", c.dispatch(enc(MATCH_FSW, MASK_FSW)));
     }
 }

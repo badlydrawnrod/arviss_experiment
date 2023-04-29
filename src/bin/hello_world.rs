@@ -1,7 +1,10 @@
 use std::fs::File;
 use std::io::prelude::*;
 
-use arviss::prelude::*;
+use arviss::cpu::CoreCpu;
+use arviss::memory::Loader;
+use arviss::Rv32iDispatcher;
+use arviss::TrapHandler;
 
 use arviss::profiles::cpu::Rv32iCpu;
 use arviss::profiles::memory::BasicMem;
@@ -22,6 +25,6 @@ pub fn main() {
     let mut cpu = Rv32iCpu::<BasicMem>::with_mem(mem);
     while !cpu.is_trapped() {
         let instruction = cpu.fetch().expect("Failed to fetch instruction.");
-        cpu.dispatch_rv32i(instruction);
+        cpu.dispatch(instruction);
     }
 }

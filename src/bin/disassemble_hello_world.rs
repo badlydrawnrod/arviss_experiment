@@ -1,9 +1,8 @@
 use std::fs::File;
 use std::io::prelude::*;
 
-use arviss::prelude::*;
-
 use arviss::disassembler::Disassembler;
+use arviss::Rv32icDispatcher;
 
 pub fn main() {
     // Load an RV32IC image into a buffer.
@@ -22,7 +21,7 @@ pub fn main() {
             let word = u32::from_le_bytes(*slice);
             let is_compact = (word & 3) != 3;
             let word = if is_compact { word & 0xffff } else { word };
-            let result = disassembler.dispatch_rv32ic(word);
+            let result = disassembler.dispatch(word);
             if is_compact {
                 // Compact instructions are 2 bytes each.
                 println!("{:08x}     {:04x} {}", index, word, result);

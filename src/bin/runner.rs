@@ -3,17 +3,14 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 
-use arviss::prelude::*;
+use arviss::cpu::CoreCpu;
+use arviss::memory::Loader;
+use arviss::Rv32iDispatcher;
+use arviss::{TrapCause, TrapHandler};
 
 use arviss::disassembler::Disassembler;
 use arviss::profiles::cpu::Rv32iCpu;
 use arviss::profiles::memory::BasicMem;
-
-// A shim that makes it easy to change dispatchers.
-#[inline]
-fn dispatch<T>(dispatcher: &mut impl Rv32iDispatcher<Item = T>, code: u32) -> T {
-    dispatcher.dispatch_rv32i(code)
-}
 
 pub fn main() -> io::Result<()> {
     let args = env::args().collect::<Vec<_>>();
@@ -51,12 +48,12 @@ pub fn main() -> io::Result<()> {
 
         // Disassemble if the user asked for it.
         if disassemble {
-            let result = dispatch(&mut disassembler, ins);
+            let result = disassembler.dispatch(ins);
             println!("{:08x} {:08x} {}", cpu.get_pc(), ins, result);
         }
 
         // Decode and dispatch.
-        dispatch(&mut cpu, ins);
+        cpu.dispatch(ins);
     }
 
     match cpu.trap_cause() {
