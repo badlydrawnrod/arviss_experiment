@@ -94,8 +94,6 @@
 //! }
 //! ```
 
-pub mod prelude;
-
 pub mod cpu;
 pub mod disassembler;
 pub mod dispatcher;
