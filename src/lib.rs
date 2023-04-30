@@ -16,8 +16,8 @@
 //! ## Examples
 //! This example loads a binary RV32I image into simulator memory then executes it.
 //!
-//! To do this, it loads the data from an image and uses it to populate a [`profiles::memory::BasicMem`] memory
-//! implementation. It then creates an [`profiles::cpu::Rv32iCpu`] using that memory, then executes instructions from that
+//! To do this, it loads the data from an image and uses it to populate a [`profiles::basic_mem::BasicMem`] memory
+//! implementation. It then creates an [`profiles::rv32icpu::Rv32iCpu`] using that memory, then executes instructions from that
 //! memory by fetching them then dispatching them with [`Rv32iDispatcher`] which is implemented for
 //! [`Rv32i`].
 //!
@@ -29,14 +29,11 @@
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //!
-//! use arviss::cpu::CoreCpu;
-//! use arviss::memory::Loader;
 //! use arviss::Rv32iDispatcher;
-//! use arviss::TrapHandler;
-//! 
-//! use arviss::profiles::cpu::Rv32iCpu;
-//! use arviss::profiles::memory::BasicMem;
-//! 
+//!
+//! use arviss::profiles::rv32icpu::*;
+//! use arviss::profiles::basic_mem::*;
+//!
 //! // Load an RV32I image into a buffer.
 //! let mut f = File::open("images/hello_world.rv32i").expect("Failed to open image.");
 //! let mut buffer = Vec::new();
@@ -61,8 +58,9 @@
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //!
-//! use arviss::disassembler::Disassembler;
 //! use arviss::Rv32icDispatcher;
+//! 
+//! use arviss::disassembler::Disassembler;
 //!
 //! // Load an RV32IC image into a buffer.
 //! let mut f = File::open("images/hello_world.rv32ic").expect("Failed to open image.");

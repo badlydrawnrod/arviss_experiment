@@ -1,8 +1,9 @@
 use std::fs::File;
 use std::io::prelude::*;
 
-use arviss::disassembler::Disassembler;
 use arviss::Rv32icDispatcher;
+
+use arviss::disassembler::Disassembler;
 
 pub fn main() {
     // Load an RV32IC image into a buffer.

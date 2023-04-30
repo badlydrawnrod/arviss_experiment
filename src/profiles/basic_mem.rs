@@ -1,6 +1,7 @@
 //! A very basic implementation of memory.
 
-use crate::memory::{Address, Loader, Mem, MemoryResult};
+use crate::memory::{Address, MemoryResult};
+pub use crate::memory::{Loader, Mem};
 
 const MEMBASE: Address = 0;
 const MEMSIZE: Address = 0x8000;

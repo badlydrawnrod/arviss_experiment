@@ -1,11 +1,13 @@
 //! An RV32I CPU with integer registers but not floating point.
 
 use crate::{
-    cpu::{CoreCpu, Xreg},
+    // cpu::{CoreCpu, Xreg},
     memory::{Address, Mem, MemoryResult},
     reg::Reg,
-    trap::{TrapCause, TrapHandler},
 };
+
+pub use crate::cpu::{CoreCpu, Xreg};
+pub use crate::trap::{TrapCause, TrapHandler};
 
 #[derive(Default, Clone, Copy)]
 /// The current trap state of the CPU.
