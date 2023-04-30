@@ -6,8 +6,7 @@ use std::io::prelude::*;
 use arviss::Rv32iDispatcher;
 
 use arviss::disassembler::Disassembler;
-use arviss::profiles::basic_mem::*;
-use arviss::profiles::rv32icpu::*;
+use arviss::platforms::basic::*;
 
 pub fn main() -> io::Result<()> {
     let args = env::args().collect::<Vec<_>>();
@@ -25,14 +24,10 @@ pub fn main() -> io::Result<()> {
     let mut buffer = Vec::new();
     f.read_to_end(&mut buffer)?;
 
-    // Copy the image from the buffer into simulator memory.
-    let mut mem = BasicMem::new();
-    let image = buffer.as_slice();
-    mem.write_bytes(0, image)
+    // Create a simulator and copy the image from the buffer into simulator memory.
+    let mut cpu = Rv32iCpu::<BasicMem>::new();
+    cpu.write_bytes(0, buffer.as_slice())
         .expect("Failed to initialize memory.");
-
-    // Create a CPU that will use that memory.
-    let mut cpu = Rv32iCpu::<BasicMem>::with_mem(mem);
 
     // Run until we can run no more.
     let mut disassembler = Disassembler {};

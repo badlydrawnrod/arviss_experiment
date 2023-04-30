@@ -96,6 +96,7 @@ pub mod cpu;
 pub mod disassembler;
 pub mod dispatcher;
 pub mod memory;
+pub mod platforms;
 pub mod profiles;
 pub mod reg;
 pub mod tobits;

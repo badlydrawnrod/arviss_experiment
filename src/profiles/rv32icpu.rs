@@ -1,7 +1,7 @@
 //! An RV32I CPU with integer registers but not floating point.
 
 use crate::{
-    memory::{Address, Mem, MemoryResult},
+    memory::{Address, Loader, Mem, MemoryResult},
     reg::Reg,
 };
 
@@ -90,6 +90,15 @@ where
 
     fn write32(&mut self, address: Address, value: u32) -> MemoryResult<()> {
         self.mem.write32(address, value)
+    }
+}
+
+impl<M> Loader for Rv32iCpu<M>
+where
+    M: Mem + Loader,
+{
+    fn write_bytes(&mut self, start: crate::Address, bytes: &[u8]) -> crate::MemoryResult<()> {
+        self.mem.write_bytes(start, bytes)
     }
 }
 
