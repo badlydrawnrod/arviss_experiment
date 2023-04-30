@@ -1,7 +1,6 @@
 //! An RV32I CPU with integer registers but not floating point.
 
 use crate::{
-    // cpu::{CoreCpu, Xreg},
     memory::{Address, Mem, MemoryResult},
     reg::Reg,
 };
@@ -60,6 +59,15 @@ where
         self.next_pc = address;
     }
 
+    fn fetch32(&self, address: Address) -> MemoryResult<u32> {
+        self.read32(address)
+    }
+}
+
+impl<M> Mem for Rv32iCpu<M>
+where
+    M: Mem,
+{
     fn read8(&self, address: Address) -> MemoryResult<u8> {
         self.mem.read8(address)
     }

@@ -1,7 +1,7 @@
 //! Core traits used to implement RISC-V CPUs.
 
 use crate::{
-    memory::{Address, MemoryResult},
+    memory::{Address, Mem, MemoryResult},
     reg::Reg,
     trap::{TrapCause, TrapHandler},
 };
@@ -9,8 +9,7 @@ use crate::{
 /// The basic operations of a CPU that don't involve registers.
 ///
 /// A [CoreCpu] provides an abstraction over the basic CPU operations that don't involve general purpose registers,
-/// such as reading and updating the program counter, fetching the next instruction, and reading from and writing to
-/// memory.
+/// such as reading and updating the program counter, and fetching the next instruction.
 pub trait CoreCpu {
     /// Returns the current value of the program counter.
     fn get_pc(&self) -> Address;
@@ -19,10 +18,11 @@ pub trait CoreCpu {
     fn transfer(&mut self) -> Address;
 
     /// Sets the program counter to `next_pc`, retrieves the instruction at the memory address in the program counter,
-    /// then sets `next_pc` to the address of the next instruction. This can vary depending on instruction length.
+    /// then sets `next_pc` to the address of the next instruction by adding 4 bytes for 32-bit instructions and 2 bytes
+    /// for 16-bit instructions.
     fn fetch(&mut self) -> MemoryResult<u32> {
         let pc = self.transfer();
-        match self.read32(pc) {
+        match self.fetch32(pc) {
             Ok(ins) if (ins & 0b11) == 0b11 => {
                 // 32-bit instruction.
                 self.set_next_pc(pc.wrapping_add(4));
@@ -40,23 +40,8 @@ pub trait CoreCpu {
     /// Sets the value of `next_pc`, the address that's copied into the program counter when `fetch` is called.
     fn set_next_pc(&mut self, address: Address);
 
-    /// Reads a byte from memory.
-    fn read8(&self, address: Address) -> MemoryResult<u8>;
-
-    /// Reads a 16-bit half-word from memory.
-    fn read16(&self, address: Address) -> MemoryResult<u16>;
-
-    /// Reads a 32-bit word from memory.
-    fn read32(&self, address: Address) -> MemoryResult<u32>;
-
-    /// Writes a byte to memory.
-    fn write8(&mut self, address: Address, value: u8) -> MemoryResult<()>;
-
-    /// Writes a 16-bit half word to memory.
-    fn write16(&mut self, address: Address, value: u16) -> MemoryResult<()>;
-
-    /// Writes a 32-bit word to memory.
-    fn write32(&mut self, address: Address, value: u32) -> MemoryResult<()>;
+    /// Fetches a 32-bit word from memory.
+    fn fetch32(&self, address: Address) -> MemoryResult<u32>;
 }
 
 /// Provides access to the base RV32I integer registers.
@@ -145,7 +130,7 @@ pub trait Rv32i {
 
 impl<T> Rv32i for T
 where
-    T: CoreCpu + TrapHandler + Xreg,
+    T: CoreCpu + TrapHandler + Xreg + Mem,
 {
     type Item = ();
 
@@ -771,7 +756,7 @@ pub trait Rv32f {
 
 impl<T> Rv32f for T
 where
-    T: CoreCpu + TrapHandler + Xreg + Freg,
+    T: CoreCpu + TrapHandler + Xreg + Freg + Mem,
 {
     type Item = ();
 
