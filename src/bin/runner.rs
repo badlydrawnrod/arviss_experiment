@@ -41,7 +41,7 @@ pub fn main() -> io::Result<()> {
         // Disassemble if the user asked for it.
         if disassemble {
             let result = disassembler.dispatch(ins);
-            println!("{:08x} {:08x} {}", cpu.get_pc(), ins, result);
+            println!("{:08x} {:08x} {}", cpu.pc(), ins, result);
         }
 
         // Decode and dispatch.
@@ -50,7 +50,7 @@ pub fn main() -> io::Result<()> {
 
     match cpu.trap_cause() {
         Some(TrapCause::Breakpoint) => {}
-        Some(cause) => println!("{:?} at 0x{:08x}", cause, cpu.get_pc()),
+        Some(cause) => println!("{:?} at 0x{:08x}", cause, cpu.pc()),
         None => {}
     }
 

@@ -16,40 +16,42 @@
 //! ## Examples
 //! This example loads a binary RV32I image into simulator memory then executes it.
 //!
-//! To do this, it loads the data from an image and uses it to populate a [`profiles::basic_mem::BasicMem`] memory
-//! implementation. It then creates an [`profiles::rv32icpu::Rv32iCpu`] using that memory, then executes instructions from that
-//! memory by fetching them then dispatching them with [`Rv32iDispatcher`] which is implemented for
-//! [`Rv32i`].
+//! To do this, it loads the data from an image and uses it to populate a [`platforms::basic::BasicCpu`]'s memory. It
+//! then executes instructions, dispatching them with [`Rv32iDispatcher`] which is implemented for [`Rv32i`].
 //!
 //! It does this until the CPU hits a trap, which it will do when it reaches an `ebreak`.
 //!
 //! If you run this example it should output "Hello, world from Rust!" multiple times.
 //!
 //! ```
+//! # use std::error::Error;
+//! #
+//! # fn main() -> Result<(), Box<dyn Error>> {
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //!
 //! use arviss::Rv32iDispatcher;
 //!
-//! use arviss::profiles::rv32icpu::*;
-//! use arviss::profiles::basic_mem::*;
+//! use arviss::platforms::basic::*;
 //!
 //! // Load an RV32I image into a buffer.
-//! let mut f = File::open("images/hello_world.rv32i").expect("Failed to open image.");
+//! let mut f = File::open("images/hello_world.rv32i")?;
 //! let mut buffer = Vec::new();
-//! f.read_to_end(&mut buffer).expect("Failed to load image.");
+//! f.read_to_end(&mut buffer)?;
 //!
-//! // Copy the image into simulator memory.
-//! let mut mem = BasicMem::new();
-//! let image = buffer.as_slice();
-//! mem.write_bytes(0, image).expect("Failed to initialize memory.");
+//! // Create a simulator and copy the image from the buffer into simulator memory.
+//! let mut cpu = Rv32iCpu::<BasicMem>::new();
+//! cpu.write_bytes(0, buffer.as_slice())
+//!     .expect("Failed to initialize memory.");
 //!
 //! // Execute the image.
-//! let mut cpu = Rv32iCpu::<BasicMem>::with_mem(mem);
 //! while !cpu.is_trapped() {
-//!     let instruction = cpu.fetch().expect("Failed to fetch instruction.");
+//!     let instruction = cpu.fetch().unwrap();
 //!     cpu.dispatch(instruction);
 //! }
+//! #
+//! #     Ok(())
+//! # }
 //! ```
 //!
 //! This example loads a binary RV32IC image and disassembles it.
@@ -59,7 +61,7 @@
 //! use std::io::prelude::*;
 //!
 //! use arviss::Rv32icDispatcher;
-//! 
+//!
 //! use arviss::disassembler::Disassembler;
 //!
 //! // Load an RV32IC image into a buffer.

@@ -12,7 +12,7 @@ use crate::{
 /// such as reading and updating the program counter, and fetching the next instruction.
 pub trait CoreCpu {
     /// Returns the current value of the program counter.
-    fn get_pc(&self) -> Address;
+    fn pc(&self) -> Address;
 
     /// Sets the program counter to `next_pc` and returns it.
     fn transfer(&mut self) -> Address;
@@ -145,14 +145,14 @@ where
     fn beq(&mut self, rs1: Reg, rs2: Reg, bimm: u32) {
         // pc <- pc + ((rs1 == rs2) ? imm_b : 4)
         if self.rx(rs1) == self.rx(rs2) {
-            self.set_next_pc(self.get_pc().wrapping_add(bimm));
+            self.set_next_pc(self.pc().wrapping_add(bimm));
         }
     }
 
     fn bne(&mut self, rs1: Reg, rs2: Reg, bimm: u32) {
         // pc <- pc + ((rs1 != rs2) ? imm_b : 4)
         if self.rx(rs1) != self.rx(rs2) {
-            self.set_next_pc(self.get_pc().wrapping_add(bimm));
+            self.set_next_pc(self.pc().wrapping_add(bimm));
         }
     }
 
@@ -160,7 +160,7 @@ where
         // Signed.
         // pc <- pc + ((rs1 < rs2) ? imm_b : 4)
         if (self.rx(rs1) as i32) < (self.rx(rs2) as i32) {
-            self.set_next_pc(self.get_pc().wrapping_add(bimm));
+            self.set_next_pc(self.pc().wrapping_add(bimm));
         }
     }
 
@@ -168,7 +168,7 @@ where
         // Signed.
         // pc <- pc + ((rs1 >= rs2) ? imm_b : 4)
         if (self.rx(rs1) as i32) >= (self.rx(rs2) as i32) {
-            self.set_next_pc(self.get_pc().wrapping_add(bimm));
+            self.set_next_pc(self.pc().wrapping_add(bimm));
         }
     }
 
@@ -176,7 +176,7 @@ where
         // Unsigned.
         // pc <- pc + ((rs1 < rs2) ? imm_b : 4)
         if self.rx(rs1) < self.rx(rs2) {
-            self.set_next_pc(self.get_pc().wrapping_add(bimm));
+            self.set_next_pc(self.pc().wrapping_add(bimm));
         }
     }
 
@@ -184,7 +184,7 @@ where
         // Unsigned.
         // pc <- pc + ((rs1 >= rs2) ? imm_b : 4)
         if self.rx(rs1) >= self.rx(rs2) {
-            self.set_next_pc(self.get_pc().wrapping_add(bimm));
+            self.set_next_pc(self.pc().wrapping_add(bimm));
         }
     }
 
@@ -285,7 +285,7 @@ where
     fn jalr(&mut self, rd: Reg, rs1: Reg, iimm: u32) {
         // rd <- pc + 4, pc <- (rs1 + imm_i) & ~1
         let rs1_before = self.rx(rs1); // Because rd and rs1 might be the same register.
-        self.wx(rd, self.get_pc().wrapping_add(4));
+        self.wx(rd, self.pc().wrapping_add(4));
         self.set_next_pc(rs1_before.wrapping_add(iimm) & !1);
     }
 
@@ -321,7 +321,7 @@ where
 
     fn auipc(&mut self, rd: Reg, uimm: u32) {
         // rd <- pc + imm_u, pc += 4
-        self.wx(rd, self.get_pc().wrapping_add(uimm));
+        self.wx(rd, self.pc().wrapping_add(uimm));
     }
 
     fn lui(&mut self, rd: Reg, uimm: u32) {
@@ -333,8 +333,8 @@ where
 
     fn jal(&mut self, rd: Reg, jimm: u32) {
         // rd <- pc + 4, pc <- pc + imm_j
-        self.wx(rd, self.get_pc().wrapping_add(4));
-        self.set_next_pc(self.get_pc().wrapping_add(jimm));
+        self.wx(rd, self.pc().wrapping_add(4));
+        self.set_next_pc(self.pc().wrapping_add(jimm));
     }
 
     // Arithmetic instructions.

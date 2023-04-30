@@ -8,13 +8,14 @@ use crate::{
 pub use crate::cpu::{CoreCpu, Xreg};
 pub use crate::trap::{TrapCause, TrapHandler};
 
-#[derive(Default, Clone, Copy)]
 /// The current trap state of the CPU.
+#[derive(Default, Clone, Copy)]
 pub struct TrapState {
     cause: Option<TrapCause>,
 }
 
 /// A basic RV32I CPU with integer registers but no floating point.
+#[derive(Default)]
 pub struct Rv32iCpu<M>
 where
     M: Mem,
@@ -30,6 +31,14 @@ impl<M> Rv32iCpu<M>
 where
     M: Mem,
 {
+    /// Createa a new CPU with default memory.
+    pub fn new() -> Self
+    where
+        M: Default,
+    {
+        Self::with_mem(Default::default())
+    }
+
     /// Creates a new CPU with caller-supplied memory.
     pub fn with_mem(mem: M) -> Self {
         Self {
@@ -46,7 +55,7 @@ impl<M> CoreCpu for Rv32iCpu<M>
 where
     M: Mem,
 {
-    fn get_pc(&self) -> Address {
+    fn pc(&self) -> Address {
         self.pc
     }
 
