@@ -1,4 +1,4 @@
-//! Hardware platforms.
+//! Hardware platforms combine back ends to make a specific platform.
 
 /// A platform that uses an RV32ICPU with basic memory.
 pub mod basic {

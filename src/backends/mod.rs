@@ -1,4 +1,4 @@
-//! Some implementations of hardware profiles.
+//! Implementations of CPU and memory back ends.
 
 mod basic_mem;
 mod rv32icpu;
