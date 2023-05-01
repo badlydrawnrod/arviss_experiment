@@ -99,7 +99,7 @@ pub mod disassembler;
 pub mod dispatcher;
 pub mod memory;
 pub mod platforms;
-pub mod profiles;
+pub mod backends;
 pub mod reg;
 pub mod tobits;
 pub mod trap;

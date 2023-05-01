@@ -3,8 +3,7 @@ use std::io::prelude::*;
 
 use arviss::Rv32iDispatcher;
 
-use arviss::profiles::basic_mem::*;
-use arviss::profiles::rv32icpu::*;
+use arviss::platforms::basic::*;
 
 pub fn main() {
     // Load the image into a buffer.
