@@ -17,7 +17,7 @@
 //! This example loads a binary RV32I image into simulator memory then executes it.
 //!
 //! To do this, it loads the data from an image and uses it to populate a [`platforms::basic::BasicCpu`]'s memory. It
-//! then executes instructions, dispatching them with [`Rv32iDispatcher`] which is implemented for [`Rv32i`].
+//! then executes instructions, dispatching them with [`Rv32iDispatcher`] which is implemented for [`Rv32iHandler`].
 //!
 //! It does this until the CPU hits a trap, which it will do when it reaches an `ebreak`.
 //!
@@ -94,21 +94,26 @@
 //! }
 //! ```
 
-pub mod cpu;
-pub mod disassembler;
-pub mod dispatcher;
-pub mod memory;
-pub mod platforms;
 pub mod backends;
+pub mod disassembler;
+pub mod platforms;
 pub mod reg;
 pub mod tobits;
-pub mod trap;
+
+mod cpu;
+mod dispatcher;
+mod handlers;
+mod memory;
+mod trap;
 
 #[doc(inline)]
 pub use cpu::*;
 
 #[doc(inline)]
 pub use dispatcher::*;
+
+#[doc(inline)]
+pub use handlers::*;
 
 #[doc(inline)]
 pub use memory::*;
