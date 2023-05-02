@@ -17,7 +17,7 @@
 //! This example loads a binary RV32I image into simulator memory then executes it.
 //!
 //! To do this, it loads the data from an image and uses it to populate a [`platforms::basic::BasicCpu`]'s memory. It
-//! then executes instructions, dispatching them with [`Rv32iDispatcher`] which is implemented for [`Rv32iHandler`].
+//! then executes instructions, dispatching them with [`DispatchRv32i`] which is implemented for [`HandleRv32i`].
 //!
 //! It does this until the CPU hits a trap, which it will do when it reaches an `ebreak`.
 //!
@@ -30,7 +30,7 @@
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //!
-//! use arviss::Rv32iDispatcher;
+//! use arviss::DispatchRv32i;
 //!
 //! use arviss::platforms::basic::*;
 //!
@@ -60,7 +60,7 @@
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //!
-//! use arviss::Rv32icDispatcher;
+//! use arviss::DispatchRv32ic;
 //!
 //! use arviss::disassembler::Disassembler;
 //!

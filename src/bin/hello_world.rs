@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::prelude::*;
 
-use arviss::Rv32iDispatcher;
+use arviss::DispatchRv32i;
 
 use arviss::platforms::basic::*;
 

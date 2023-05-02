@@ -1,12 +1,12 @@
 //! An RV32I CPU with integer registers but not floating point.
 
 use crate::{
-    memory::{Address, Loader, Mem, MemoryResult},
+    memory::{Address, Load, Memory, MemoryResult},
     reg::Reg,
 };
 
-pub use crate::cpu::{CoreCpu, Xreg};
-pub use crate::trap::{TrapCause, TrapHandler};
+pub use crate::cpu::{Fetch, XRegisters};
+pub use crate::trap::{TrapCause, Trap};
 
 /// The current trap state of the CPU.
 #[derive(Default, Clone, Copy)]
@@ -18,7 +18,7 @@ pub struct TrapState {
 #[derive(Default)]
 pub struct Rv32iCpu<M>
 where
-    M: Mem,
+    M: Memory,
 {
     pc: u32,               // The program counter.
     next_pc: u32,          // The program counter for the next instruction.
@@ -29,7 +29,7 @@ where
 
 impl<M> Rv32iCpu<M>
 where
-    M: Mem,
+    M: Memory,
 {
     /// Createa a new CPU with default memory.
     pub fn new() -> Self
@@ -51,9 +51,9 @@ where
     }
 }
 
-impl<M> CoreCpu for Rv32iCpu<M>
+impl<M> Fetch for Rv32iCpu<M>
 where
-    M: Mem,
+    M: Memory,
 {
     fn pc(&self) -> Address {
         self.pc
@@ -73,9 +73,9 @@ where
     }
 }
 
-impl<M> Mem for Rv32iCpu<M>
+impl<M> Memory for Rv32iCpu<M>
 where
-    M: Mem,
+    M: Memory,
 {
     fn read8(&self, address: Address) -> MemoryResult<u8> {
         self.mem.read8(address)
@@ -102,18 +102,18 @@ where
     }
 }
 
-impl<M> Loader for Rv32iCpu<M>
+impl<M> Load for Rv32iCpu<M>
 where
-    M: Mem + Loader,
+    M: Memory + Load,
 {
     fn write_bytes(&mut self, start: crate::Address, bytes: &[u8]) -> crate::MemoryResult<()> {
         self.mem.write_bytes(start, bytes)
     }
 }
 
-impl<M> Xreg for Rv32iCpu<M>
+impl<M> XRegisters for Rv32iCpu<M>
 where
-    M: Mem,
+    M: Memory,
 {
     fn rx(&self, reg: Reg) -> u32 {
         let index: usize = Into::into(reg);
@@ -127,9 +127,9 @@ where
     }
 }
 
-impl<M> TrapHandler for Rv32iCpu<M>
+impl<M> Trap for Rv32iCpu<M>
 where
-    M: Mem,
+    M: Memory,
 {
     fn trap_cause(&self) -> Option<TrapCause> {
         self.trap_state.cause

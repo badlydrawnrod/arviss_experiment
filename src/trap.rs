@@ -30,7 +30,7 @@ pub enum TrapCause {
 }
 
 /// A trait for dealing with traps.
-pub trait TrapHandler {
+pub trait Trap {
     fn trap_cause(&self) -> Option<TrapCause>;
 
     fn clear_trap(&mut self);

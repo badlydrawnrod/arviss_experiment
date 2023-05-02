@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::prelude::*;
 
-use arviss::Rv32icDispatcher;
+use arviss::DispatchRv32ic;
 
 use arviss::disassembler::Disassembler;
 

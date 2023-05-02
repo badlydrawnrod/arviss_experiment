@@ -7,7 +7,7 @@ pub type Address = u32;
 pub type MemoryResult<T> = Result<T, Address>;
 
 /// Memory access.
-pub trait Mem {
+pub trait Memory {
     /// Reads a byte from memory.
     fn read8(&self, address: Address) -> MemoryResult<u8>;
 
@@ -28,7 +28,7 @@ pub trait Mem {
 }
 
 /// Loads data into memory.
-pub trait Loader {
+pub trait Load {
     /// Loads a slice of bytes into memory starting at the given address.
     fn write_bytes(&mut self, start: Address, bytes: &[u8]) -> MemoryResult<()>;
 }

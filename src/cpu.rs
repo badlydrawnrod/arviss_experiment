@@ -5,11 +5,11 @@ use crate::{
     reg::Reg,
 };
 
-/// The basic operations of a CPU that don't involve registers.
+/// Fetches the next instruction from memory and updates the program counter.
 ///
-/// A [CoreCpu] provides an abstraction over the basic CPU operations that don't involve general purpose registers,
-/// such as reading and updating the program counter, and fetching the next instruction.
-pub trait CoreCpu {
+/// Provides an abstraction over the basic CPU operations that involve fetching the next instruction from memory and
+/// updating the program counter.
+pub trait Fetch {
     /// Returns the current value of the program counter.
     fn pc(&self) -> Address;
 
@@ -44,7 +44,7 @@ pub trait CoreCpu {
 }
 
 /// Provides access to the base RV32I integer registers.
-pub trait Xreg {
+pub trait XRegisters {
     /// Returns the value in the given integer register.
     fn rx(&self, reg: Reg) -> u32;
 
@@ -53,7 +53,7 @@ pub trait Xreg {
 }
 
 /// Provides access to the single-precision floating point registers used by the 'F' extension.
-pub trait Freg {
+pub trait FRegisters {
     /// Returns the value in the given floating point register.
     fn rf(&self, reg: Reg) -> f32;
 

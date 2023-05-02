@@ -1,14 +1,14 @@
 //! Instruction handlers.
 
 use crate::{
-    cpu::{CoreCpu, Freg, Xreg},
-    memory::Mem,
+    cpu::{Fetch, FRegisters, XRegisters},
+    memory::Memory,
     reg::Reg,
-    trap::{TrapCause, TrapHandler},
+    trap::{TrapCause, Trap},
 };
 
-/// Implements the instructions from the base RV32I ISA.
-pub trait Rv32iHandler {
+/// An **instruction handler** for instructions from the base RV32I ISA.
+pub trait HandleRv32i {
     type Item;
 
     // Illegal instruction.
@@ -73,9 +73,9 @@ pub trait Rv32iHandler {
     fn ebreak(&mut self) -> Self::Item;
 }
 
-impl<T> Rv32iHandler for T
+impl<T> HandleRv32i for T
 where
-    T: CoreCpu + TrapHandler + Xreg + Mem,
+    T: Fetch + Trap + XRegisters + Memory,
 {
     type Item = ();
 
@@ -370,8 +370,8 @@ where
     }
 }
 
-/// Implements the instructions from the 'M' extension for integer multiplication and division.
-pub trait Rv32mHandler {
+/// An **instruction handler** for instructions from the 'M' extension for integer multiplication and division.
+pub trait HandleRv32m {
     type Item;
 
     fn mul(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item;
@@ -384,9 +384,9 @@ pub trait Rv32mHandler {
     fn remu(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item;
 }
 
-impl<T> Rv32mHandler for T
+impl<T> HandleRv32m for T
 where
-    T: CoreCpu + Xreg,
+    T: Fetch + XRegisters,
 {
     type Item = ();
 
@@ -481,8 +481,8 @@ where
     }
 }
 
-/// Implements the instructions from the 'C' extension for compressed instructions.
-pub trait Rv32cHandler {
+/// An **instruction handler** for instructions from the 'C' extension for compressed instructions.
+pub trait HandleRv32c {
     type Item;
 
     fn c_addi4spn(&mut self, rdp: Reg, imm: u32) -> Self::Item;
@@ -514,9 +514,9 @@ pub trait Rv32cHandler {
     fn c_slli(&mut self, rdrs1n0: Reg, imm: u32) -> Self::Item;
 }
 
-impl<T> Rv32cHandler for T
+impl<T> HandleRv32c for T
 where
-    T: CoreCpu + Xreg + Rv32iHandler,
+    T: Fetch + XRegisters + HandleRv32i,
 {
     type Item = ();
 
@@ -654,8 +654,8 @@ where
     }
 }
 
-/// Implements the instructions from the 'F' extension for single-precision floating point.
-pub trait Rv32fHandler {
+/// An **instruction handler** for instructions from the 'F' extension for single-precision floating point.
+pub trait HandleRv32f {
     type Item;
 
     // I-type instructions.
@@ -699,9 +699,9 @@ pub trait Rv32fHandler {
     fn feq_s(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item;
 }
 
-impl<T> Rv32fHandler for T
+impl<T> HandleRv32f for T
 where
-    T: CoreCpu + TrapHandler + Xreg + Freg + Mem,
+    T: Fetch + Trap + XRegisters + FRegisters + Memory,
 {
     type Item = ();
 

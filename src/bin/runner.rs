@@ -3,7 +3,7 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 
-use arviss::Rv32iDispatcher;
+use arviss::DispatchRv32i;
 
 use arviss::disassembler::Disassembler;
 use arviss::platforms::basic::*;

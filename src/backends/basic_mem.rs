@@ -1,7 +1,7 @@
 //! A very basic implementation of memory.
 
 use crate::memory::{Address, MemoryResult};
-pub use crate::memory::{Loader, Mem};
+pub use crate::memory::{Load, Memory};
 
 const MEMBASE: Address = 0;
 const MEMSIZE: Address = 0x8000;
@@ -50,7 +50,7 @@ impl BasicMem {
     }
 }
 
-impl Loader for BasicMem {
+impl Load for BasicMem {
     fn write_bytes(&mut self, start: Address, bytes: &[u8]) -> MemoryResult<()> {
         let start = start as usize;
         let end = start + bytes.len();
@@ -65,7 +65,7 @@ impl Loader for BasicMem {
     }
 }
 
-impl Mem for BasicMem {
+impl Memory for BasicMem {
     #[inline]
     fn read8(&self, address: Address) -> MemoryResult<u8> {
         if (MEMBASE..MEMBASE + MEMSIZE).contains(&address) {
@@ -144,7 +144,7 @@ impl Mem for BasicMem {
 
 #[cfg(test)]
 mod tests {
-    use super::{BasicMem, Mem, TTY_DATA};
+    use super::{BasicMem, Memory, TTY_DATA};
 
     #[test]
     fn test_the_tty_is_writable() {
