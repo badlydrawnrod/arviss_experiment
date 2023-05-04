@@ -1,7 +1,7 @@
 use std::fs::File;
 use std::io::prelude::*;
 
-use arviss::prelude::*;
+use arviss::DispatchRv32ic;
 
 use arviss::disassembler::Disassembler;
 
@@ -22,7 +22,7 @@ pub fn main() {
             let word = u32::from_le_bytes(*slice);
             let is_compact = (word & 3) != 3;
             let word = if is_compact { word & 0xffff } else { word };
-            let result = disassembler.dispatch_rv32ic(word);
+            let result = disassembler.dispatch(word);
             if is_compact {
                 // Compact instructions are 2 bytes each.
                 println!("{:08x}     {:04x} {}", index, word, result);

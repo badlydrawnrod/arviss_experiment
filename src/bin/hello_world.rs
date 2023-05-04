@@ -1,10 +1,9 @@
 use std::fs::File;
 use std::io::prelude::*;
 
-use arviss::prelude::*;
+use arviss::DispatchRv32i;
 
-use arviss::profiles::cpu::Rv32iCpu;
-use arviss::profiles::memory::BasicMem;
+use arviss::platforms::basic::*;
 
 pub fn main() {
     // Load the image into a buffer.
@@ -22,6 +21,6 @@ pub fn main() {
     let mut cpu = Rv32iCpu::<BasicMem>::with_mem(mem);
     while !cpu.is_trapped() {
         let instruction = cpu.fetch().expect("Failed to fetch instruction.");
-        cpu.dispatch_rv32i(instruction);
+        cpu.dispatch(instruction);
     }
 }

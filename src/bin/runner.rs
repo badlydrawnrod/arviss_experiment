@@ -3,17 +3,10 @@ use std::fs::File;
 use std::io;
 use std::io::prelude::*;
 
-use arviss::prelude::*;
+use arviss::DispatchRv32i;
 
 use arviss::disassembler::Disassembler;
-use arviss::profiles::cpu::Rv32iCpu;
-use arviss::profiles::memory::BasicMem;
-
-// A shim that makes it easy to change dispatchers.
-#[inline]
-fn dispatch<T>(dispatcher: &mut impl Rv32iDispatcher<Item = T>, code: u32) -> T {
-    dispatcher.dispatch_rv32i(code)
-}
+use arviss::platforms::basic::*;
 
 pub fn main() -> io::Result<()> {
     let args = env::args().collect::<Vec<_>>();
@@ -31,14 +24,10 @@ pub fn main() -> io::Result<()> {
     let mut buffer = Vec::new();
     f.read_to_end(&mut buffer)?;
 
-    // Copy the image from the buffer into simulator memory.
-    let mut mem = BasicMem::new();
-    let image = buffer.as_slice();
-    mem.write_bytes(0, image)
+    // Create a simulator and copy the image from the buffer into simulator memory.
+    let mut cpu = Rv32iCpu::<BasicMem>::new();
+    cpu.write_bytes(0, buffer.as_slice())
         .expect("Failed to initialize memory.");
-
-    // Create a CPU that will use that memory.
-    let mut cpu = Rv32iCpu::<BasicMem>::with_mem(mem);
 
     // Run until we can run no more.
     let mut disassembler = Disassembler {};
@@ -51,17 +40,17 @@ pub fn main() -> io::Result<()> {
 
         // Disassemble if the user asked for it.
         if disassemble {
-            let result = dispatch(&mut disassembler, ins);
-            println!("{:08x} {:08x} {}", cpu.get_pc(), ins, result);
+            let result = disassembler.dispatch(ins);
+            println!("{:08x} {:08x} {}", cpu.pc(), ins, result);
         }
 
         // Decode and dispatch.
-        dispatch(&mut cpu, ins);
+        cpu.dispatch(ins);
     }
 
     match cpu.trap_cause() {
         Some(TrapCause::Breakpoint) => {}
-        Some(cause) => println!("{:?} at 0x{:08x}", cause, cpu.get_pc()),
+        Some(cause) => println!("{:?} at 0x{:08x}", cause, cpu.pc()),
         None => {}
     }
 

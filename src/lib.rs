@@ -16,40 +16,42 @@
 //! ## Examples
 //! This example loads a binary RV32I image into simulator memory then executes it.
 //!
-//! To do this, it loads the data from an image and uses it to populate a [`profiles::memory::BasicMem`] memory
-//! implementation. It then creates an [`profiles::cpu::Rv32iCpu`] using that memory, then executes instructions from that
-//! memory by fetching them then dispatching them with [`Rv32iDispatcher`] which is implemented for
-//! [`Rv32i`].
+//! To do this, it loads the data from an image and uses it to populate a [`platforms::basic::BasicCpu`]'s memory. It
+//! then executes instructions, dispatching them with [`DispatchRv32i`] which is implemented for [`HandleRv32i`].
 //!
 //! It does this until the CPU hits a trap, which it will do when it reaches an `ebreak`.
 //!
 //! If you run this example it should output "Hello, world from Rust!" multiple times.
 //!
 //! ```
+//! # use std::error::Error;
+//! #
+//! # fn main() -> Result<(), Box<dyn Error>> {
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //!
-//! use arviss::prelude::*;
+//! use arviss::DispatchRv32i;
 //!
-//! use arviss::profiles::memory::BasicMem;
-//! use arviss::profiles::cpu::Rv32iCpu;
+//! use arviss::platforms::basic::*;
 //!
 //! // Load an RV32I image into a buffer.
-//! let mut f = File::open("images/hello_world.rv32i").expect("Failed to open image.");
+//! let mut f = File::open("images/hello_world.rv32i")?;
 //! let mut buffer = Vec::new();
-//! f.read_to_end(&mut buffer).expect("Failed to load image.");
+//! f.read_to_end(&mut buffer)?;
 //!
-//! // Copy the image into simulator memory.
-//! let mut mem = BasicMem::new();
-//! let image = buffer.as_slice();
-//! mem.write_bytes(0, image).expect("Failed to initialize memory.");
+//! // Create a simulator and copy the image from the buffer into simulator memory.
+//! let mut cpu = Rv32iCpu::<BasicMem>::new();
+//! cpu.write_bytes(0, buffer.as_slice())
+//!     .expect("Failed to initialize memory.");
 //!
 //! // Execute the image.
-//! let mut cpu = Rv32iCpu::<BasicMem>::with_mem(mem);
 //! while !cpu.is_trapped() {
-//!     let instruction = cpu.fetch().expect("Failed to fetch instruction.");
-//!     cpu.dispatch_rv32i(instruction);
+//!     let instruction = cpu.fetch().unwrap();
+//!     cpu.dispatch(instruction);
 //! }
+//! #
+//! #     Ok(())
+//! # }
 //! ```
 //!
 //! This example loads a binary RV32IC image and disassembles it.
@@ -58,7 +60,7 @@
 //! use std::fs::File;
 //! use std::io::prelude::*;
 //!
-//! use arviss::prelude::*;
+//! use arviss::DispatchRv32ic;
 //!
 //! use arviss::disassembler::Disassembler;
 //!
@@ -78,7 +80,7 @@
 //!         let word = u32::from_le_bytes(*slice);
 //!         let is_compact = (word & 3) != 3;
 //!         let word = if is_compact { word & 0xffff } else { word };
-//!         let result = disassembler.dispatch_rv32ic(word);
+//!         let result = disassembler.dispatch(word);
 //!         if is_compact {
 //!             // Compact instructions are 2 bytes each.
 //!             println!("{:08x}     {:04x} {}", index, word, result);
@@ -92,16 +94,16 @@
 //! }
 //! ```
 
-pub mod prelude;
-
-pub mod cpu;
+pub mod backends;
 pub mod disassembler;
-pub mod dispatcher;
-pub mod memory;
-pub mod profiles;
-pub mod reg;
-pub mod tobits;
-pub mod trap;
+
+mod cpu;
+mod dispatcher;
+mod handlers;
+mod memory;
+mod reg;
+mod tobits;
+mod trap;
 
 #[doc(inline)]
 pub use cpu::*;
@@ -110,7 +112,37 @@ pub use cpu::*;
 pub use dispatcher::*;
 
 #[doc(inline)]
+pub use handlers::*;
+
+#[doc(inline)]
 pub use memory::*;
 
 #[doc(inline)]
 pub use trap::*;
+
+/// Utilities for decoding instructions and registers.
+pub mod decoding {
+    #[doc(inline)]
+    pub use crate::reg::*;
+
+    #[doc(inline)]
+    pub use crate::tobits::*;
+}
+
+/// Hardware platforms combine back ends to make a specific platform.
+pub mod platforms {
+    use super::backends;
+
+    /// A platform that uses an RV32ICPU with basic memory.
+    pub mod basic {
+        use super::backends;
+
+        #[doc(inline)]
+        pub use backends::cpus::rv32i::*;
+
+        #[doc(inline)]
+        pub use backends::memory::basic::*;
+
+        pub type BasicCpu = Rv32iCpu<BasicMem>;
+    }
+}

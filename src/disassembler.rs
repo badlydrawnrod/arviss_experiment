@@ -1,7 +1,7 @@
 //! A disassembler.
 
 use crate::{
-    cpu::{Rv32c, Rv32f, Rv32i, Rv32m},
+    handlers::{HandleRv32c, HandleRv32f, HandleRv32i, HandleRv32m},
     reg::Reg,
 };
 
@@ -35,7 +35,7 @@ fn fabi(reg: Reg) -> &'static str {
     }
 }
 
-impl Rv32i for Disassembler {
+impl HandleRv32i for Disassembler {
     type Item = String;
 
     fn illegal(&mut self, ins: u32) -> Self::Item {
@@ -203,7 +203,7 @@ impl Rv32i for Disassembler {
     }
 }
 
-impl Rv32m for Disassembler {
+impl HandleRv32m for Disassembler {
     type Item = String;
 
     fn mul(&mut self, rd: Reg, rs1: Reg, rs2: Reg) -> Self::Item {
@@ -239,7 +239,7 @@ impl Rv32m for Disassembler {
     }
 }
 
-impl Rv32c for Disassembler {
+impl HandleRv32c for Disassembler {
     type Item = String;
 
     fn c_addi4spn(&mut self, rdp: Reg, imm: u32) -> Self::Item {
@@ -376,7 +376,7 @@ impl Rv32c for Disassembler {
     }
 }
 
-impl Rv32f for Disassembler {
+impl HandleRv32f for Disassembler {
     type Item = String;
 
     fn flw(&mut self, rd: Reg, rs1: Reg, iimm: u32) -> Self::Item {

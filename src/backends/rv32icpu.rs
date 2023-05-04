@@ -1,22 +1,24 @@
 //! An RV32I CPU with integer registers but not floating point.
 
 use crate::{
-    cpu::{CoreCpu, Xreg},
-    memory::{Address, Mem, MemoryResult},
+    memory::{Address, Load, Memory, MemoryResult},
     reg::Reg,
-    trap::{TrapCause, TrapHandler},
 };
 
-#[derive(Default, Clone, Copy)]
+pub use crate::cpu::{Fetch, XRegisters};
+pub use crate::trap::{TrapCause, Trap};
+
 /// The current trap state of the CPU.
+#[derive(Default, Clone, Copy)]
 pub struct TrapState {
     cause: Option<TrapCause>,
 }
 
 /// A basic RV32I CPU with integer registers but no floating point.
+#[derive(Default)]
 pub struct Rv32iCpu<M>
 where
-    M: Mem,
+    M: Memory,
 {
     pc: u32,               // The program counter.
     next_pc: u32,          // The program counter for the next instruction.
@@ -27,8 +29,16 @@ where
 
 impl<M> Rv32iCpu<M>
 where
-    M: Mem,
+    M: Memory,
 {
+    /// Createa a new CPU with default memory.
+    pub fn new() -> Self
+    where
+        M: Default,
+    {
+        Self::with_mem(Default::default())
+    }
+
     /// Creates a new CPU with caller-supplied memory.
     pub fn with_mem(mem: M) -> Self {
         Self {
@@ -41,11 +51,11 @@ where
     }
 }
 
-impl<M> CoreCpu for Rv32iCpu<M>
+impl<M> Fetch for Rv32iCpu<M>
 where
-    M: Mem,
+    M: Memory,
 {
-    fn get_pc(&self) -> Address {
+    fn pc(&self) -> Address {
         self.pc
     }
 
@@ -58,6 +68,15 @@ where
         self.next_pc = address;
     }
 
+    fn fetch32(&self, address: Address) -> MemoryResult<u32> {
+        self.read32(address)
+    }
+}
+
+impl<M> Memory for Rv32iCpu<M>
+where
+    M: Memory,
+{
     fn read8(&self, address: Address) -> MemoryResult<u8> {
         self.mem.read8(address)
     }
@@ -83,9 +102,18 @@ where
     }
 }
 
-impl<M> Xreg for Rv32iCpu<M>
+impl<M> Load for Rv32iCpu<M>
 where
-    M: Mem,
+    M: Memory + Load,
+{
+    fn write_bytes(&mut self, start: crate::Address, bytes: &[u8]) -> crate::MemoryResult<()> {
+        self.mem.write_bytes(start, bytes)
+    }
+}
+
+impl<M> XRegisters for Rv32iCpu<M>
+where
+    M: Memory,
 {
     fn rx(&self, reg: Reg) -> u32 {
         let index: usize = Into::into(reg);
@@ -99,9 +127,9 @@ where
     }
 }
 
-impl<M> TrapHandler for Rv32iCpu<M>
+impl<M> Trap for Rv32iCpu<M>
 where
-    M: Mem,
+    M: Memory,
 {
     fn trap_cause(&self) -> Option<TrapCause> {
         self.trap_state.cause
