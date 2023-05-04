@@ -96,14 +96,13 @@
 
 pub mod backends;
 pub mod disassembler;
-pub mod platforms;
-pub mod reg;
-pub mod tobits;
 
 mod cpu;
 mod dispatcher;
 mod handlers;
 mod memory;
+mod reg;
+mod tobits;
 mod trap;
 
 #[doc(inline)]
@@ -120,3 +119,30 @@ pub use memory::*;
 
 #[doc(inline)]
 pub use trap::*;
+
+/// Utilities for decoding instructions and registers.
+pub mod decoding {
+    #[doc(inline)]
+    pub use crate::reg::*;
+
+    #[doc(inline)]
+    pub use crate::tobits::*;
+}
+
+/// Hardware platforms combine back ends to make a specific platform.
+pub mod platforms {
+    use super::backends;
+
+    /// A platform that uses an RV32ICPU with basic memory.
+    pub mod basic {
+        use super::backends;
+
+        #[doc(inline)]
+        pub use backends::cpus::rv32i::*;
+
+        #[doc(inline)]
+        pub use backends::memory::basic::*;
+
+        pub type BasicCpu = Rv32iCpu<BasicMem>;
+    }
+}
