@@ -49,7 +49,7 @@ $ cargo doc --open
 
 This loads an image and executes it with an RV32I CPU.
 ```
-$ cargo run --bin hello_world
+$ cargo run --example hello_world
 ```
 You should see output that looks like this.
 ```
@@ -69,7 +69,7 @@ Hello, world from Rust!
 
 This loads an RV32IC image and disassembles it to stdout.
 ```
-$ cargo run --bin disassemble_hello_world
+$ cargo run --example disassemble_hello_world
 ```
 You should see output that looks like this.
 ```
@@ -84,4 +84,38 @@ addr     instr    code
 0000020a     4b12 lw    s6, 4(sp)
 0000020c     6105 addi  sp, sp, 32
 0000020e     8082 jalr  zero, ra, 0
+```
+
+### Run `runner`
+
+This loads, runs and optionally traces an RV32I image passed on the command line.
+```
+$ cargo run --example runner images/hello_world.rv32i
+```
+You should see output that looks like this.
+```
+Hello, world from Rust!
+Hello, world from Rust!
+Hello, world from Rust!
+Hello, world from Rust!
+Hello, world from Rust!
+Hello, world from Rust!
+Hello, world from Rust!
+Hello, world from Rust!
+Hello, world from Rust!
+Hello, world from Rust!
+```
+If you try the same with an RV32IC image then it will fail with an illegal instruction,
+```
+$ cargo run --example runner -- -d images/hello_world.rv32ic
+```
+You should see output that looks like this.
+```
+pc       (pc)     Code
+00000000 00005197 auipc gp, 5
+00000004 80018193 addi  gp, gp, -2048
+00000008 00008117 auipc sp, 8
+0000000c ff810113 addi  sp, sp, -8
+00000010 0000840a illegal instruction: 840a
+IllegalInstruction(33802) at 0x00000010
 ```
