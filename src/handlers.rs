@@ -1,10 +1,10 @@
 //! Instruction handlers.
 
 use crate::{
-    cpu::{Fetch, FRegisters, XRegisters},
+    cpu::{FRegisters, Fetch, XRegisters},
     memory::Memory,
     reg::Reg,
-    trap::{TrapCause, Trap},
+    trap::{Trap, TrapCause},
 };
 
 /// An **instruction handler** for instructions from the base RV32I ISA.
@@ -586,7 +586,7 @@ where
 
     fn c_j(&mut self, imm: u32) -> Self::Item {
         // jal x0, offset[11:1]
-        self.jal(Reg::ZERO, imm);
+        self.set_next_pc(self.pc().wrapping_add(imm));
     }
 
     fn c_beqz(&mut self, rs1p: Reg, imm: u32) -> Self::Item {
@@ -601,12 +601,13 @@ where
 
     fn c_jr(&mut self, rs1n0: Reg) -> Self::Item {
         // jalr x0, 0(rs1)
-        self.jalr(Reg::ZERO, rs1n0, 0);
+        self.set_next_pc(self.rx(rs1n0) & !1);
     }
 
     fn c_jalr(&mut self, rs1n0: Reg) -> Self::Item {
         // jalr x1, 0(rs1)
-        self.jalr(Reg::RA, rs1n0, 0);
+        self.wx(Reg::RA, self.pc().wrapping_add(2));
+        self.set_next_pc(self.rx(rs1n0) & !1);
     }
 
     fn c_ebreak(&mut self) -> Self::Item {
@@ -635,7 +636,8 @@ where
 
     fn c_jal(&mut self, imm: u32) -> Self::Item {
         // jal x1, offset[11:1]
-        self.jal(Reg::RA, imm);
+        self.wx(Reg::RA, self.pc().wrapping_add(2));
+        self.set_next_pc(self.pc().wrapping_add(imm));
     }
 
     fn c_srli(&mut self, rdrs1p: Reg, imm: u32) -> Self::Item {
