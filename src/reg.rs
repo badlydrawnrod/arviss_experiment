@@ -1,5 +1,7 @@
 //! Registers.
 
+use std::fmt::Display;
+
 /// A RISC-V register index.
 #[derive(Copy, Clone)]
 pub struct Reg(u32);
@@ -42,6 +44,12 @@ impl Reg {
     #[inline]
     pub fn new(r: u32) -> Self {
         Reg(r % 32)
+    }
+}
+
+impl Display for Reg {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!("Reg({})", self.0))
     }
 }
 
