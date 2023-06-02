@@ -49,7 +49,7 @@ impl Reg {
 
 impl Display for Reg {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_fmt(format_args!("Reg({})", self.0))
+        f.write_fmt(format_args!("Reg::new({})", self.0))
     }
 }
 
