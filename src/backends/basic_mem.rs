@@ -2,6 +2,7 @@
 
 use crate::memory::{Address, MemoryResult};
 pub use crate::memory::{Load, Memory};
+use std::io::{self, Write};
 
 const MEMBASE: Address = 0;
 const MEMSIZE: Address = 0x8000;
@@ -108,7 +109,10 @@ impl Memory for BasicMem {
             self.mem[addr] = byte;
             Ok(())
         } else if address == TTY_DATA {
+            // Note that this flushes, largely because not doing so causes problems when switching from interpreted code
+            // to native code, most likely because of multiple runtimes.
             print!("{}", byte as char);
+            io::stdout().flush().unwrap();
             Ok(())
         } else {
             Err(address)
