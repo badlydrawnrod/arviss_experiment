@@ -3,7 +3,7 @@
 use std::fmt::Display;
 
 /// A RISC-V register index.
-#[derive(Copy, Clone)]
+#[derive(Copy, Clone, Debug)]
 pub struct Reg(u32);
 
 impl Reg {
