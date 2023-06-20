@@ -6,16 +6,16 @@ use crate::{
 };
 
 pub use crate::cpu::{Fetch, XRegisters};
-pub use crate::trap::{TrapCause, Trap};
+pub use crate::trap::{Trap, TrapCause};
 
 /// The current trap state of the CPU.
-#[derive(Default, Clone, Copy)]
+#[derive(Default, Clone, Copy, PartialEq, Eq)]
 pub struct TrapState {
     cause: Option<TrapCause>,
 }
 
 /// A basic RV32I CPU with integer registers but no floating point.
-#[derive(Default)]
+#[derive(Default, PartialEq, Eq)]
 pub struct Rv32iCpu<M>
 where
     M: Memory,

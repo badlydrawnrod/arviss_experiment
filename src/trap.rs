@@ -3,7 +3,7 @@
 use crate::memory::Address;
 
 /// Denotes the cause of a trap.
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum TrapCause {
     // Non-interrupt traps.
     InstructionAddressMisaligned,

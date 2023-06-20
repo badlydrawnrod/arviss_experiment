@@ -33,6 +33,7 @@ const TTY_DATA: Address = TTY_STATUS + 1;
 /// Attempts to read or write outside of the address space will result in an error.
 ///
 /// Attempts to write to ROM will result in an error.
+#[derive(PartialEq, Eq)]
 pub struct BasicMem {
     mem: [u8; MEMSIZE as usize],
 }
