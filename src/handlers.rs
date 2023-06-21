@@ -606,8 +606,9 @@ where
 
     fn c_jalr(&mut self, rs1n0: Reg) -> Self::Item {
         // jalr x1, 0(rs1)
+        let rs1_before = self.rx(rs1n0); // Because rs1 might be RA.
         self.wx(Reg::RA, self.pc().wrapping_add(2));
-        self.set_next_pc(self.rx(rs1n0) & !1);
+        self.set_next_pc(rs1_before & !1);
     }
 
     fn c_ebreak(&mut self) -> Self::Item {
