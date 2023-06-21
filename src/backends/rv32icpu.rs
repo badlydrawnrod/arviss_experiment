@@ -1,5 +1,7 @@
 //! An RV32I CPU with integer registers but not floating point.
 
+use std::fmt::Display;
+
 use crate::{
     memory::{Address, Load, Memory, MemoryResult},
     reg::Reg,
@@ -25,6 +27,19 @@ where
     xreg: [u32; 32],       // Regular registers, x0-x31.
     mem: M,                // Memory.
     trap_state: TrapState, // The current trap state.
+}
+
+impl<M> Display for Rv32iCpu<M>
+where
+    M: Memory,
+{
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_fmt(format_args!(
+            "pc: {:08x} next_pc {:08x}\n",
+            self.pc, self.next_pc
+        ))?;
+        f.write_fmt(format_args!("xregs: {:?}\n", self.xreg))
+    }
 }
 
 impl<M> Rv32iCpu<M>
